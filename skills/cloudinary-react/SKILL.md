@@ -49,9 +49,10 @@ If the user is **not** using the create-cloudinary-react CLI and only has these 
 
 **1. Environment (.env)**  
 Create a `.env` file in the project root with **Vite prefix** (required for client access):
-- `VITE_CLOUDINARY_CLOUD_NAME=your_cloud_name` (required)
-- `VITE_CLOUDINARY_UPLOAD_PRESET=your_unsigned_preset_name` (optional; required for unsigned upload widget)
-- Restart the dev server after adding or changing `.env`. Use `import.meta.env.VITE_*` in code, not `process.env`.
+- `VITE_CLOUDINARY_CLOUD_NAME=mycloud` (required — use your actual cloud name, **never** the literal string `your_cloud_name` which causes 401)
+- `VITE_CLOUDINARY_UPLOAD_PRESET=my_preset` (optional; required for unsigned upload widget — use your actual preset name)
+- **Restart the dev server** after adding or changing `.env`. Use `import.meta.env.VITE_*` in code, not `process.env`.
+- **If env var still empty in browser after restart**: Vite may cache the old value. Clear `node_modules/.vite/`, restart dev server, and do a hard refresh (Cmd+Shift+R / Ctrl+Shift+F5). If still empty, see "Vite env not reaching client" in Common Errors.
 
 **2. Reusable Cloudinary instance (config)**  
 Create a config file (e.g. `src/cloudinary/config.ts`) so the rest of the app can use a single `cld` instance:
@@ -94,6 +95,12 @@ export const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || '';
 ## Environment Variables
 - **Default: Vite** — Vite requires `VITE_` prefix; use `import.meta.env.VITE_CLOUDINARY_CLOUD_NAME` (not `process.env`). Restart dev server after changing `.env`.
 - ✅ CORRECT (Vite): `VITE_CLOUDINARY_CLOUD_NAME=mycloud` in `.env`; `import.meta.env.VITE_CLOUDINARY_CLOUD_NAME`
+- ❌ **WRONG**: `VITE_CLOUDINARY_CLOUD_NAME=your_cloud_name` — **Never** use the literal placeholder `your_cloud_name`; it causes 401 errors. Use your actual cloud name from the Cloudinary dashboard.
+- ⚠️ **Vite env not reaching client**: If `import.meta.env.VITE_CLOUDINARY_CLOUD_NAME` is still `undefined` in the browser after restarting:
+  1. Clear Vite cache: `rm -rf node_modules/.vite/` (or delete `node_modules/.vite` folder)
+  2. Restart dev server: `npm run dev`
+  3. Hard refresh browser: Cmd+Shift+R (Mac) or Ctrl+Shift+F5 (Windows/Linux)
+  4. If still empty, use a **static config** workaround (create a `cloudinaryConfig.ts` with a hardcoded cloud name for dev, then switch back to env later) and see Common Errors → "VITE_ prefix required or env var is undefined"
 
 ## Other bundlers (non-Vite)
 - **Only the env access changes.** All other patterns (reusable `cld`, Upload Widget, Video Player, overlays, signed uploads) are bundler-agnostic.
@@ -636,10 +643,19 @@ Docs: https://cloudinary.com/documentation/cloudinary_video_player.md
   3. Restart dev server after adding .env variables
 
 ### "VITE_ prefix required" or env var is undefined
-- ❌ Problem: Variable doesn't have the right prefix for the bundler, or wrong access (e.g. process.env in Vite, or no prefix in CRA).
+- ❌ Problem: Variable doesn't have the right prefix for the bundler, or wrong access (e.g. process.env in Vite, or no prefix in CRA). **Or** Vite cached the old value.
 - ✅ **Vite**: Use `VITE_` prefix in `.env` and `import.meta.env.VITE_CLOUDINARY_CLOUD_NAME` (not `process.env`).
 - ✅ **Not Vite?** Use your bundler's client env prefix and access: Create React App → `REACT_APP_` and `process.env.REACT_APP_CLOUDINARY_CLOUD_NAME`; Next.js (client) → `NEXT_PUBLIC_` and `process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`. See PATTERNS → "Other bundlers (non-Vite)".
-- Restart dev server after changing `.env`.
+- ✅ **Vite env not reaching client (still undefined after restart)**:
+  1. **Clear Vite cache**: Delete `node_modules/.vite/` folder (or run `rm -rf node_modules/.vite/`)
+  2. **Restart dev server**: Stop and run `npm run dev` again
+  3. **Hard refresh browser**: Cmd+Shift+R (Mac) or Ctrl+Shift+F5 (Windows/Linux) to clear browser cache
+  4. **Check `.env` is in project root** (not in a subdirectory) and has correct format: `VITE_CLOUDINARY_CLOUD_NAME=mycloud` (no quotes, no spaces around `=`)
+  5. **If still empty**: As a temporary workaround, create a static config file with a hardcoded cloud name for dev (e.g. `const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'mycloud'`), then debug why Vite isn't picking up `.env`.
+
+### Using literal placeholder "your_cloud_name" causes 401
+- ❌ Problem: User set `VITE_CLOUDINARY_CLOUD_NAME=your_cloud_name` (the literal placeholder string) in `.env`, causing 401 Unauthorized errors.
+- ✅ Solution: Replace `your_cloud_name` with your **actual** Cloudinary cloud name from your dashboard (e.g. `VITE_CLOUDINARY_CLOUD_NAME=myawesomecloud`). The placeholder `your_cloud_name` is not a valid cloud name. Find your real cloud name at https://console.cloudinary.com/app/home/dashboard (top left).
 
 ## Import Errors
 
@@ -871,7 +887,9 @@ When something isn't working, check:
 - [ ] **Rules-only?** → Create config file with reusable `cld` and export `uploadPreset`; use your bundler's client env prefix in .env; create Upload Widget in useEffect with ref (see "Project setup (rules-only / without CLI)").
 - [ ] **Not Vite?** → Use your bundler's env prefix and access (e.g. REACT_APP_ + process.env.REACT_APP_*; NEXT_PUBLIC_ + process.env.NEXT_PUBLIC_*). See "Other bundlers (non-Vite)".
 - [ ] Environment variables use the correct prefix for your bundler (Vite: VITE_; CRA: REACT_APP_; Next client: NEXT_PUBLIC_); **never** put API secret in client-exposed vars
+- [ ] **Never use literal placeholders in .env** → `your_cloud_name` or `your_preset` are placeholders; replace with your actual cloud name/preset (causes 401 if left as-is)
 - [ ] Dev server was restarted after .env changes
+- [ ] **Env var still undefined after restart?** → Clear Vite cache: delete `node_modules/.vite/`, restart dev server, hard refresh browser (Cmd+Shift+R / Ctrl+Shift+F5)
 - [ ] **@cloudinary/url-gen imports?** → Use only the exact paths from PATTERNS → "Import reference" and "Canonical overlay block" (e.g. `text`/`image` from `qualifiers/source`, not `actions/overlay`)
 - [ ] Imports are from correct packages (components/plugins from @cloudinary/react; actions/qualifiers from @cloudinary/url-gen with exact paths)
 - [ ] Transformations are chained on image instance
