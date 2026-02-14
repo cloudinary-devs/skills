@@ -458,7 +458,7 @@ Use when the user asks for a **video player** (styled UI, controls, playlists). 
 **Rule: imperative element only.** Do **not** pass a React-managed `<video ref={...} />` to the player — the library mutates the DOM and React will throw removeChild errors. Create the video element with `document.createElement('video')`, append it to a container ref, and pass that element to `videoPlayer(el, ...)`.
 
 - **Package**: `cloudinary-video-player`. Install with `npm install cloudinary-video-player` (no version).
-- **Import**: `import { videoPlayer } from 'cloudinary-video-player'` (named) and `import 'cloudinary-video-player/cld-video-player.min.css'` (no `dist/` in path).
+- **Import**: `import { videoPlayer } from 'cloudinary-video-player'` (named) and `import 'cloudinary-video-player/cld-video-player.min.css'` (no `dist/` in path). The package only exposes paths under `lib/` via `exports`; use `cld-video-player.min.css` (no `dist/`), which resolves to `lib/cld-video-player.min.css`.
 - **player.source()** takes an **object**: `player.source({ publicId: 'samples/elephants' })`. Not a string.
 - **Cleanup**: Call `player.dispose()`, then **only if** `el.parentNode` exists call `el.parentNode.removeChild(el)` (avoids NotFoundError).
 - **If init fails** (CSP, extensions, timing): render **AdvancedVideo** with the same publicId. Do not relax CSP in index.html or ask the user to disable extensions.
