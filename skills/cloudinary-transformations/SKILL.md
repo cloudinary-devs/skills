@@ -27,7 +27,7 @@ https://res.cloudinary.com/<cloud_name>/<asset_type>/<delivery_type>/<transforma
 - Commas (`,`) separate parameters **within** a component
 - Slashes (`/`) separate components **between** transformations
 - Each component acts on the output of the previous one
-- Format and quality must be separate: `f_auto/q_auto` NOT `f_auto,q_auto`
+- Best practice: Use `f_auto/q_auto` in separate components (though `f_auto,q_auto` is also valid)
 
 ### Parameter Types
 
@@ -66,13 +66,13 @@ x_20,y_30       # Pixel offsets
 ### Format & Quality
 
 ```
-f_auto/q_auto           # Automatic optimization (ALWAYS separate with /)
+f_auto/q_auto           # Automatic optimization (best practice: separate components)
 f_webp                  # Specific format
 q_80                    # Quality level
 dpr_auto                # Retina displays
 ```
 
-**Critical**: Format and quality parameters MUST be in separate components using `/`, never `,`.
+**Best Practice**: Format and quality parameters should be in separate components using `/`. While `f_auto,q_auto` works, separating them (e.g., `f_auto/q_auto`) is cleaner and more maintainable.
 
 ### Effects
 
@@ -273,13 +273,12 @@ When a transformation isn't working:
 
 1. **Check the X-Cld-Error header**: Cloudinary reports errors in the `X-Cld-Error` HTTP response header
 2. **Check parameter names** against [Transformation Reference](https://cloudinary.com/documentation/transformation_reference.md)
-3. **Verify format/quality separation**: Must be `f_auto/q_auto` not `f_auto,q_auto`
-4. **Check crop mode**: Width/height require a crop mode (e.g., `c_scale,w_400`)
-5. **Verify gravity compatibility**: `g_auto` doesn't work with `c_scale`, `c_fit`, `c_limit`, `c_pad`
-6. **Check action vs qualifier**: Only one action per component, qualifiers in same component
-7. **Verify overlay pattern**: Must end with `fl_layer_apply` component
-8. **Check variable names**: No underscores, must start with letter
-9. **Verify URL encoding**: Text overlays need URL-encoded strings (spaces = `%20`)
+3. **Check crop mode**: Width/height require a crop mode (e.g., `c_scale,w_400`)
+4. **Verify gravity compatibility**: `g_auto` doesn't work with `c_scale`, `c_fit`, `c_limit`, `c_pad`
+5. **Check action vs qualifier**: Only one action per component, qualifiers in same component
+6. **Verify overlay pattern**: Must end with `fl_layer_apply` component
+7. **Check variable names**: No underscores, must start with letter
+8. **Verify URL encoding**: Text overlays need URL-encoded strings (spaces = `%20`)
 
 ### Checking X-Cld-Error Header
 
@@ -313,7 +312,7 @@ For more details, see [Error Handling](https://cloudinary.com/documentation/adva
 
 ## Best Practices
 
-1. **Always use `f_auto/q_auto`** at the end unless specific format/quality requested
+1. **Always use format and quality optimization** at the end unless specific format/quality requested (prefer `f_auto/q_auto` in separate components over `f_auto,q_auto`)
 2. **Prefer `g_auto`** for smart cropping unless specific focal point needed
 3. **Order parameters alphabetically** within components for consistency
 4. **Specify only one dimension** with `c_scale` to maintain aspect ratio
@@ -379,8 +378,11 @@ For complete transformation cost details, see [How are transformations counted?]
 
 ## Common Mistakes to Avoid
 
-❌ `f_auto,q_auto` → ✅ `f_auto/q_auto`
 ❌ `w_400,h_300` → ✅ `c_scale,w_400` (specify crop mode, prefer one dimension)
 ❌ `c_scale,g_auto,w_400` → ✅ `c_fill,g_auto,w_400` (g_auto doesn't work with c_scale)
 ❌ `l_logo/fl_layer_apply,g_north_west` → ✅ `l_logo/c_scale,w_100/fl_layer_apply,g_north_west`
 ❌ `b_lightblue/e_trim` → ✅ `b_lightblue,c_pad,w_1.0/e_trim` (background as qualifier)
+
+## Best Practices
+
+✅ **Prefer** `f_auto/q_auto` over `f_auto,q_auto` (both work, but separate components are cleaner)
