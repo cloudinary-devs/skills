@@ -165,10 +165,39 @@ x_20,y_30       # Pixel offsets
 f_auto/q_auto           # Automatic optimization (best practice: separate components)
 f_webp                  # Specific format
 q_80                    # Quality level
-dpr_auto                # Retina displays
+dpr_auto                # Retina displays (see important notes below)
 ```
 
 **Best Practice**: Format and quality parameters should be in separate components using `/`. While `f_auto,q_auto` works, separating them (e.g., `f_auto/q_auto`) is cleaner and more maintainable.
+
+#### Important Notes About `dpr_auto`
+
+`dpr_auto` automatically matches the Device Pixel Ratio (DPR) of the user's device, but has several important limitations:
+
+**Browser Compatibility:**
+- **Only works on Chromium-based browsers** (Chrome, Edge, Opera, Samsung Internet)
+- Requires [Client Hints](https://cloudinary.com/documentation/responsive_server_side_client_hints) to be enabled
+- If Client Hints aren't supported or available, the URL is treated as `dpr_1.0`
+
+**Named Transformation Limitation:**
+- ❌ **Does NOT work inside named transformations** (similar to `f_auto`)
+- The client or CDN won't "see" `dpr_auto` when it's inside a named transformation
+- ✅ Use `dpr_auto` directly in the URL, not within `t_<name>`
+
+**To enable Client Hints**, add to your HTML `<head>` before any `<link>`, `<style>`, or `<script>` elements:
+```html
+<meta http-equiv="Accept-CH" content="DPR, Viewport-Width, Width">
+<meta http-equiv="Delegate-CH" content="DPR https://res.cloudinary.com; Viewport-Width https://res.cloudinary.com; Width https://res.cloudinary.com">
+```
+
+**Alternative solutions** for better browser support:
+- Use JavaScript-based responsive solutions (see [Responsive Images docs](https://cloudinary.com/documentation/responsive_images))
+- Specify explicit DPR values (e.g., `dpr_2.0`) for high-resolution displays
+- Use `w_auto` with Client Hints for automatic width-based responsiveness
+
+For more details, see:
+- [Responsive images using Client Hints](https://cloudinary.com/documentation/responsive_server_side_client_hints)
+- [Responsive images overview](https://cloudinary.com/documentation/responsive_images)
 
 ### Effects
 
@@ -425,7 +454,6 @@ if_w_gt_300_and_h_gt_200/c_fill,h_200,w_300/if_else/c_pad,h_200,w_300/if_end
 
 ```
 c_thumb,g_face,h_300,w_300/r_max/f_auto/q_auto              # Avatar
-c_fill,g_auto,w_800/f_auto/q_auto/dpr_auto                  # Responsive image
 c_fit,w_1200/l_logo,o_40,w_0.25/fl_layer_apply,g_south_east,x_20,y_20/f_auto/q_auto  # Watermark
 e_background_removal/b_lightblue,c_pad,w_1.0/f_png          # Background removal + color
 co_yellow,l_text:Arial_60_bold:Hello/fl_layer_apply,g_north,y_50  # Text overlay
@@ -445,6 +473,7 @@ ac_none/vc_h264/f_mp4/q_auto                                 # Silent video (aut
 6. ✅ **`g_auto` compatibility** (only works with `c_fill`, `c_lfill`, `c_crop`, `c_thumb`, `c_auto`)
 7. ✅ **Background as qualifier** (use with pad crop: `b_color,c_pad,w_X`, not `/b_color/`)
 8. ✅ **Format/quality at end** (prefer `f_auto/q_auto` as final components)
+9. ✅ **Auto parameters not in named transformations** (`f_auto`, `dpr_auto`, and `w_auto` don't work inside named transformations)
 
 **Quick syntax check:**
 - Commas separate parameters within a component: `c_fill,g_auto,w_400`
@@ -465,6 +494,8 @@ When a transformation isn't working:
 6. **Verify overlay pattern**: Must end with `fl_layer_apply` component
 7. **Check variable names**: No underscores, must start with letter
 8. **Verify URL encoding**: Text overlays need URL-encoded strings (spaces = `%20`)
+9. **Check auto parameters in named transformations**: `f_auto`, `dpr_auto`, and `w_auto` don't work inside named transformations - use them directly in URLs
+10. **Verify Client Hints for `dpr_auto`/`w_auto`**: These only work on Chromium browsers with Client Hints enabled; fallback to `dpr_1.0` otherwise
 
 ### Checking X-Cld-Error Header
 
@@ -549,8 +580,22 @@ c_fill,w_300/t_<name>             # Transform first, then apply named transforma
 
 ### Limitations of named transformations
 
-- See [Limitations of named transformations](https://cloudinary.com/documentation/image_transformations#limitations_of_named_transformations)
-- Do not add f_auto to a named transformation.
+**Automatic parameters don't work inside named transformations:**
+- ❌ `f_auto` - Automatic format selection
+- ❌ `dpr_auto` - Automatic DPR matching
+- ❌ `w_auto` - Automatic width matching (with Client Hints)
+
+These parameters rely on runtime information from the client or CDN that isn't available when the named transformation is processed. Use them directly in the URL instead:
+
+```
+# ❌ Don't do this:
+t_product_thumb   # where product_thumb includes f_auto
+
+# ✅ Do this instead:
+t_product_thumb/f_auto/q_auto
+```
+
+See [Limitations of named transformations](https://cloudinary.com/documentation/image_transformations#limitations_of_named_transformations) for complete details.
 
 ### Implementation Note
 

@@ -80,6 +80,8 @@ c_scale,w_400/f_auto/q_auto/dpr_auto
 ```
 Automatically serves 2x or 3x resolution for high-DPI displays.
 
+**Note:** `dpr_auto` only works on Chromium-based browsers (Chrome, Edge, Opera, Samsung Internet) with Client Hints enabled. Falls back to `dpr_1.0` otherwise. For broader browser support, consider using explicit DPR values (e.g., `dpr_2.0`) or JavaScript-based responsive solutions.
+
 ## Effects
 
 ### Grayscale
@@ -373,11 +375,15 @@ c_fill,g_auto,w_auto:breakpoints/f_auto/q_auto/dpr_auto
 ```
 Cloudinary generates optimal breakpoints.
 
+**Note:** Both `w_auto` and `dpr_auto` require Client Hints and only work on Chromium-based browsers. Without Client Hints support, `w_auto` is ignored and `dpr_auto` falls back to `dpr_1.0`.
+
 ### Specific Breakpoints
 ```
 c_fill,g_auto,w_auto:100:1600:80/f_auto/q_auto
 ```
 Breakpoints from 100px to 1600px in 80px increments.
+
+**Note:** `w_auto` requires Client Hints and only works on Chromium-based browsers.
 
 ### Art Direction
 ```
@@ -671,23 +677,25 @@ Automatic quality with low setting for smaller files.
 
 ## DPR and Responsive
 
+**Important:** `dpr_auto` and `w_auto` parameters only work on Chromium-based browsers (Chrome, Edge, Opera, Samsung Internet) with Client Hints enabled. They do NOT work inside named transformations. For broader browser support, see the [Responsive Images documentation](https://cloudinary.com/documentation/responsive_images).
+
 ### Specific DPR
 ```
 c_scale,w_400/dpr_2.0/f_auto/q_auto
 ```
-Delivers 800px image for 2x displays.
+Delivers 800px image for 2x displays. Explicit DPR values work in all browsers.
 
 ### Auto Breakpoints
 ```
 c_fill,g_auto,w_auto:breakpoints/f_auto/q_auto
 ```
-Cloudinary generates optimal responsive breakpoints.
+Cloudinary generates optimal responsive breakpoints. Requires Client Hints support.
 
 ### Breakpoints with Range
 ```
 c_fill,g_auto,w_auto:100:1600:80/f_auto/q_auto
 ```
-Breakpoints from 100px to 1600px in 80px steps.
+Breakpoints from 100px to 1600px in 80px steps. Requires Client Hints support.
 
 ## Fetch Delivery Type
 
