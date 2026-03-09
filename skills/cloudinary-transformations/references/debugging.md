@@ -404,12 +404,47 @@ c_scale,w_2000/f_auto/q_auto
 
 **Why:** Always use `f_auto/q_auto` for optimization unless specific format required.
 
+## URL Structure Issues
+
+### Issue: Missing Asset Type
+❌ **Wrong:**
+```
+https://res.cloudinary.com/demo/upload/c_scale,w_300/sample.jpg
+```
+
+✅ **Correct:**
+```
+https://res.cloudinary.com/demo/image/upload/c_scale,w_300/sample.jpg
+```
+
+**Why:** The asset type (`/image/`, `/video/`, or `/raw/`) is required between the cloud name and delivery type.
+
+**URL structure must be:**
+```
+https://res.cloudinary.com/<cloud_name>/<asset_type>/<delivery_type>/<transformations>/<public_id>
+```
+
+### Issue: Wrong Asset Type
+❌ **Wrong:**
+```
+https://res.cloudinary.com/demo/video/upload/sample.jpg
+```
+
+✅ **Correct:**
+```
+https://res.cloudinary.com/demo/image/upload/sample.jpg
+```
+
+**Why:** Asset type must match the actual asset. Images use `/image/`, videos use `/video/`, other files use `/raw/`.
+
 ## Debugging Workflow
 
 When a transformation doesn't work:
 
 1. **Verify URL structure**
-   - Check cloud name, asset type, delivery type
+   - Check cloud name exists: `/<cloud_name>/`
+   - **Check asset type is present:** `/image/` or `/video/` or `/raw/` 
+   - Check delivery type: `/upload/` or `/fetch/` etc.
    - Verify public ID exists and is spelled correctly
 
 2. **Check component separation**

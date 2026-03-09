@@ -465,15 +465,16 @@ ac_none/vc_h264/f_mp4/q_auto                                 # Silent video (aut
 
 **Before returning a transformation URL, verify:**
 
-1. ✅ **Each component has only one action parameter** (e.g., one crop mode per component)
-2. ✅ **Crop mode is explicit** (don't rely on defaults; avoid both dimensions with `c_scale`)
-3. ✅ **Overlays end with `fl_layer_apply`** in separate component
-4. ✅ **Text strings are URL-encoded** (spaces = `%20`, special chars encoded)
-5. ✅ **Variable names follow rules** (alphanumeric, start with letter, no underscores)
-6. ✅ **`g_auto` compatibility** (only works with `c_fill`, `c_lfill`, `c_crop`, `c_thumb`, `c_auto`)
-7. ✅ **Background as qualifier** (use with pad crop: `b_color,c_pad,w_X`, not `/b_color/`)
-8. ✅ **Format/quality at end** (prefer `f_auto/q_auto` as final components)
-9. ✅ **Auto parameters not in named transformations** (`f_auto`, `dpr_auto`, and `w_auto` don't work inside named transformations)
+1. ✅ **URL structure is complete** (cloud_name, asset_type `/image/` or `/video/` or `/raw/`, delivery_type, public_id)
+2. ✅ **Each component has only one action parameter** (e.g., one crop mode per component)
+3. ✅ **Crop mode is explicit** (don't rely on defaults; avoid both dimensions with `c_scale`)
+4. ✅ **Overlays end with `fl_layer_apply`** in separate component
+5. ✅ **Text strings are URL-encoded** (spaces = `%20`, special chars encoded)
+6. ✅ **Variable names follow rules** (alphanumeric, start with letter, no underscores)
+7. ✅ **`g_auto` compatibility** (only works with `c_fill`, `c_lfill`, `c_crop`, `c_thumb`, `c_auto`)
+8. ✅ **Background as qualifier** (use with pad crop: `b_color,c_pad,w_X`, not `/b_color/`)
+9. ✅ **Format/quality at end** (prefer `f_auto/q_auto` as final components)
+10. ✅ **Auto parameters not in named transformations** (`f_auto`, `dpr_auto`, and `w_auto` don't work inside named transformations)
 
 **Quick syntax check:**
 - Commas separate parameters within a component: `c_fill,g_auto,w_400`
@@ -486,16 +487,21 @@ See [references/debugging.md](references/debugging.md) for detailed examples of 
 
 When a transformation isn't working:
 
-1. **Check the X-Cld-Error header**: Cloudinary reports errors in the `X-Cld-Error` HTTP response header
-2. **Check parameter names** against [Transformation Reference](https://cloudinary.com/documentation/transformation_reference.md)
-3. **Check crop mode**: Specify crop mode explicitly; avoid both dimensions with `c_scale` (causes distortion if aspect ratios don't match)
-4. **Verify gravity compatibility**: `g_auto` doesn't work with `c_scale`, `c_fit`, `c_limit`, `c_pad`
-5. **Check action vs qualifier**: Only one action per component, qualifiers in same component
-6. **Verify overlay pattern**: Must end with `fl_layer_apply` component
-7. **Check variable names**: No underscores, must start with letter
-8. **Verify URL encoding**: Text overlays need URL-encoded strings (spaces = `%20`)
-9. **Check auto parameters in named transformations**: `f_auto`, `dpr_auto`, and `w_auto` don't work inside named transformations - use them directly in URLs
-10. **Verify Client Hints for `dpr_auto`/`w_auto`**: These only work on Chromium browsers with Client Hints enabled; fallback to `dpr_1.0` otherwise
+1. **Verify URL structure**: Check that all required URL parts are present:
+   - Cloud name: `/<cloud_name>/`
+   - Asset type: `/image/` or `/video/` or `/raw/`
+   - Delivery type: `/upload/` or `/fetch/` etc.
+   - Public ID at the end
+2. **Check the X-Cld-Error header**: Cloudinary reports errors in the `X-Cld-Error` HTTP response header
+3. **Check parameter names** against [Transformation Reference](https://cloudinary.com/documentation/transformation_reference.md)
+4. **Check crop mode**: Specify crop mode explicitly; avoid both dimensions with `c_scale` (causes distortion if aspect ratios don't match)
+5. **Verify gravity compatibility**: `g_auto` doesn't work with `c_scale`, `c_fit`, `c_limit`, `c_pad`
+6. **Check action vs qualifier**: Only one action per component, qualifiers in same component
+7. **Verify overlay pattern**: Must end with `fl_layer_apply` component
+8. **Check variable names**: No underscores, must start with letter
+9. **Verify URL encoding**: Text overlays need URL-encoded strings (spaces = `%20`)
+10. **Check auto parameters in named transformations**: `f_auto`, `dpr_auto`, and `w_auto` don't work inside named transformations - use them directly in URLs
+11. **Verify Client Hints for `dpr_auto`/`w_auto`**: These only work on Chromium browsers with Client Hints enabled; fallback to `dpr_1.0` otherwise
 
 ### Checking X-Cld-Error Header
 
