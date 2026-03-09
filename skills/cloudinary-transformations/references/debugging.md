@@ -4,40 +4,27 @@ Common issues and their solutions when transformations don't work as expected.
 
 ## Syntax Errors
 
-### Issue: Format and Quality Not Applied
-❌ **Wrong:**
-```
-f_auto,q_auto
-```
-
-✅ **Correct:**
-```
-f_auto/q_auto
-```
-
-**Why:** Format and quality are action parameters and must be in separate components.
-
-### Issue: Width/Height Without Crop Mode
-❌ **Wrong:**
+### Issue: Both Dimensions Without Explicit Crop Mode
+⚠️ **Works but risky:**
 ```
 w_400,h_300
 ```
 
-✅ **Correct:**
+✅ **Better:**
 ```
-c_scale,w_400
+c_scale,w_400                  # Specify one dimension, maintain aspect ratio
 ```
 or
 ```
-c_fill,h_300,w_400
+c_fill,h_300,w_400            # Both dimensions needed, smart crop
 ```
 
-**Why:** Dimensions require a crop mode. Prefer specifying only one dimension with `c_scale`.
+**Why:** While `c_scale` is the default crop mode, specifying both dimensions with `c_scale` (explicit or default) will distort the image if the aspect ratio doesn't match the original. Best practice: specify the crop mode explicitly and prefer one dimension with `c_scale` to maintain aspect ratio.
 
 ### Issue: Invalid Parameter Names
 ❌ **Wrong:**
 ```
-width_400,height_300
+crop_scale,width_400
 ```
 
 ✅ **Correct:**
@@ -159,7 +146,7 @@ r_20/bo_5px_solid_blue
 bo_5px_solid_blue,r_20
 ```
 
-**Why:** Border is a qualifier and should be in the same component as radius to follow the rounded corners.
+**Why:** Border is a qualifier in this case and should be in the same component as radius to follow the rounded corners.
 
 ### Issue: Border on Transparent Images
 ❌ **Wrong:**
@@ -483,25 +470,22 @@ When a transformation doesn't work:
 3. **Use browser DevTools**: Check network tab for errors
 4. **Test in isolation**: Remove other transformations to isolate issue
 5. **Check documentation**: Always verify parameter syntax
-6. **Use named transformations**: Test complex transformations in Cloudinary console first
 
 ## Quick Reference
 
 **Always separate with `/`:**
-- Format and quality: `f_auto/q_auto`
-- Different actions: `c_scale,w_400/e_sepia`
+- Different actions: `c_scale,w_400/e_sepia/f_auto/q_auto`
 
 **Always in same component:**
 - Action and its qualifiers: `co_yellow,l_text:Arial_40:Hello`
 - Border and radius: `bo_5px_solid_blue,r_20`
 
-**Always required:**
+**Always use:**
 - Crop mode with dimensions: `c_scale,w_400`
 - `fl_layer_apply` after overlays
 - `if_end` after conditionals
 
 **Never do:**
-- Both dimensions with `c_scale`: use one dimension or different crop mode
 - `g_auto` with `c_scale`, `c_fit`, `c_limit`, `c_pad`
 - Multiple actions in one component
 - Underscores in variable names

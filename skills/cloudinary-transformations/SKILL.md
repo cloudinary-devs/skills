@@ -15,6 +15,65 @@ This skill helps you create valid Cloudinary transformation URLs from natural la
 - Optimizing images or videos with Cloudinary
 - Applying effects, overlays, resizing, or cropping
 
+## Gathering Requirements
+
+Before generating a transformation URL, clarify these details based on the user's request:
+
+### For Resize/Crop Requests
+**Required:**
+- At least one dimension (width OR height)
+- Crop behavior if both dimensions specified (fill, pad, scale, limit, etc.)
+
+**Clarify if not specified:**
+- Focal point/gravity (especially for cropping): Face detection? Center? Smart auto-detection?
+- Maintain aspect ratio? (if only one dimension, this is automatic)
+
+**Example questions:**
+- "What dimensions do you need? (width and/or height)"
+- "Should this fill the space (may crop) or fit within it (no cropping)?"
+- "Any important focal point? (faces, center, specific area)"
+
+### For AI Transformation Requests
+**Background removal:**
+- Output format needs (PNG for transparency vs JPG with solid background)
+- What to do with transparent area (keep transparent, add color, or gen_fill)
+
+**Generative fill:**
+- Target dimensions or aspect ratio
+- How much extension needed
+
+**Generative replace:**
+- What object to replace (from)
+- What to replace it with (to)
+- Preserve original shape? (for clothing/objects)
+
+**Generative remove:**
+- What object(s) to remove
+- Remove all instances or just one?
+
+**Generative background replace:**
+- Describe desired background (or use auto-generation)
+- Need reproducibility? (consider seed parameter)
+
+### For Video Transformation Requests
+**Trimming:**
+- Start and end time, or duration
+- Seconds or percentage of video
+
+**Codec/format:**
+- Output format needs (MP4, WebM, etc.)
+- Quality requirements (use `vc_auto` if unsure)
+
+**Audio:**
+- Keep or remove audio track
+- If for autoplay, suggest removing audio (`ac_none`)
+
+### Always Recommend
+Unless user specifies otherwise:
+- Add `f_auto/q_auto` for automatic format/quality optimization
+- Use `g_auto` for smart cropping when filling dimensions
+- Consider cost for AI transformations (inform user of transformation credits)
+
 ## Quick Reference
 
 ### URL Structure
@@ -27,12 +86,11 @@ https://res.cloudinary.com/<cloud_name>/<asset_type>/<delivery_type>/<transforma
 - Commas (`,`) separate parameters **within** a component
 - Slashes (`/`) separate components **between** transformations
 - Each component acts on the output of the previous one
-- Best practice: Use `f_auto/q_auto` in separate components (though `f_auto,q_auto` is also valid)
 
 ### Parameter Types
 
-**Action parameters**: Perform transformations (one per component)
-**Qualifier parameters**: Modify action behavior (same component as action)
+**Action parameters**: Perform transformations (one action per component: each action transformation should be separated by a slash)
+**Qualifier parameters**: Modify action behavior (in the same component as the action, using commas as separators)
 
 Check the [Transformation Reference](https://cloudinary.com/documentation/transformation_reference.md) to determine if a parameter is an action or qualifier.
 
@@ -40,16 +98,54 @@ Check the [Transformation Reference](https://cloudinary.com/documentation/transf
 
 ### Resize & Crop
 
+**Choosing the right crop mode:**
+
+Use **`c_scale`** when:
+- Resizing while maintaining original aspect ratio
+- Specify only ONE dimension (width OR height)
+- No cropping needed
+- The user intentionally wants to stretch or squash an image by changing the aspect ratio
+
+Use **`c_fill`** when:
+- Must fit exact dimensions (e.g., thumbnail grid, fixed layout)
+- Okay to crop parts of image
+- Combine with `g_auto` for smart cropping, or `g_face` for portraits
+
+Use **`c_fit`** when:
+- Image must fit within dimensions without cropping
+- Okay to have empty space
+- Maintaining full image content is critical
+
+Use **`c_pad`** when:
+- Must fit exact dimensions without cropping
+- Need to fill empty space with background color/blur/AI-generated pixels
+- Use with `b_<color>` or `b_auto` (blurred background) or `b_gen_fill`
+
+Use **`c_limit`** when:
+- Set maximum dimensions but don't upscale small images
+- Preserving original quality of small images matters
+
+Use **`c_thumb`** when:
+- Creating thumbnails (typically avatars)
+- Use with `g_face` for face-centered crops
+
+Use **`c_auto`** when:
+- Cloudinary should intelligently crop to interesting content
+- Combine with `g_auto` for best results
+- Good for dynamic content where focal point varies
+
+**Examples:**
 ```
-c_scale,w_400           # Resize width, maintain aspect ratio
-c_fill,g_auto,h_300,w_400  # Fill dimensions, smart crop
-c_thumb,g_face,h_150,w_150 # Thumbnail with face detection
-c_pad,b_white,w_800     # Pad with background color
-c_limit,w_1000          # Limit size, no upscale
-c_auto,g_auto,w_800     # Auto crop to interesting area
+c_scale,w_400                      # Resize width, maintain aspect ratio
+c_fill,g_auto,h_300,w_400          # Fill dimensions, smart crop
+c_fit,h_300,w_400                  # Fit within dimensions, no crop
+c_pad,b_white,h_300,w_400          # Pad to exact size with white background
+c_limit,w_1000                     # Limit max width, no upscale
+c_thumb,g_face,h_150,w_150         # Face-centered square thumbnail
+c_auto,g_auto,w_800                # Auto crop to interesting area
 ```
 
-**Important**: Always specify a crop mode with width/height. Never use both dimensions with `c_scale` unless explicitly requested.
+**Important**: Always specify a crop mode explicitly. Avoid using both dimensions with `c_scale` (will distort if aspect ratios don't match) - prefer one dimension to maintain aspect ratio.
 
 ### Gravity (Focal Point)
 
@@ -138,72 +234,157 @@ a_vflip                 # Vertical flip
 Cloudinary's AI transformations solve common business challenges. **Proactively suggest these when appropriate:**
 
 ### Background Removal (`e_background_removal`)
-**Cost:** 75 tx | **Use when:**
-- Creating product images for e-commerce (white/transparent backgrounds)
-- Preparing images for overlays or compositing
-- Removing distracting backgrounds from portraits
-- Creating cutouts for marketing materials
+**Cost:** 75 tx | **Use when:** Product images, portraits, preparing for overlays
+**Value:** Professional product photos without manual editing
 
 ```
 e_background_removal/f_png
 ```
 
-**Business value:** Professional product photos without manual editing or photoshoots
-
 ### Generative Fill (`b_gen_fill`)
-**Cost:** 50 tx | **Use when:**
-- Changing aspect ratios without cropping important content
-- Extending images to fit different layouts (social media, banners)
-- Filling transparent areas after background removal
-- Creating images for different device sizes
+**Cost:** 50 tx | **Use when:** Changing aspect ratios without cropping, extending images
+**Value:** Adapt one image to multiple formats without reshooting
 
 ```
 c_pad,ar_16:9,b_gen_fill,w_1200/f_auto/q_auto
 ```
 
-**Business value:** Adapt one image to multiple formats without reshooting
-
 ### Auto Enhance (`e_auto_enhance`)
-**Cost:** 100 tx | **Use when:**
-- Improving low-quality user-generated content
-- Batch processing product photos with inconsistent lighting
-- Enhancing old or poorly lit images
-- Automatically correcting exposure, contrast, and color
+**Cost:** 100 tx | **Use when:** Improving UGC quality, correcting lighting/exposure
+**Value:** Professional-looking images without manual photo editing
 
 ```
 e_auto_enhance/f_auto/q_auto
 ```
 
-**Business value:** Professional-looking images without manual photo editing
-
 ### Upscale (`e_upscale`)
-**Cost:** 10-100 tx (based on input size) | **Use when:**
-- Enlarging low-resolution images for print or large displays
-- Improving quality of user-uploaded images
-- Scaling vintage or historical photos
-- Creating high-res versions from small originals
+**Cost:** 10-100 tx | **Use when:** Enlarging images without quality loss
+**Value:** Use existing images at larger sizes for print or displays
 
 ```
 e_upscale/c_scale,w_2000/f_auto/q_auto
 ```
 
-**Business value:** Use existing images at larger sizes without quality loss
+### Generative Background Replace (`e_gen_background_replace`)
+**Cost:** 230 tx | **Use when:** Replacing backgrounds with AI-generated environments
+**Value:** Create contextual product imagery without photoshoots
+
+```
+e_gen_background_replace:prompt_modern office space/f_auto/q_auto
+e_gen_background_replace:prompt_<text>;seed_<num>      # Use seed for reproducibility
+```
+
+**Key notes:**
+- Auto-detects/preserves foreground on non-transparent images
+- For transparent images, fills transparent area
+- Not supported for animated/fetched images
+
+### Generative Replace (`e_gen_replace`)
+**Cost:** 120 tx | **Use when:** Swapping objects, A/B testing product variations
+**Value:** Create product variations instantly without reshoots
+
+```
+e_gen_replace:from_shirt;to_cable knit sweater;preserve-geometry_true
+e_gen_replace:from_<object>;to_<replacement>;multiple_true     # Replace all instances
+```
+
+**Key notes:**
+- Use `preserve-geometry_true` to maintain shape (ideal for clothing)
+- Don't use for faces, hands, or text
+- Only works on non-transparent images
+
+### Generative Restore (`e_gen_restore`)
+**Cost:** 100 tx | **Use when:** Restoring old photos, fixing compression artifacts
+**Value:** Revitalize low-quality or historical content at scale
+
+```
+e_gen_restore/f_auto/q_auto
+```
+
+**Key notes:** Removes artifacts, reduces noise, sharpens, recovers detail
+
+### Generative Remove (`e_gen_remove`)
+**Cost:** 50 tx | **Use when:** Removing unwanted objects, cleaning product photos
+**Value:** Clean up images at scale without manual editing
+
+```
+e_gen_remove:prompt_the stick/f_auto/q_auto
+e_gen_remove:prompt_goose;multiple_true                 # Remove all instances
+e_gen_remove:prompt_(text;person)                       # Remove multiple types
+```
+
+**Key notes:** Parentheses syntax removes multiple different objects simultaneously
 
 ### When to Suggest AI Transformations
 
-**Proactively recommend when users ask for:**
-- "Remove background" → Use `e_background_removal`
-- "Make image bigger/higher quality" → Use `e_upscale`
-- "Improve image quality" → Use `e_auto_enhance`
-- "Change aspect ratio without cropping" → Use `b_gen_fill` with `c_pad`
-- "Extend image" or "fill empty space" → Use `b_gen_fill`
-- "Professional product photos" → Combine `e_background_removal` + `b_gen_fill` or solid color
+**Proactively recommend:**
+- "Remove background" → `e_background_removal`
+- "Replace background" → `e_gen_background_replace:prompt_<text>`
+- "Change aspect ratio without cropping" → `b_gen_fill` with `c_pad`
+- "Swap object/change color" → `e_gen_replace:from_<obj>;to_<new>`
+- "Fix old photo/restore" → `e_gen_restore`
+- "Remove object" → `e_gen_remove:prompt_<text>`
+- "Improve quality" → `e_auto_enhance`
+- "Make bigger" → `e_upscale`
 
-**Combine AI transformations for powerful results:**
+**Powerful combinations:**
 ```
+e_background_removal/e_gen_background_replace:prompt_modern office/f_auto/q_auto
+e_gen_remove:prompt_price tag/e_background_removal/b_white,c_pad,w_1.0/e_auto_enhance/f_auto/q_auto
+e_gen_restore/e_upscale/c_scale,w_2000/f_auto/q_auto
 e_background_removal/b_gen_fill,c_pad,ar_16:9,w_1200/e_auto_enhance/f_auto/q_auto
 ```
-Removes background, extends to 16:9, and enhances quality in one URL
+
+## Video-Specific Transformations
+
+### Video Codec (`vc_`)
+
+```
+vc_auto                        # Automatic codec selection (recommended)
+vc_h264:high:4.1               # H.264 with profile and level
+vc_h265, vc_vp8, vc_vp9, vc_av1  # Other codecs
+vc_none                        # Remove video, keep audio only
+```
+
+**Key options:** h264 profiles (`baseline`, `main`, `high`), levels (`3.0`-`5.2`)
+
+### Trimming Videos (`so_`, `eo_`, `du_`)
+
+```
+so_6.5                         # Start at 6.5 seconds
+eo_10                          # End at 10 seconds
+du_15                          # Duration of 15 seconds
+so_10p, eo_90p, du_30p         # Percentage-based (0p-100p)
+```
+
+**Value formats:** Seconds (float) or percentage (`10p`)
+
+### Audio Control (`ac_`)
+
+```
+ac_none                        # Remove audio track (for autoplay)
+ac_aac, ac_mp3, ac_vorbis, ac_opus  # Audio codecs
+```
+
+### Frame Rate (`fps_`)
+
+```
+fps_30                         # Set FPS (ensures audio sync)
+fps_20-25                      # FPS range
+```
+
+### Video Concatenation (`fl_splice`)
+
+**Pattern:**
+1. Declare: `fl_splice,l_video:<public_id>`
+2. Transform overlay (optional)
+3. Apply: `fl_layer_apply` (with `so_0` to splice at beginning)
+
+```
+c_fill,h_300,w_450/du_5/fl_splice,l_video:second_clip/c_fill,h_300,w_450/du_5/fl_layer_apply
+```
+
+**Important:** Both videos should be resized to matching dimensions before splicing
 
 ## Variables & Conditionals
 
@@ -242,30 +423,35 @@ if_w_gt_300_and_h_gt_200/c_fill,h_200,w_300/if_else/c_pad,h_200,w_300/if_end
 
 ## Common Patterns
 
-### Optimized Avatar
 ```
-c_thumb,g_face,h_300,w_300/r_max/f_auto/q_auto
-```
-
-### Responsive Image
-```
-c_fill,g_auto,w_800/f_auto/q_auto/dpr_auto
-```
-
-### Watermarked Image
-```
-c_fit,w_1200/fl_relative,l_logo,o_40,w_0.25/fl_layer_apply,g_south_east,x_20,y_20/f_auto/q_auto
+c_thumb,g_face,h_300,w_300/r_max/f_auto/q_auto              # Avatar
+c_fill,g_auto,w_800/f_auto/q_auto/dpr_auto                  # Responsive image
+c_fit,w_1200/l_logo,o_40,w_0.25/fl_layer_apply,g_south_east,x_20,y_20/f_auto/q_auto  # Watermark
+e_background_removal/b_lightblue,c_pad,w_1.0/f_png          # Background removal + color
+co_yellow,l_text:Arial_60_bold:Hello/fl_layer_apply,g_north,y_50  # Text overlay
+du_5/vc_auto/f_auto/q_auto                                   # 5-second video preview
+ac_none/vc_h264/f_mp4/q_auto                                 # Silent video (autoplay)
 ```
 
-### Background Removal with Color
-```
-e_background_removal/b_lightblue,c_pad,w_1.0/f_png
-```
+## Self-Validation Checklist
 
-### Text Overlay
-```
-co_yellow,l_text:Arial_60_bold:Hello/fl_layer_apply,g_north,y_50/f_auto/q_auto
-```
+**Before returning a transformation URL, verify:**
+
+1. ✅ **Each component has only one action parameter** (e.g., one crop mode per component)
+2. ✅ **Crop mode is explicit** (don't rely on defaults; avoid both dimensions with `c_scale`)
+3. ✅ **Overlays end with `fl_layer_apply`** in separate component
+4. ✅ **Text strings are URL-encoded** (spaces = `%20`, special chars encoded)
+5. ✅ **Variable names follow rules** (alphanumeric, start with letter, no underscores)
+6. ✅ **`g_auto` compatibility** (only works with `c_fill`, `c_lfill`, `c_crop`, `c_thumb`, `c_auto`)
+7. ✅ **Background as qualifier** (use with pad crop: `b_color,c_pad,w_X`, not `/b_color/`)
+8. ✅ **Format/quality at end** (prefer `f_auto/q_auto` as final components)
+
+**Quick syntax check:**
+- Commas separate parameters within a component: `c_fill,g_auto,w_400`
+- Slashes separate components: `c_fill,w_400/f_auto/q_auto`
+- Actions vs qualifiers: Only one action per component, qualifiers modify that action
+
+See [references/debugging.md](references/debugging.md) for detailed examples of each check.
 
 ## Debugging Checklist
 
@@ -273,7 +459,7 @@ When a transformation isn't working:
 
 1. **Check the X-Cld-Error header**: Cloudinary reports errors in the `X-Cld-Error` HTTP response header
 2. **Check parameter names** against [Transformation Reference](https://cloudinary.com/documentation/transformation_reference.md)
-3. **Check crop mode**: Width/height require a crop mode (e.g., `c_scale,w_400`)
+3. **Check crop mode**: Specify crop mode explicitly; avoid both dimensions with `c_scale` (causes distortion if aspect ratios don't match)
 4. **Verify gravity compatibility**: `g_auto` doesn't work with `c_scale`, `c_fit`, `c_limit`, `c_pad`
 5. **Check action vs qualifier**: Only one action per component, qualifiers in same component
 6. **Verify overlay pattern**: Must end with `fl_layer_apply` component
@@ -310,18 +496,9 @@ fetch('https://res.cloudinary.com/demo/image/upload/w_abc/sample.jpg')
 
 For more details, see [Error Handling](https://cloudinary.com/documentation/advanced_url_delivery_options#error_handling)
 
-## Best Practices
-
-1. **Always use format and quality optimization** at the end unless specific format/quality requested (prefer `f_auto/q_auto` in separate components over `f_auto,q_auto`)
-2. **Prefer `g_auto`** for smart cropping unless specific focal point needed
-3. **Order parameters alphabetically** within components for consistency
-4. **Specify only one dimension** with `c_scale` to maintain aspect ratio
-5. **Use `c_fill` or `c_auto` with `g_auto`** for smart cropping to dimensions
-6. **Never guess parameter names** - always verify against documentation
-
 ## Transformation Costs
 
-**Important**: Different transformations have different costs. Be aware of high-cost operations:
+**Important**: Different transformations have different costs. Be aware of high-cost operations and warn the user before generating transformations that cost more than a standard transformation:
 
 ### Standard Transformations
 - Basic image transformations: 1 transformation credit
@@ -342,6 +519,44 @@ For more details, see [Error Handling](https://cloudinary.com/documentation/adva
 5. **Video considerations**: HD video (1080p) costs more than SD (720p); AV1 codec costs significantly more than H.264
 
 For complete transformation cost details, see [How are transformations counted?](https://cloudinary.com/documentation/transformation_counts.md)
+
+## Named Transformations
+
+Named transformations allow you to save transformation chains with a name (e.g., `t_thumbnail`) and reuse them across your application.
+
+### When to Suggest Named Transformations
+
+- **Transformations used across multiple assets** - Consistency and easy updates
+- **Complex transformation chains** - Easier to maintain and read
+- **Saving money on expensive transformations** - Named transformations are required for baseline transformations, which save processing time and cost by avoiding regeneration of shared transformation steps.
+
+**Example**
+
+# Instead of repeating the same transformation:
+❌ c_thumb,g_face,h_200,w_200/r_max/e_sharpen/f_auto/q_auto
+
+# Create named transformation "avatar":
+✅ t_avatar/f_auto/q_auto
+
+
+### How to Reference Named Transformations
+
+```
+t_<name>                           # Use named transformation
+t_<name>/c_scale,w_500            # Named transformation + additional changes
+c_fill,w_300/t_<name>             # Transform first, then apply named transformation
+```
+
+### Limitations of named transformations
+
+- See [Limitations of named transformations](https://cloudinary.com/documentation/image_transformations#limitations_of_named_transformations)
+- Do not add f_auto to a named transformation.
+
+### Implementation Note
+
+Named transformations are created in the Cloudinary Console or via API. When suggesting them to users, explain:
+1. The transformation would be saved in their Cloudinary account with a name
+2. They can then reference it using `t_<name>` in URLs
 
 ## Additional Resources
 
@@ -376,13 +591,16 @@ For complete transformation cost details, see [How are transformations counted?]
 - [Conditional Transformations](https://cloudinary.com/documentation/video_conditional_expressions.md)
 - [User-Defined Variables and Arithmetic](https://cloudinary.com/documentation/video_user_defined_variables.md)
 
-## Common Mistakes to Avoid
+## Common Mistakes & Best Practices
 
-❌ `w_400,h_300` → ✅ `c_scale,w_400` (specify crop mode, prefer one dimension)
-❌ `c_scale,g_auto,w_400` → ✅ `c_fill,g_auto,w_400` (g_auto doesn't work with c_scale)
-❌ `l_logo/fl_layer_apply,g_north_west` → ✅ `l_logo/c_scale,w_100/fl_layer_apply,g_north_west`
-❌ `b_lightblue/e_trim` → ✅ `b_lightblue,c_pad,w_1.0/e_trim` (background as qualifier)
+**Avoid:**
+- ❌ `w_400,h_300` → ✅ `c_scale,w_400` (both dimensions with c_scale distorts image; prefer one dimension)
+- ❌ `c_scale,g_auto,w_400` → ✅ `c_fill,g_auto,w_400` (g_auto doesn't work with c_scale)
+- ❌ `l_logo/fl_layer_apply,g_north_west` → ✅ `l_logo/c_scale,w_100/fl_layer_apply,g_north_west`
+- ❌ `b_lightblue/e_trim` → ✅ `b_lightblue,c_pad,w_1.0/e_trim` (background as qualifier)
 
-## Best Practices
-
-✅ **Prefer** `f_auto/q_auto` over `f_auto,q_auto` (both work, but separate components are cleaner)
+**Always:**
+- Prefer `f_auto/q_auto` in separate components over `f_auto,q_auto`
+- Use `g_auto` for smart cropping unless specific focal point needed
+- Specify crop mode with width/height; prefer one dimension with `c_scale`
+- Never guess parameter names - verify against documentation
