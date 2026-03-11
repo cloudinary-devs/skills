@@ -425,17 +425,19 @@ https://res.cloudinary.com/<cloud_name>/<asset_type>/<delivery_type>/<transforma
 ```
 
 ### Issue: Wrong Asset Type
-❌ **Wrong:**
+❌ **Wrong if there is no video with public ID `sample`:**
 ```
 https://res.cloudinary.com/demo/video/upload/sample.jpg
 ```
 
-✅ **Correct:**
+✅ **Correct for an image with public ID `sample`:**
 ```
 https://res.cloudinary.com/demo/image/upload/sample.jpg
 ```
 
-**Why:** Asset type must match the actual asset. Images use `/image/`, videos use `/video/`, other files use `/raw/`.
+**Why:** Asset type must match the type of the uploaded asset. Images use `/image/`, videos use `/video/`, other files use `/raw/`.  
+
+If there is a video with public ID `sample` then `https://res.cloudinary.com/demo/video/upload/sample.jpg` is the correct way to deliver an image thumbnail from the video.
 
 ## Debugging Workflow
 
