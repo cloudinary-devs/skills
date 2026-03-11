@@ -421,7 +421,7 @@ Maintains 16:9 aspect ratio at 800px wide.
 ```
 t_thumbnail/f_auto/q_auto
 ```
-References a named transformation defined in Cloudinary console.
+References a named transformation that's been defined for this product environment.
 
 ## Additional Crop Modes
 

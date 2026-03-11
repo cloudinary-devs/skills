@@ -474,7 +474,6 @@ ac_none/vc_h264/f_mp4/q_auto                                 # Silent video (aut
 7. ✅ **`g_auto` compatibility** (only works with `c_fill`, `c_lfill`, `c_crop`, `c_thumb`, `c_auto`)
 8. ✅ **Background as qualifier** (use with pad crop: `b_color,c_pad,w_X`, not `/b_color/`)
 9. ✅ **Format/quality at end** (prefer `f_auto/q_auto` as final components)
-10. ✅ **Auto parameters not in named transformations** (`f_auto`, `dpr_auto`, and `w_auto` don't work inside named transformations)
 
 **Quick syntax check:**
 - Commas separate parameters within a component: `c_fill,g_auto,w_400`
