@@ -17,7 +17,7 @@ This skill helps you create valid Cloudinary transformation URLs from natural la
 
 ## Gathering Requirements
 
-Before generating a transformation URL, clarify these details based on the user's request:
+Before generating a transformation URL, if not already specified, clarify these details based on the user's request:
 
 ### For Resize/Crop Requests
 **Required:**
