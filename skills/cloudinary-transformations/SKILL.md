@@ -24,7 +24,7 @@ Before generating a transformation URL, if not already specified, clarify these 
 - At least one dimension (width OR height)
 - Crop behavior if both dimensions specified (fill, pad, scale, limit, etc.)
 
-**Clarify if not specified:**
+**Clarify:**
 - Focal point/gravity (especially for cropping): Face detection? Center? Smart auto-detection?
 - Maintain aspect ratio? (if only one dimension, this is automatic)
 
