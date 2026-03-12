@@ -98,6 +98,10 @@ Check the [Transformation Reference](https://cloudinary.com/documentation/transf
 
 ### Resize & Crop
 
+**Dimension value formats:**
+- **Whole numbers** (e.g., `w_400`, `h_300`) = pixels
+- **Decimal values** (e.g., `w_0.5`, `h_1.0`) = percentage of original dimensions (0.5 = 50%, 1.0 = 100%)
+
 **Choosing the right crop mode:**
 
 Use **`c_scale`** when:
@@ -136,10 +140,12 @@ Use **`c_auto`** when:
 
 **Examples:**
 ```
-c_scale,w_400                      # Resize width, maintain aspect ratio
-c_fill,g_auto,h_300,w_400          # Fill dimensions, smart crop
+c_scale,w_400                      # Resize width to 400px, maintain aspect ratio
+c_scale,w_0.5                      # Resize to 50% of original width
+c_fill,g_auto,h_300,w_400          # Fill 400x300px dimensions, smart crop
 c_fit,h_300,w_400                  # Fit within dimensions, no crop
 c_pad,b_white,h_300,w_400          # Pad to exact size with white background
+c_pad,w_1.0                        # Pad to original width (100%)
 c_limit,w_1000                     # Limit max width, no upscale
 c_thumb,g_face,h_150,w_150         # Face-centered square thumbnail
 c_auto,g_auto,w_800                # Auto crop to interesting area
@@ -155,7 +161,13 @@ g_face          # Face detection
 g_center        # Center position
 g_north_west    # Compass positions
 x_20,y_30       # Pixel offsets
+x_0.8,y_0.2     # Percentage offsets (0.8 = 80%, 0.2 = 20%)
 ```
+
+**Coordinate value formats (x, y):**
+- **Integers** (e.g., `x_20`, `y_30`) = pixels
+- **Float values** (e.g., `x_0.8`, `y_0.2`) = percentage in relation to 1.0 (0.8 = 80%, 0.2 = 20%)
+- **Important**: When using x, y, h, and w together, use either integers or floats for all values. Do not mix types.
 
 **Note**: `g_auto` does NOT work with `c_scale`, `c_fit`, `c_limit`, `c_pad`, or overlay positioning.
 
@@ -224,8 +236,9 @@ l_logo/c_scale,w_100/fl_layer_apply,g_north_west,x_10,y_10
 
 **Text overlays:**
 ```
-l_text:Arial_40:Hello%20World/co_yellow/fl_layer_apply,g_south
+co_yellow,l_text:Arial_40:Hello%20World/fl_layer_apply,g_south
 ```
+**Important**: Color (`co_`) is a qualifier — it must be in the **same component** as the text overlay declaration, not in a separate component.
 
 ### Borders & Rounding
 
@@ -454,7 +467,7 @@ if_w_gt_300_and_h_gt_200/c_fill,h_200,w_300/if_else/c_pad,h_200,w_300/if_end
 
 ```
 c_thumb,g_face,h_300,w_300/r_max/f_auto/q_auto              # Avatar
-c_fit,w_1200/l_logo,o_40,w_0.25/fl_layer_apply,g_south_east,x_20,y_20/f_auto/q_auto  # Watermark
+c_fit,w_1200/l_logo/c_scale,o_40,w_0.25/fl_layer_apply,g_south_east,x_20,y_20/f_auto/q_auto  # Watermark scaled to a quarter of its size
 e_background_removal/b_lightblue,c_pad,w_1.0/f_png          # Background removal + color
 co_yellow,l_text:Arial_60_bold:Hello/fl_layer_apply,g_north,y_50  # Text overlay
 du_5/vc_auto/f_auto/q_auto                                   # 5-second video preview
