@@ -7,6 +7,17 @@ description: Create and debug Cloudinary transformation URLs from natural langua
 
 This skill helps you create valid Cloudinary transformation URLs from natural language instructions and debug transformation issues.
 
+## Quick Start
+
+**Most common transformations:**
+1. Resize: `c_scale,w_400` (maintain aspect ratio)
+2. Fill exact size: `c_fill,g_auto,h_300,w_400` (smart crop)
+3. Optimize: `f_auto/q_auto` (automatic format/quality)
+4. Remove background: `e_background_removal/f_png`
+5. Text overlay: `co_yellow,l_text:Arial_40:Hello%20World/fl_layer_apply,g_south`
+
+**For debugging:** See [references/debugging.md](references/debugging.md) for detailed troubleshooting steps.
+
 ## When to Use This Skill
 
 - Building Cloudinary delivery/transformation URLs
@@ -275,193 +286,36 @@ a_vflip                 # Vertical flip
 
 Cloudinary's AI transformations solve common business challenges. **Proactively suggest these when appropriate:**
 
-### Background Removal (`e_background_removal`)
-**Cost:** 75 tx | **Use when:** Product images, portraits, preparing for overlays
-**Value:** Professional product photos without manual editing
+**Common AI transformations:**
+- `e_background_removal` - Remove backgrounds (75 tx)
+- `b_gen_fill` - Extend images without cropping (50 tx)
+- `e_gen_background_replace:prompt_<text>` - AI-generated backgrounds (230 tx)
+- `e_gen_replace:from_<obj>;to_<new>` - Swap objects (120 tx)
+- `e_gen_remove:prompt_<text>` - Remove objects (50 tx)
+- `e_auto_enhance` - Improve image quality (100 tx)
+- `e_upscale` - Enlarge without quality loss (10-100 tx)
 
-```
-e_background_removal/f_png
-```
+**Important:** AI transformations have higher costs. See [references/costs-optimization.md](references/costs-optimization.md) for details.
 
-### Generative Fill (`b_gen_fill`)
-**Cost:** 50 tx | **Use when:** Changing aspect ratios without cropping, extending images
-**Value:** Adapt one image to multiple formats without reshooting
-
-```
-c_pad,ar_16:9,b_gen_fill,w_1200/f_auto/q_auto
-```
-
-### Auto Enhance (`e_auto_enhance`)
-**Cost:** 100 tx | **Use when:** Improving UGC quality, correcting lighting/exposure
-**Value:** Professional-looking images without manual photo editing
-
-```
-e_auto_enhance/f_auto/q_auto
-```
-
-### Upscale (`e_upscale`)
-**Cost:** 10-100 tx | **Use when:** Enlarging images without quality loss
-**Value:** Use existing images at larger sizes for print or displays
-
-```
-e_upscale/c_scale,w_2000/f_auto/q_auto
-```
-
-### Generative Background Replace (`e_gen_background_replace`)
-**Cost:** 230 tx | **Use when:** Replacing backgrounds with AI-generated environments
-**Value:** Create contextual product imagery without photoshoots
-
-```
-e_gen_background_replace:prompt_modern office space/f_auto/q_auto
-e_gen_background_replace:prompt_<text>;seed_<num>      # Use seed for reproducibility
-```
-
-**Key notes:**
-- Auto-detects/preserves foreground on non-transparent images
-- For transparent images, fills transparent area
-- Not supported for animated/fetched images
-
-### Generative Replace (`e_gen_replace`)
-**Cost:** 120 tx | **Use when:** Swapping objects, A/B testing product variations
-**Value:** Create product variations instantly without reshoots
-
-```
-e_gen_replace:from_shirt;to_cable knit sweater;preserve-geometry_true
-e_gen_replace:from_<object>;to_<replacement>;multiple_true     # Replace all instances
-```
-
-**Key notes:**
-- Use `preserve-geometry_true` to maintain shape (ideal for clothing)
-- Don't use for faces, hands, or text
-- Only works on non-transparent images
-
-### Generative Restore (`e_gen_restore`)
-**Cost:** 100 tx | **Use when:** Restoring old photos, fixing compression artifacts
-**Value:** Revitalize low-quality or historical content at scale
-
-```
-e_gen_restore/f_auto/q_auto
-```
-
-**Key notes:** Removes artifacts, reduces noise, sharpens, recovers detail
-
-### Generative Remove (`e_gen_remove`)
-**Cost:** 50 tx | **Use when:** Removing unwanted objects, cleaning product photos
-**Value:** Clean up images at scale without manual editing
-
-```
-e_gen_remove:prompt_the stick/f_auto/q_auto
-e_gen_remove:prompt_goose;multiple_true                 # Remove all instances
-e_gen_remove:prompt_(text;person)                       # Remove multiple types
-```
-
-**Key notes:** Parentheses syntax removes multiple different objects simultaneously
-
-### When to Suggest AI Transformations
-
-**Proactively recommend:**
-- "Remove background" → `e_background_removal`
-- "Replace background" → `e_gen_background_replace:prompt_<text>`
-- "Change aspect ratio without cropping" → `b_gen_fill` with `c_pad`
-- "Swap object/change color" → `e_gen_replace:from_<obj>;to_<new>`
-- "Fix old photo/restore" → `e_gen_restore`
-- "Remove object" → `e_gen_remove:prompt_<text>`
-- "Improve quality" → `e_auto_enhance`
-- "Make bigger" → `e_upscale`
-
-**Powerful combinations:**
-```
-e_background_removal/e_gen_background_replace:prompt_modern office/f_auto/q_auto
-e_gen_remove:prompt_price tag/e_background_removal/b_white,c_pad,w_1.0/e_auto_enhance/f_auto/q_auto
-e_gen_restore/e_upscale/c_scale,w_2000/f_auto/q_auto
-e_background_removal/b_gen_fill,c_pad,ar_16:9,w_1200/e_auto_enhance/f_auto/q_auto
-```
+For complete AI transformation details, syntax, use cases, and powerful combinations, see [references/ai-transformations.md](references/ai-transformations.md)
 
 ## Video-Specific Transformations
 
-### Video Codec (`vc_`)
+**Common video operations:**
+- `vc_auto` - Automatic codec (recommended)
+- `so_6.5/eo_10` - Trim from 6.5s to 10s
+- `ac_none` - Remove audio (for autoplay)
+- `fps_30` - Set frame rate
 
-```
-vc_auto                        # Automatic codec selection (recommended)
-vc_h264:high:4.1               # H.264 with profile and level
-vc_h265, vc_vp8, vc_vp9, vc_av1  # Other codecs
-vc_none                        # Remove video, keep audio only
-```
-
-**Key options:** h264 profiles (`baseline`, `main`, `high`), levels (`3.0`-`5.2`)
-
-### Trimming Videos (`so_`, `eo_`, `du_`)
-
-```
-so_6.5                         # Start at 6.5 seconds
-eo_10                          # End at 10 seconds
-du_15                          # Duration of 15 seconds
-so_10p, eo_90p, du_30p         # Percentage-based (0p-100p)
-```
-
-**Value formats:** Seconds (float) or percentage (`10p`)
-
-### Audio Control (`ac_`)
-
-```
-ac_none                        # Remove audio track (for autoplay)
-ac_aac, ac_mp3, ac_vorbis, ac_opus  # Audio codecs
-```
-
-### Frame Rate (`fps_`)
-
-```
-fps_30                         # Set FPS (ensures audio sync)
-fps_20-25                      # FPS range
-```
-
-### Video Concatenation (`fl_splice`)
-
-**Pattern:**
-1. Declare: `fl_splice,l_video:<public_id>`
-2. Transform overlay (optional)
-3. Apply: `fl_layer_apply` (with `so_0` to splice at beginning)
-
-```
-c_fill,h_300,w_450/du_5/fl_splice,l_video:second_clip/c_fill,h_300,w_450/du_5/fl_layer_apply
-```
-
-**Important:** Both videos should be resized to matching dimensions before splicing
+For complete video transformation details including codecs, trimming, audio control, and video concatenation, see [references/video-transformations.md](references/video-transformations.md)
 
 ## Variables & Conditionals
 
-### Variables
+**Variables:** `$width_300/c_fill,h_$width,w_$width` - Reuse values in transformations
 
-Use when values are reused or for template transformations.
+**Conditionals:** `if_w_gt_300/c_scale,w_300/if_end` - Apply transformations based on conditions
 
-```
-$width_300/c_fill,h_$width,w_$width    # Declare and use
-$date_12/l_text:Arial_40:$(date)/fl_layer_apply  # String variables use !text!
-```
-
-**Rules:**
-- Variable names: alphanumeric only, must start with letter, NO underscores
-- String assignment: `$var_!text value!`
-- Reference: `$var` or `$(var)` in text
-
-### Conditionals
-
-```
-if_w_gt_300/c_scale,w_300/if_end
-if_!sale!_in_tags/l_sale_icon/fl_layer_apply/if_end
-if_w_gt_300_and_h_gt_200/c_fill,h_200,w_300/if_else/c_pad,h_200,w_300/if_end
-```
-
-**Operators:**
-- `eq`, `ne`, `lt`, `gt`, `lte`, `gte`
-- `in`, `nin` (for tags)
-- `and`, `or` (AND takes precedence)
-
-**Conditions:**
-- Dimensions: `if_w_gt_300`, `if_h_lte_200`
-- Aspect ratio: `if_ar_gt_1.0`
-- Tags: `if_!sale!_in_tags`
-- Metadata: `if_md:!stock-level!_lt_50`
+For complete syntax, rules, and examples, see [references/advanced-features.md](references/advanced-features.md)
 
 ## Common Patterns
 
@@ -470,8 +324,6 @@ c_thumb,g_face,h_300,w_300/r_max/f_auto/q_auto              # Avatar
 c_fit,w_1200/l_logo/c_scale,o_40,w_0.25/fl_layer_apply,g_south_east,x_20,y_20/f_auto/q_auto  # Watermark scaled to a quarter of its size
 e_background_removal/b_lightblue,c_pad,w_1.0/f_png          # Background removal + color
 co_yellow,l_text:Arial_60_bold:Hello/fl_layer_apply,g_north,y_50  # Text overlay
-du_5/vc_auto/f_auto/q_auto                                   # 5-second video preview
-ac_none/vc_h264/f_mp4/q_auto                                 # Silent video (autoplay)
 ```
 
 ## Self-Validation Checklist
@@ -547,83 +399,33 @@ For more details, see [Error Handling](https://cloudinary.com/documentation/adva
 
 ## Transformation Costs
 
-**Important**: Different transformations have different costs. Be aware of high-cost operations and warn the user before generating transformations that cost more than a standard transformation:
+**Important:** Warn users about high-cost transformations before generating URLs. AI effects cost significantly more than standard transformations (50-230 tx vs 1 tx).
 
-### Standard Transformations
-- Basic image transformations: 1 transformation credit
-- Video transformations: Counted per second (varies by resolution and codec)
-
-### High-Cost Effects (per use)
-- **Generative AI**: `e_gen_background_replace` (230 tx), `e_gen_replace` (120 tx), `e_gen_restore` (100 tx)
-- **AI Enhancement**: `e_auto_enhance` (100 tx), `e_enhance` (100 tx)
-- **Background Removal**: `e_background_removal` (75 tx), `e_extract` (75 tx)
-- **Generative Edits**: `b_gen_fill` (50 tx), `e_gen_recolor` (50 tx), `e_gen_remove` (50 tx)
-- **Upscale**: `e_upscale` (10-100 tx depending on input size)
-
-### Cost Optimization Tips
-1. **Use baseline transformations** for expensive effects: Save `e_background_removal` as a named transformation (e.g., `t_bg_removed`), then use `bl_bg_removed/c_scale,w_500` to avoid re-applying the effect
-2. **Reuse derived assets**: Multiple requests to the same transformation URL don't incur additional costs
-3. **Avoid unnecessary variations**: Different parameter orders create separate derived assets (e.g., `w_200,h_200` vs `h_200,w_200`)
-4. **Consider format costs**: AVIF images cost 1 tx per 2MP (or part thereof)
-5. **Video considerations**: HD video (1080p) costs more than SD (720p); AV1 codec costs significantly more than H.264
-
-For complete transformation cost details, see [How are transformations counted?](https://cloudinary.com/documentation/transformation_counts.md)
+For complete cost details and optimization strategies, see [references/costs-optimization.md](references/costs-optimization.md)
 
 ## Named Transformations
 
-Named transformations allow you to save transformation chains with a name (e.g., `t_thumbnail`) and reuse them across your application.
+Named transformations (`t_<name>`) save transformation chains for reuse. Suggest for:
+- Transformations used across multiple assets
+- Complex transformation chains
+- Expensive operations (to enable baseline transformations and reduce costs)
 
-### When to Suggest Named Transformations
+**Important:** `f_auto`, `dpr_auto`, and `w_auto` don't work inside named transformations - use them directly in URLs: `t_avatar/f_auto/q_auto`
 
-- **Transformations used across multiple assets** - Consistency and easy updates
-- **Complex transformation chains** - Easier to maintain and read
-- **Saving money on expensive transformations** - Named transformations are required for baseline transformations, which save processing time and cost by avoiding regeneration of shared transformation steps.
-
-**Example**
-
-# Instead of repeating the same transformation:
-❌ c_thumb,g_face,h_200,w_200/r_max/e_sharpen/f_auto/q_auto
-
-# Create named transformation "avatar":
-✅ t_avatar/f_auto/q_auto
-
-
-### How to Reference Named Transformations
-
-```
-t_<name>                           # Use named transformation
-t_<name>/c_scale,w_500            # Named transformation + additional changes
-c_fill,w_300/t_<name>             # Transform first, then apply named transformation
-```
-
-### Limitations of named transformations
-
-**Automatic parameters don't work inside named transformations:**
-- ❌ `f_auto` - Automatic format selection
-- ❌ `dpr_auto` - Automatic DPR matching
-- ❌ `w_auto` - Automatic width matching (with Client Hints)
-
-These parameters rely on runtime information from the client or CDN that isn't available when the named transformation is processed. Use them directly in the URL instead:
-
-```
-# ❌ Don't do this:
-t_product_thumb   # where product_thumb includes f_auto
-
-# ✅ Do this instead:
-t_product_thumb/f_auto/q_auto
-```
-
-See [Limitations of named transformations](https://cloudinary.com/documentation/image_transformations#limitations_of_named_transformations.md) for complete details.
-
-### Implementation Note
-
-Named transformations are created in the Cloudinary Console or via API. When suggesting them to users, explain:
-1. The transformation would be saved in their Cloudinary account with a name
-2. They can then reference it using `t_<name>` in URLs
+For complete details, limitations, and examples, see [references/named-transformations.md](references/named-transformations.md)
 
 ## Additional Resources
 
-### Core References
+### Skill References (Progressive Disclosure)
+- [references/ai-transformations.md](references/ai-transformations.md) - Complete AI transformation details
+- [references/video-transformations.md](references/video-transformations.md) - Video-specific operations
+- [references/advanced-features.md](references/advanced-features.md) - Variables and conditionals
+- [references/costs-optimization.md](references/costs-optimization.md) - Cost details and optimization
+- [references/named-transformations.md](references/named-transformations.md) - Named transformation guide
+- [references/debugging.md](references/debugging.md) - Detailed debugging examples
+- [references/examples.md](references/examples.md) - Additional examples
+
+### Core Cloudinary Documentation
 - [Transformation Reference](https://cloudinary.com/documentation/transformation_reference.md) - All parameters
 - [Transformation Rules](https://cloudinary.com/documentation/cloudinary_transformation_rules.md) - Complete guide
 
