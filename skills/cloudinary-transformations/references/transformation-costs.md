@@ -1,9 +1,11 @@
-# Transformation Costs & Optimization
+# Transformation Costs & Cost Reduction
 
 **Important**: Different transformations have different costs. Be aware of high-cost operations and warn the user before generating transformations that cost more than a standard transformation.
 
+**Note:** "tx" = transformation credits. Numbers shown (e.g., 75 tx) indicate additional transformation credits consumed per use.
+
 ## Standard Transformations
-- Basic image transformations: 1 transformation credit
+- Basic image transformations: 1 transformation credit (1 tx)
 - Video transformations: Counted per second (varies by resolution and codec)
 
 ## High-Cost Effects (per use)
@@ -13,9 +15,9 @@
 - **Generative Edits**: `b_gen_fill` (50 tx), `e_gen_recolor` (50 tx), `e_gen_remove` (50 tx)
 - **Upscale**: `e_upscale` (10-100 tx depending on input size)
 
-## Cost Optimization Tips
+## Strategies to Reduce Costs
 
-1. **Use baseline transformations** for expensive effects: Save `e_background_removal` as a named transformation (e.g., `t_bg_removed`), then use `bl_bg_removed/c_scale,w_500` to avoid re-applying the effect
+1. **Use baseline transformations** for expensive effects: Baseline transformations (`bl_<named>`) cache expensive operations (like `e_background_removal`, 75 tx) so they don't have to be regenerated for each variation. See [named-transformations.md](named-transformations.md#baseline-transformations) for complete details on syntax, rules, and cost savings examples.
 2. **Reuse derived assets**: Multiple requests to the same transformation URL don't incur additional costs
 3. **Avoid unnecessary variations**: Different parameter orders create separate derived assets (e.g., `w_200,h_200` vs `h_200,w_200`)
 4. **Consider format costs**: AVIF images cost 1 tx per 2MP (or part thereof)

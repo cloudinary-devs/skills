@@ -104,3 +104,30 @@ e_gen_remove:prompt_price tag/e_background_removal/b_white,c_pad,w_1.0/e_auto_en
 e_gen_restore/e_upscale/c_scale,w_2000/f_auto/q_auto
 e_background_removal/b_gen_fill,c_pad,ar_16:9,w_1200/e_auto_enhance/f_auto/q_auto
 ```
+
+## Cost Optimization with Baseline Transformations
+
+Since AI transformations are expensive (50-230 tx), use **baseline transformations** to cache results and avoid re-processing:
+
+**Example: Background removal with multiple variations**
+```
+# Without baseline - regenerates background removal each time (75 tx each)
+e_background_removal/c_scale,w_500/f_auto/q_auto           # 75 tx
+e_background_removal/c_fill,h_300,w_400/f_auto/q_auto     # 75 tx
+e_background_removal/e_grayscale/f_auto/q_auto            # 75 tx
+# Total: 225 tx
+
+# With baseline - processes background removal once (75 tx + 1 tx per variation)
+# Named transformation "bg_removed" contains: e_background_removal/f_jxl/q_100
+bl_bg_removed/c_scale,w_500/f_auto/q_auto                 # 1 tx
+bl_bg_removed/c_fill,h_300,w_400/f_auto/q_auto           # 1 tx
+bl_bg_removed/e_grayscale/f_auto/q_auto                  # 1 tx
+# Total: 78 tx (75 tx for baseline + 3 tx for variations)
+```
+
+**When to suggest baseline transformations:**
+- User needs multiple variations of an AI-transformed image
+- Expensive AI operations will be reused (background removal, generative AI, upscale)
+- Building a product catalog with consistent AI processing
+
+For complete syntax, rules, and implementation details, see [named-transformations.md](named-transformations.md#baseline-transformations)

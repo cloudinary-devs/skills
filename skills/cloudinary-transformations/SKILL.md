@@ -9,12 +9,29 @@ This skill helps you create valid Cloudinary transformation URLs from natural la
 
 ## Quick Start
 
-**Most common transformations:**
-1. Resize: `c_scale,w_400` (maintain aspect ratio)
-2. Fill exact size: `c_fill,g_auto,h_300,w_400` (smart crop)
-3. Optimize: `f_auto/q_auto` (automatic format/quality)
-4. Remove background: `e_background_removal/f_png`
-5. Text overlay: `co_yellow,l_text:Arial_40:Hello%20World/fl_layer_apply,g_south`
+### Default Best Practice: Always Optimize
+
+**Add `f_auto/q_auto` to the end of nearly every transformation URL** (as final components):
+- Automatically delivers optimal format
+- Optimizes quality for best balance of visual quality and file size
+- Reduces bandwidth and improves performance
+
+**Example:** `c_fill,g_auto,w_400,h_300/f_auto/q_auto`
+
+**Exceptions - Don't add optimization when:**
+- Account has "Optimize By Default" enabled (already applied automatically)
+- Special quality requirements (use `q_auto:best`, `q_auto:low`, or manual `q_N` instead)
+- Specific format required (replace `f_auto` with `f_png`, `f_jpg`, etc.)
+- Delivering exact original with no modifications
+
+**Examples of common transformations (with optimization):**
+1. Resize: `c_scale,w_400/f_auto/q_auto`
+2. Smart crop: `c_fill,g_auto,h_300,w_400/f_auto/q_auto`
+3. Background removal: `e_background_removal/f_png/q_auto`
+4. Text overlay: `co_yellow,l_text:Arial_40:Hello%20World/fl_layer_apply,g_south/f_auto/q_auto`
+5. Image overlay: `l_logo/c_scale,w_100/fl_layer_apply,g_north_west,x_10,y_10/f_auto/q_auto`
+
+**Important:** All transformation strings shown throughout this skill are illustrative examples to demonstrate syntax and concepts. When generating transformations, choose specific values (dimensions, colors, positions, etc.) based on the user's actual requirements and use case, not the example values shown.
 
 **For debugging:** See [references/debugging.md](references/debugging.md) for detailed troubleshooting steps.
 
@@ -81,7 +98,7 @@ Before generating a transformation URL, if not already specified, clarify these 
 
 ### Always Recommend
 Unless user specifies otherwise:
-- Add `f_auto/q_auto` for automatic format/quality optimization
+- **Add `f_auto/q_auto` at the end** of transformation URLs (see Quick Start section for exceptions)
 - Use `g_auto` for smart cropping when filling dimensions
 - Consider cost for AI transformations (inform user of transformation credits)
 
@@ -166,32 +183,44 @@ c_auto,g_auto,w_800                # Auto crop to interesting area
 
 ### Gravity (Focal Point)
 
+Gravity determines which part of the image to focus on when cropping:
+
+- **`g_auto`** - Smart detection (recommended for varied content; detects faces, objects, contrast)
+- **`g_face`** - Face detection (portraits, avatars)
+- **`g_center`** - Center position (centered subjects, logos)
+- **`g_north`, `g_south_east`, etc.** - Compass positions (fixed locations, overlay positioning)
+- **`x_N,y_N`** - Custom offsets (integers = pixels, floats = percentage: 0.8 = 80%)
+
+**Examples:**
 ```
-g_auto          # Smart detection (works with c_fill, c_lfill, c_crop, c_thumb, c_auto)
-g_face          # Face detection
-g_center        # Center position
-g_north_west    # Compass positions
-x_20,y_30       # Pixel offsets
-x_0.8,y_0.2     # Percentage offsets (0.8 = 80%, 0.2 = 20%)
+c_fill,g_auto,w_400,h_300                      # Smart crop
+c_thumb,g_face,w_200,h_200                     # Face-centered
+l_logo/fl_layer_apply,g_south_east,x_10,y_10  # Logo bottom-right
 ```
 
-**Coordinate value formats (x, y):**
-- **Integers** (e.g., `x_20`, `y_30`) = pixels
-- **Float values** (e.g., `x_0.8`, `y_0.2`) = percentage in relation to 1.0 (0.8 = 80%, 0.2 = 20%)
-- **Important**: When using x, y, h, and w together, use either integers or floats for all values. Do not mix types.
-
-**Note**: `g_auto` does NOT work with `c_scale`, `c_fit`, `c_limit`, `c_pad`, or overlay positioning.
+**Important**: 
+- `g_auto` only works with `c_fill`, `c_lfill`, `c_crop`, `c_thumb`, `c_auto`
+- When using x, y, h, w together, use all integers OR all floats (don't mix)
 
 ### Format & Quality
 
+**Recommended defaults:**
+- **`f_auto/q_auto`** - Use for most production images (WebP to supported browsers, optimized file size)
+
+**Specific formats** (when requirements dictate):
+- **`f_png`** - Transparency needed (e.g., after background removal)
+- **`f_jpg`** - Force JPEG (remove transparency)
+- **`q_N`** - Manual quality 1-100 (e.g., `q_60` for thumbnails, `q_90` for hero images)
+- **`dpr_auto`** - Retina displays (Chromium-only, requires Client Hints - see limitations below)
+
+**Examples:**
 ```
-f_auto/q_auto           # Automatic optimization (best practice: separate components)
-f_webp                  # Specific format
-q_80                    # Quality level
-dpr_auto                # Retina displays (see important notes below)
+f_auto/q_auto           # Recommended default
+f_png/q_auto            # PNG with transparency
+q_80                    # Manual 80% quality
 ```
 
-**Best Practice**: Format and quality parameters should be in separate components using `/`. While `f_auto,q_auto` works, separating them (e.g., `f_auto/q_auto`) is cleaner and more maintainable.
+**Best Practice**: Use `/` to separate format and quality as distinct components.
 
 #### Important Notes About `dpr_auto`
 
@@ -224,107 +253,179 @@ For more details, see:
 
 ### Effects
 
+**Common effects:**
+- **`e_grayscale`** - Black and white (artistic, accessibility)
+- **`e_sepia`** - Vintage/nostalgic feel
+- **`e_blur:N`** - Blur (privacy, placeholders; N typically 300-2000)
+- **`e_sharpen`** - Enhance clarity (useful after resizing)
+- **`e_cartoonify`** - Illustrated style
+- **`co_rgb:RRGGBB,e_colorize:N`** - Color tint (N = intensity 0-100, for brand theming)
+- **`e_background_removal`** - See AI Transformations section
+
+**Examples:**
 ```
-e_sepia                 # Sepia tone
-e_grayscale             # Grayscale
-e_blur:800              # Blur effect
-e_sharpen               # Sharpen
-e_cartoonify            # Cartoon effect
-e_background_removal    # Remove background
-co_rgb:0044ff,e_colorize:40  # Colorize (co_ is qualifier)
+e_blur:800                       # Blur effect
+e_sharpen                        # Enhance clarity
+co_rgb:0044ff,e_colorize:40      # Blue tint at 40%
 ```
+
+**Note**: Color (`co_`) is a qualifier - use in same component as `e_colorize`.
 
 ### Overlays & Underlays
 
-```
-l_logo/c_scale,w_100/fl_layer_apply,g_north_west,x_10,y_10
-```
+**Use for:**
+- **`l_<public_id>`** - Image overlays (logos, watermarks, badges)
+- **`u_<public_id>`** - Image underlays (custom backgrounds behind transparent subjects)
+- **`l_text:font_size:text`** - Text overlays (labels, social cards, dynamic text)
 
 **Pattern:**
-1. Declare layer: `l_<public_id>` or `u_<public_id>`
-2. Transform layer: `/c_scale,w_100/` (optional)
-3. Apply layer: `/fl_layer_apply,g_<position>,x_<offset>,y_<offset>`
+1. Declare: `l_<public_id>` or `u_<public_id>` or `l_text:Arial_40:Hello%20World`
+2. Transform (optional): `/c_scale,w_100/`
+3. Apply: `/fl_layer_apply,g_<position>,x_<offset>,y_<offset>`
 
-**Text overlays:**
+**Examples:**
 ```
-co_yellow,l_text:Arial_40:Hello%20World/fl_layer_apply,g_south
+l_logo/c_scale,w_100/fl_layer_apply,g_north_west,x_10,y_10     # Logo watermark
+co_yellow,l_text:Arial_40:Hello%20World/fl_layer_apply,g_south  # Text overlay
+u_background/e_background_removal                                # Custom background
 ```
-**Important**: Color (`co_`) is a qualifier — it must be in the **same component** as the text overlay declaration, not in a separate component.
+
+**Important**: Color (`co_`) is a qualifier — use in the **same component** as text overlay declaration.
 
 ### Borders & Rounding
 
+- **`r_N`** - Rounded corners (N = radius in pixels; for modern UI, cards)
+- **`r_max`** - Perfect circle (use with square dimensions; avatars, icons)
+- **`bo_NNpx_solid_color`** - Border (frame images, separate from background)
+
+**Examples:**
 ```
-r_20                    # Rounded corners
-r_max                   # Circle (if square dimensions)
-bo_5px_solid_black      # Border
+r_20                           # 20px rounded corners
+r_max                          # Perfect circle
+bo_5px_solid_black             # 5px black border
+r_20,bo_5px_solid_rgb:0066ff   # Rounded with border (same component)
 ```
 
-**Important**: For borders that follow rounded corners, use border as qualifier in same component:
-```
-r_20,bo_5px_solid_rgb:0066ff
-```
+**Important**: For borders that follow rounded corners, use border as qualifier in same component.
 
 ### Background Color
 
+- **`b_color,c_pad`** - Fill empty space with solid color (product images, letterboxing)
+- **`b_auto,c_pad`** - Blurred original as background (elegant alternative to solid)
+- **`b_gen_fill,c_pad`** - AI-extended background (change aspect ratio without cropping; see AI Transformations for cost)
+
+**Examples:**
 ```
-b_lightblue,c_pad,w_1.0    # Background with pad crop
-b_gen_fill                 # AI-generated background fill
+b_lightblue,c_pad,w_1.0         # Light blue background
+b_auto,c_pad,ar_16:9            # Blurred background, 16:9
+b_gen_fill,c_pad,ar_1:1         # AI-extended to square
 ```
 
-**Critical**: Use background as a qualifier with a pad crop, NOT in its own component when chaining transformations.
+**Critical**: Background (`b_`) is a qualifier - use **with** pad crop in same component: `b_color,c_pad,w_X`, NOT `/b_color/`.
 
 ### Rotation & Flips
 
+- **`a_90`, `a_180`, `a_270`** - Rotate in 90° increments (correct orientation)
+- **`a_N`** - Rotate by degrees (e.g., `a_-2` to straighten crooked photos)
+- **`a_hflip`** - Horizontal flip (mirror selfies, directional images)
+- **`a_vflip`** - Vertical flip (reflections)
+- **`a_auto_right`/`a_auto_left`** - Auto-rotate based on EXIF orientation
+
+**Examples:**
 ```
-a_90                    # Rotate 90 degrees
-a_-20                   # Rotate -20 degrees
-a_hflip                 # Horizontal flip
-a_vflip                 # Vertical flip
+a_90                    # Rotate 90° clockwise
+a_-2                    # Straighten slight tilt
+a_hflip                 # Mirror horizontally
+a_auto_right            # Auto-fix from EXIF
 ```
+
+## Named Transformations
+
+Named transformations (`t_<name>`) save transformation chains for reuse. Suggest for:
+- Transformations used across multiple assets
+- Complex transformation chains
+- Expensive operations (to enable baseline transformations and reduce costs)
+
+**Baseline transformations** (`bl_<name>`) cache expensive named transformations so they don't need to be regenerated. Use `bl_` instead of `t_` for AI transformations (background removal, generative AI) that will have variations applied. This can reduce costs from 75-230 tx per variation down to 1 tx each after the initial baseline is generated.
+
+**Example:** `bl_bg_removed/c_scale,w_500` - Uses cached background removal result, only pays for resize (1 tx instead of 75 tx)
+
+**Important:** `f_auto`, `dpr_auto`, and `w_auto` don't work inside named transformations - use them directly in URLs: `t_avatar/f_auto/q_auto`
+
+For complete details, limitations, and baseline transformation examples, see [references/named-transformations.md](references/named-transformations.md)
 
 ## Generative AI Transformations
 
-Cloudinary's AI transformations solve common business challenges. **Proactively suggest these when appropriate:**
+**Proactively suggest these AI transformations when appropriate:**
 
-**Common AI transformations:**
-- `e_background_removal` - Remove backgrounds (75 tx)
-- `b_gen_fill` - Extend images without cropping (50 tx)
-- `e_gen_background_replace:prompt_<text>` - AI-generated backgrounds (230 tx)
-- `e_gen_replace:from_<obj>;to_<new>` - Swap objects (120 tx)
-- `e_gen_remove:prompt_<text>` - Remove objects (50 tx)
-- `e_auto_enhance` - Improve image quality (100 tx)
-- `e_upscale` - Enlarge without quality loss (10-100 tx)
+**Note:** Numbers in parentheses (e.g., 75 tx) indicate additional transformation credits consumed per use. Standard transformations = 1 tx.
 
-**Important:** AI transformations have higher costs. See [references/costs-optimization.md](references/costs-optimization.md) for details.
+- **`e_background_removal`** (75 tx) - Remove backgrounds (e-commerce, profiles; combine with `f_png` or `b_color,c_pad`)
+- **`b_gen_fill`** (50 tx) - Extend backgrounds (change aspect ratio without cropping; use with `c_pad`)
+- **`e_gen_background_replace:prompt_<text>`** (230 tx) - AI-generated backgrounds (custom environments, seasonal variations; high cost)
+- **`e_gen_replace:from_<obj>;to_<new>`** (120 tx) - Swap objects (product variations, colors; use `;preserve_geometry_true` for clothing)
+- **`e_gen_remove:prompt_<text>`** (50 tx) - Remove objects (clean up distractions)
+- **`e_auto_enhance`** (100 tx) - Improve quality (fix poor lighting/exposure)
+- **`e_upscale`** (10-100 tx) - Enlarge without quality loss (low-res to high-res)
 
-For complete AI transformation details, syntax, use cases, and powerful combinations, see [references/ai-transformations.md](references/ai-transformations.md)
+**Important:** AI transformations cost significantly more (50-230 tx vs 1 tx). Inform users of costs and consider baseline transformations (e.g., `bl_bg_removed/c_scale,w_500`) to avoid re-processing expensive operations - see [references/named-transformations.md](references/named-transformations.md#baseline-transformations) and [references/transformation-costs.md](references/transformation-costs.md) for details.
+
+For complete details, syntax, and powerful combinations, see [references/ai-transformations.md](references/ai-transformations.md)
 
 ## Video-Specific Transformations
 
-**Common video operations:**
-- `vc_auto` - Automatic codec (recommended)
-- `so_6.5/eo_10` - Trim from 6.5s to 10s
-- `ac_none` - Remove audio (for autoplay)
-- `fps_30` - Set frame rate
+- **`vc_auto`** - Automatic codec (recommended; optimal for browser/device)
+- **`so_N/eo_M`** - Trim (start/end in seconds; create clips, remove intro/outro)
+- **`ac_none`** - Remove audio (essential for autoplay; reduces file size)
+- **`fps_N`** - Set frame rate (lower = smaller file; standardize rates)
+- **Video resizing** - Same crop modes as images (`c_fill`, `c_scale`, `c_pad`)
 
-For complete video transformation details including codecs, trimming, audio control, and video concatenation, see [references/video-transformations.md](references/video-transformations.md)
+**Common patterns:**
+```
+vc_auto/ac_none/f_auto/q_auto                      # Autoplay-ready
+so_0/du_10/vc_auto/f_auto/q_auto                   # First 10 seconds
+c_scale,w_720/vc_auto/f_auto/q_auto                # Resize to 720p width
+c_fill,g_auto,h_720,w_1280/vc_auto/f_auto/q_auto  # 720p HD, smart crop
+```
+
+For complete details including codecs, trimming strategies, and video concatenation, see [references/video-transformations.md](references/video-transformations.md)
 
 ## Variables & Conditionals
 
-**Variables:** `$width_300/c_fill,h_$width,w_$width` - Reuse values in transformations
+### Variables
 
-**Conditionals:** `if_w_gt_300/c_scale,w_300/if_end` - Apply transformations based on conditions
+**Use variables to:**
+- Reuse values: `$size_300/c_fill,h_$size,w_$size` (perfect squares)
+- Derive from asset properties: `$iw/w_$iw_div_2` (half original width)
+- Simplify complex transformations: `$pad_50/l_logo/fl_layer_apply,x_$pad,y_$pad`
+
+**Syntax:** `$varName_value/...use_$varName...`  
+Variable names: alphanumeric, start with letter (no underscores in names)
+
+**Examples:**
+```
+$size_400/c_fill,h_$size,w_$size                 # 400x400 square
+$iw/w_$iw_div_2                                  # Half original width
+$pad_50/l_logo/fl_layer_apply,x_$pad,y_$pad     # Consistent padding
+```
+
+### Conditionals
+
+**Use conditionals for responsive transformations based on asset properties:**
+- Downsize only large images: `if_w_gt_1000/c_scale,w_1000/if_end`
+- Different handling for portrait vs landscape: `if_ar_gt_1.0/.../if_else/.../if_end`
+- Face-aware cropping: `if_fc_gt_0/c_thumb,g_face,w_200/if_end`
+
+**Common conditions:** `if_w_gt_N`, `if_h_lt_N`, `if_ar_gt_1.0`, `if_fc_gt_N`
+
+**Examples:**
+```
+if_w_gt_1000/c_scale,w_1000/if_end                                      # Limit max width
+if_ar_gt_1.0/c_fill,w_800,h_450/if_else/c_fill,w_450,h_800/if_end      # Landscape vs portrait
+if_fc_gt_0/c_thumb,g_face,w_200/if_else/c_fill,g_auto,w_200/if_end     # Face-aware
+```
 
 For complete syntax, rules, and examples, see [references/advanced-features.md](references/advanced-features.md)
-
-## Common Patterns
-
-```
-c_thumb,g_face,h_300,w_300/r_max/f_auto/q_auto              # Avatar
-c_fit,w_1200/l_logo/c_scale,o_40,w_0.25/fl_layer_apply,g_south_east,x_20,y_20/f_auto/q_auto  # Watermark scaled to a quarter of its size
-e_background_removal/b_lightblue,c_pad,w_1.0/f_png          # Background removal + color
-co_yellow,l_text:Arial_60_bold:Hello/fl_layer_apply,g_north,y_50  # Text overlay
-```
 
 ## Self-Validation Checklist
 
@@ -401,33 +502,21 @@ For more details, see [Error Handling](https://cloudinary.com/documentation/adva
 
 **Important:** Warn users about high-cost transformations before generating URLs. AI effects cost significantly more than standard transformations (50-230 tx vs 1 tx).
 
-For complete cost details and optimization strategies, see [references/costs-optimization.md](references/costs-optimization.md)
-
-## Named Transformations
-
-Named transformations (`t_<name>`) save transformation chains for reuse. Suggest for:
-- Transformations used across multiple assets
-- Complex transformation chains
-- Expensive operations (to enable baseline transformations and reduce costs)
-
-**Important:** `f_auto`, `dpr_auto`, and `w_auto` don't work inside named transformations - use them directly in URLs: `t_avatar/f_auto/q_auto`
-
-For complete details, limitations, and examples, see [references/named-transformations.md](references/named-transformations.md)
+For complete cost details and cost reduction strategies, see [references/transformation-costs.md](references/transformation-costs.md)
 
 ## Additional Resources
 
 ### Skill References (Progressive Disclosure)
-- [references/ai-transformations.md](references/ai-transformations.md) - Complete AI transformation details
-- [references/video-transformations.md](references/video-transformations.md) - Video-specific operations
-- [references/advanced-features.md](references/advanced-features.md) - Variables and conditionals
-- [references/costs-optimization.md](references/costs-optimization.md) - Cost details and optimization
-- [references/named-transformations.md](references/named-transformations.md) - Named transformation guide
-- [references/debugging.md](references/debugging.md) - Detailed debugging examples
-- [references/examples.md](references/examples.md) - Additional examples
+- [references/debugging.md](references/debugging.md) - Use when transformations return errors or unexpected results
+- [references/ai-transformations.md](references/ai-transformations.md) - Use when you need AI transformation prompt syntax, cost details, or complex AI combinations
+- [references/video-transformations.md](references/video-transformations.md) - Use when working with video codecs, trimming strategies, or concatenation
+- [references/advanced-features.md](references/advanced-features.md) - Use when building complex logic with variables, conditionals, or arithmetic
+- [references/transformation-costs.md](references/transformation-costs.md) - Use when optimizing for cost or explaining cost implications to users
+- [references/named-transformations.md](references/named-transformations.md) - Use when creating reusable transformations or reducing costs for repeated operations
+- [references/examples.md](references/examples.md) - Use when you need real-world examples beyond the Quick Start (social cards, e-commerce, responsive images)
 
 ### Core Cloudinary Documentation
 - [Transformation Reference](https://cloudinary.com/documentation/transformation_reference.md) - All parameters
-- [Transformation Rules](https://cloudinary.com/documentation/cloudinary_transformation_rules.md) - Complete guide
 
 ### Image Transformations
 - [Image Transformations Overview](https://cloudinary.com/documentation/image_transformations.md)
