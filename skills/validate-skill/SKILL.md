@@ -143,23 +143,17 @@ skill-name/
 
 ### 7. Common Anti-Patterns Check
 
-Flag these issues if found:
+Flag issues such as:
+- Windows-style paths (backslashes)
+- Too many options without defaults
+- Time-sensitive information
+- Inconsistent terminology
+- Vague skill names
+- Verbose common knowledge explanations
+- First/second person language
+- Abstract or placeholder examples
 
-❌ **Windows-style paths**: `scripts\helper.py` → Use `scripts/helper.py`
-
-❌ **Too many options**: "You can use X, or Y, or Z..." → Provide one default with escape hatch
-
-❌ **Time-sensitive info**: "Before 2025, use..." → Use "old patterns" sections
-
-❌ **Inconsistent terms**: Mixing "field", "box", "control" → Pick one term
-
-❌ **Vague names**: "helper", "utils" → Use specific names
-
-❌ **Verbose explanations**: Teaching common knowledge → Assume agent knowledge
-
-❌ **First/second person**: "I can help" or "You can use" → Use third person
-
-❌ **Abstract examples**: Generic placeholders → Show concrete cases
+For complete list with examples and fixes, see [references/ANTI_PATTERNS.md](references/ANTI_PATTERNS.md)
 
 ## Providing Feedback
 
@@ -187,53 +181,16 @@ Nice-to-have improvements:
 - More detailed error handling
 - Enhanced documentation
 
-## Validation Report Template
+## Validation Report Format
 
-Use this structure for the validation report:
+Structure your validation feedback with clear severity levels:
 
-```markdown
-# Skill Validation Report: [skill-name]
+- **✅ Strengths**: What the skill does well
+- **🔴 Critical Issues**: Must-fix (metadata, broken references, discovery problems)
+- **🟡 Recommended Improvements**: Should-fix (verbosity, structure, consistency)
+- **🟢 Optional Enhancements**: Nice-to-have additions
 
-## Summary
-[One paragraph overview of the skill and validation results]
-
-## Metadata Review
-- Name: [valid/issues]
-- Description: [valid/issues with specifics]
-
-## Content Quality
-- Length: [X lines - within/exceeds guidelines]
-- Conciseness: [good/needs improvement]
-- Progressive disclosure: [used appropriately/not used]
-
-## Structure
-- Clear organization: [yes/no]
-- File references: [appropriate/issues]
-- Workflows: [clear/needs improvement]
-
----
-
-## ✅ Strengths
-- [Strength 1]
-- [Strength 2]
-
-## 🔴 Critical Issues
-- [Critical issue 1]
-- [Critical issue 2]
-
-## 🟡 Recommended Improvements
-- [Improvement 1]
-- [Improvement 2]
-
-## 🟢 Optional Enhancements
-- [Enhancement 1]
-- [Enhancement 2]
-
----
-
-## Overall Assessment
-[Pass/Needs work] - [Brief summary of readiness]
-```
+For complete report template and examples, see [references/REPORT_TEMPLATE.md](references/REPORT_TEMPLATE.md)
 
 ## Quick Validation
 
@@ -246,6 +203,10 @@ For a rapid check, verify these essentials:
 
 ## Additional Resources
 
-For complete specification details, reference:
-- Agent Skills Specification: https://agentskills.io/specification
-- Complete validation checklist: [references/CHECKLIST.md](references/CHECKLIST.md)
+### Skill References
+- [references/CHECKLIST.md](references/CHECKLIST.md) - Complete validation checklist with all criteria
+- [references/ANTI_PATTERNS.md](references/ANTI_PATTERNS.md) - Common anti-patterns with examples and fixes
+- [references/REPORT_TEMPLATE.md](references/REPORT_TEMPLATE.md) - Report structure and scoring guidelines
+
+### External Documentation
+- [Agent Skills Specification](https://agentskills.io/specification) - Complete specification

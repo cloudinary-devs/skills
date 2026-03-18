@@ -222,34 +222,17 @@ q_80                    # Manual 80% quality
 
 **Best Practice**: Use `/` to separate format and quality as distinct components.
 
-#### Important Notes About `dpr_auto`
+#### Responsive Images (`dpr_auto`, `w_auto`)
 
-`dpr_auto` automatically matches the Device Pixel Ratio (DPR) of the user's device, but has several important limitations:
+**`dpr_auto`** - Automatically adapts to device pixel ratio (Retina displays)
+- **Chromium-only** (Chrome, Edge, Opera, Samsung Internet)
+- Requires Client Hints configuration
+- Falls back to `dpr_1.0` on other browsers
+- Does NOT work inside named transformations
 
-**Browser Compatibility:**
-- **Only works on Chromium-based browsers** (Chrome, Edge, Opera, Samsung Internet)
-- Requires [Client Hints](https://cloudinary.com/documentation/responsive_server_side_client_hints) to be enabled
-- If Client Hints aren't supported or available, the URL is treated as `dpr_1.0`
+**Alternative for universal support:** Use explicit `dpr_2.0` or `<img srcset>` with 1x/2x variants
 
-**Named Transformation Limitation:**
-- ❌ **Does NOT work inside named transformations** (similar to `f_auto`)
-- The client or CDN won't "see" `dpr_auto` when it's inside a named transformation
-- ✅ Use `dpr_auto` directly in the URL, not within `t_<name>`
-
-**To enable Client Hints**, add to your HTML `<head>` before any `<link>`, `<style>`, or `<script>` elements:
-```html
-<meta http-equiv="Accept-CH" content="DPR, Viewport-Width, Width">
-<meta http-equiv="Delegate-CH" content="DPR https://res.cloudinary.com; Viewport-Width https://res.cloudinary.com; Width https://res.cloudinary.com">
-```
-
-**Alternative solutions** for better browser support:
-- Use JavaScript-based responsive solutions (see [Responsive Images docs](https://cloudinary.com/documentation/responsive_images))
-- Specify explicit DPR values (e.g., `dpr_2.0`) for high-resolution displays
-- Use `w_auto` with Client Hints for automatic width-based responsiveness
-
-For more details, see:
-- [Responsive images using Client Hints](https://cloudinary.com/documentation/responsive_server_side_client_hints)
-- [Responsive images overview](https://cloudinary.com/documentation/responsive_images)
+For Client Hints configuration, browser compatibility, responsive breakpoints, and framework integration, see [references/responsive-images.md](references/responsive-images.md)
 
 ### Effects
 
@@ -392,40 +375,24 @@ For complete details including codecs, trimming strategies, and video concatenat
 
 ## Variables & Conditionals
 
-### Variables
-
-**Use variables to:**
-- Reuse values: `$size_300/c_fill,h_$size,w_$size` (perfect squares)
-- Derive from asset properties: `$iw/w_$iw_div_2` (half original width)
-- Simplify complex transformations: `$pad_50/l_logo/fl_layer_apply,x_$pad,y_$pad`
-
-**Syntax:** `$varName_value/...use_$varName...`  
-Variable names: alphanumeric, start with letter (no underscores in names)
-
-**Examples:**
+**Variables** reuse values and create templates:
 ```
-$size_400/c_fill,h_$size,w_$size                 # 400x400 square
-$iw/w_$iw_div_2                                  # Half original width
-$pad_50/l_logo/fl_layer_apply,x_$pad,y_$pad     # Consistent padding
+$size_300/c_fill,h_$size,w_$size        # Reuse value
+$iw/w_$iw_div_2                         # Half original width (arithmetic)
 ```
 
-### Conditionals
-
-**Use conditionals for responsive transformations based on asset properties:**
-- Downsize only large images: `if_w_gt_1000/c_scale,w_1000/if_end`
-- Different handling for portrait vs landscape: `if_ar_gt_1.0/.../if_else/.../if_end`
-- Face-aware cropping: `if_fc_gt_0/c_thumb,g_face,w_200/if_end`
-
-**Common conditions:** `if_w_gt_N`, `if_h_lt_N`, `if_ar_gt_1.0`, `if_fc_gt_N`
-
-**Examples:**
+**Conditionals** adapt transformations dynamically:
 ```
-if_w_gt_1000/c_scale,w_1000/if_end                                      # Limit max width
-if_ar_gt_1.0/c_fill,w_800,h_450/if_else/c_fill,w_450,h_800/if_end      # Landscape vs portrait
-if_fc_gt_0/c_thumb,g_face,w_200/if_else/c_fill,g_auto,w_200/if_end     # Face-aware
+if_w_gt_1000/c_scale,w_1000/if_end                          # Responsive sizing
+if_ar_gt_1.0/c_fill,w_800,h_450/if_else/c_fill,w_450,h_800/if_end  # Orientation handling
 ```
 
-For complete syntax, rules, and examples, see [references/advanced-features.md](references/advanced-features.md)
+**Key rules:**
+- Variable names: alphanumeric, start with letter, no underscores
+- Conditionals: Must close with `if_end`
+- Arithmetic: `add`, `sub`, `mul`, `div` (left-to-right evaluation)
+
+For complete syntax, arithmetic operations, nested conditionals, and real-world patterns, see [references/advanced-features.md](references/advanced-features.md)
 
 ## Self-Validation Checklist
 
@@ -466,7 +433,7 @@ When a transformation isn't working:
 8. **Check variable names**: No underscores, must start with letter
 9. **Verify URL encoding**: Text overlays need URL-encoded strings (spaces = `%20`)
 10. **Check auto parameters in named transformations**: `f_auto`, `dpr_auto`, and `w_auto` don't work inside named transformations - use them directly in URLs
-11. **Verify Client Hints for `dpr_auto`/`w_auto`**: These only work on Chromium browsers with Client Hints enabled; fallback to `dpr_1.0` otherwise
+11. **Verify Client Hints for `dpr_auto`/`w_auto`**: These only work on Chromium browsers with Client Hints enabled; fallback to `dpr_1.0` otherwise (see [references/responsive-images.md](references/responsive-images.md) for configuration)
 
 ### Checking X-Cld-Error Header
 
@@ -511,6 +478,7 @@ For complete cost details and cost reduction strategies, see [references/transfo
 - [references/ai-transformations.md](references/ai-transformations.md) - Use when you need AI transformation prompt syntax, cost details, or complex AI combinations
 - [references/video-transformations.md](references/video-transformations.md) - Use when working with video codecs, trimming strategies, or concatenation
 - [references/advanced-features.md](references/advanced-features.md) - Use when building complex logic with variables, conditionals, or arithmetic
+- [references/responsive-images.md](references/responsive-images.md) - Use when implementing responsive images, configuring Client Hints, or using dpr_auto/w_auto
 - [references/transformation-costs.md](references/transformation-costs.md) - Use when optimizing for cost or explaining cost implications to users
 - [references/named-transformations.md](references/named-transformations.md) - Use when creating reusable transformations or reducing costs for repeated operations
 - [references/examples.md](references/examples.md) - Use when you need real-world examples beyond the Quick Start (social cards, e-commerce, responsive images)
