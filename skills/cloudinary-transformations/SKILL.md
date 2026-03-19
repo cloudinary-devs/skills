@@ -263,17 +263,28 @@ co_rgb:0044ff,e_colorize:40      # Blue tint at 40%
 
 **Pattern:**
 1. Declare: `l_<public_id>` or `u_<public_id>` or `l_text:Arial_40:Hello%20World`
-2. Transform (optional): `/c_scale,w_100/`
+2. Transform (optional): e.g.  `/c_scale,w_100/` or `/o_50/` (opacity)
 3. Apply: `/fl_layer_apply,g_<position>,x_<offset>,y_<offset>`
+
+**Critical: Using `fl_relative` for overlay dimensions:**
+- **Without `fl_relative`**: Dimensions are relative to the **overlay's original size**
+  - Example: `w_1.0` = 100% of the overlay image's width (not useful for small images)
+- **With `fl_relative`**: Dimensions are relative to the **base image's size**
+  - Example: `w_1.0` = 100% of the base image's width (covers entire width)
+  - **Always use `fl_relative`** when sizing overlays as a percentage of the base image
 
 **Examples:**
 ```
-l_logo/c_scale,w_100/fl_layer_apply,g_north_west,x_10,y_10     # Logo watermark
-co_yellow,l_text:Arial_40:Hello%20World/fl_layer_apply,g_south  # Text overlay
-u_background/e_background_removal                                # Custom background
+l_logo/c_scale,w_100/fl_layer_apply,g_north_west,x_10,y_10                # Logo at 100px
+l_logo/c_scale,fl_relative,w_0.25/fl_layer_apply,g_north_west,x_10,y_10  # Logo at 25% of image width
+l_docs:one_black_pixel/c_scale,fl_relative,h_1.0,w_1.0/o_50/fl_layer_apply # Full-image semi-transparent overlay
+co_yellow,l_text:Arial_40:Hello%20World/fl_layer_apply,g_south            # Text overlay
+u_background/e_background_removal                                          # Custom background
 ```
 
-**Important**: Color (`co_`) is a qualifier — use in the **same component** as text overlay declaration.
+**Important**: 
+- Color (`co_`) is a qualifier — use in the **same component** as text overlay declaration
+- **Always use `fl_relative`** when you want overlay dimensions as a percentage of the base image
 
 ### Borders & Rounding
 
@@ -357,6 +368,8 @@ For complete details, syntax, and powerful combinations, see [references/ai-tran
 
 ## Video-Specific Transformations
 
+**Critical:** Use `f_auto:video` (not just `f_auto`) to ensure video output - plain `f_auto` may return an image thumbnail.
+
 - **`vc_auto`** - Automatic codec (recommended; optimal for browser/device)
 - **`so_N/eo_M`** - Trim (start/end in seconds; create clips, remove intro/outro)
 - **`ac_none`** - Remove audio (essential for autoplay; reduces file size)
@@ -365,10 +378,10 @@ For complete details, syntax, and powerful combinations, see [references/ai-tran
 
 **Common patterns:**
 ```
-vc_auto/ac_none/f_auto/q_auto                      # Autoplay-ready
-so_0/du_10/vc_auto/f_auto/q_auto                   # First 10 seconds
-c_scale,w_720/vc_auto/f_auto/q_auto                # Resize to 720p width
-c_fill,g_auto,h_720,w_1280/vc_auto/f_auto/q_auto  # 720p HD, smart crop
+vc_auto/ac_none/f_auto:video/q_auto                      # Autoplay-ready
+so_0/du_10/vc_auto/f_auto:video/q_auto                   # First 10 seconds
+c_scale,w_720/vc_auto/f_auto:video/q_auto                # Resize to 720p width
+c_fill,g_auto,h_720,w_1280/vc_auto/f_auto:video/q_auto  # 720p HD, smart crop
 ```
 
 For complete details including codecs, trimming strategies, and video concatenation, see [references/video-transformations.md](references/video-transformations.md)
@@ -434,6 +447,7 @@ When a transformation isn't working:
 9. **Verify URL encoding**: Text overlays need URL-encoded strings (spaces = `%20`)
 10. **Check auto parameters in named transformations**: `f_auto`, `dpr_auto`, and `w_auto` don't work inside named transformations - use them directly in URLs
 11. **Verify Client Hints for `dpr_auto`/`w_auto`**: These only work on Chromium browsers with Client Hints enabled; fallback to `dpr_1.0` otherwise (see [references/responsive-images.md](references/responsive-images.md) for configuration)
+12. **Video returns image instead of video**: Use `f_auto:video` (not just `f_auto`) for video transformations - plain `f_auto` may return an image thumbnail
 
 ### Checking X-Cld-Error Header
 

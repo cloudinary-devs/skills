@@ -1,5 +1,16 @@
 # Video-Specific Transformations
 
+## Important: Format Parameter for Videos
+
+**Critical:** When using `f_auto` on video URLs, you must specify `f_auto:video` to ensure a video is returned (not an image thumbnail):
+
+```
+f_auto:video                   # Returns video in optimal format (NOT an image)
+f_auto                         # May return an image ⚠️
+```
+
+**Always use `f_auto:video` or a specific video format** (`f_mp4`, `f_webm`, etc.) when transforming videos.
+
 ## Video Codec (`vc_`)
 
 ```
@@ -52,6 +63,7 @@ c_fill,h_300,w_450/du_5/fl_splice,l_video:second_clip/c_fill,h_300,w_450/du_5/fl
 ## Common Video Patterns
 
 ```
-du_5/vc_auto/f_auto/q_auto                                   # 5-second video preview
+du_5/vc_auto/f_auto:video/q_auto                             # 5-second video preview
 ac_none/vc_h264/f_mp4/q_auto                                 # Silent video (autoplay)
+c_limit,h_720/vc_auto/f_auto:video/q_auto                    # 720p cap with auto format
 ```
