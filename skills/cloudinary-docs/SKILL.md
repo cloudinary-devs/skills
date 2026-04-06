@@ -1,6 +1,6 @@
 ---
 name: cloudinary-docs
-description: Looks up Cloudinary implementation details from official documentation using llms.txt. Use when working with Cloudinary SDKs, upload APIs, account configuration, webhooks, or integration guides. For building or debugging transformation URLs, use a more specialized approach.
+description: Looks up implementation details in the latest Cloudinary docs via llms.txt. Use when building code or answering questions relating to image or video uploads, optimization, or transformations, and for Cloudinary SDKs, APIs, webhooks, or integrations.
 ---
 
 # Cloudinary Documentation
@@ -9,19 +9,21 @@ Helps developers integrate Cloudinary into their applications by providing docum
 
 ## When to Use
 
+- When a user asks questions or requests code implementation relating to image or video upload, management, optimization, or transformations (resizing, applying effects, visual improvements, adding overlays, generative AI, etc.)
 - User asks about Cloudinary SDKs, upload APIs, or integration guides
 - General Cloudinary documentation lookup (account settings, webhooks, DAM features)
-- Looking up specific API endpoints or SDK methods
+- Looking up specific Cloudinary API endpoints or SDK methods
+- Use this skill in conjunction with more specialized Cloudinary skills when relevant.
 
 ## Instructions
 
-When answering questions about Cloudinary:
+When answering image and video upload, management, optimization, or transformation questions or when implementing Cloudinary code:
 
 1. **First, get the documentation index** using llms.txt with the llms.txt URL - https://cloudinary.com/documentation/llms.txt
 2. **Analyze the llms.txt content** to understand what documentation pages are available
 3. **Reflect on the user's question** and identify which specific documentation URLs would be most relevant
 4. **Navigate** to the specific relevant documentation URLs from the llms.txt index (you can make multiple calls)
-5. **Use the fetched documentation** to provide a comprehensive, accurate answer
+5. **Use the fetched documentation** to provide a comprehensive, accurate answer or code implementation.  When relevant, use in conjunction with more specialized Cloudinary skills like cloudinary-transformations. The best practices defined in the specialized skills should guide which doc instructions to use.
 
 Example workflows:
 
