@@ -1,11 +1,16 @@
 ---
 name: cloudinary-react
-description: React-specific patterns, best practices, and troubleshooting for Cloudinary SDK integration. Use when building React apps with Cloudinary, implementing Upload Widget, AdvancedImage/AdvancedVideo components, image/video transformations, overlays, signed uploads, Video Player, or debugging Cloudinary React errors (wrong imports, createUploadWidget issues, transformation syntax, TypeScript errors).
+description: Provides opinionated React SDK patterns for configuration, common integration scenarios, and troubleshooting for frequent errors and TypeScript pitfalls. Use when writing code or answering questions related to the Cloudinary React SDK.
 ---
 
 # Cloudinary React Skill
 
-Use this skill when working with Cloudinary in React (web) projects. It provides correct patterns for setup, env vars, Upload Widget, video player, transformations, overlays, and signed uploads, plus solutions to common errors.
+## When to Use
+
+- When a user is building or debugging Cloudinary in a **React** app (Vite, Create React App, Parcel, etc.).
+- When implementing or fixing: Upload Widget, AdvancedImage/AdvancedVideo, transformations, overlays, image galleries, video player, or signed/unsigned uploads.
+- When the user sees errors like "createUploadWidget is not a function", wrong imports from `@cloudinary/url-gen`, upload preset issues, or video player DOM errors.
+
 
 ## Quick Start
 
@@ -20,11 +25,7 @@ Use this skill when working with Cloudinary in React (web) projects. It provides
 **For TypeScript**: See [references/typescript-patterns.md](references/typescript-patterns.md)
 **For Video Player**: See [references/video-player.md](references/video-player.md)
 
-## When to Use
 
-- Use this skill when a user is building or debugging Cloudinary in a **React** app (Vite, Create React App, Next.js, Parcel, etc.).
-- Use this skill when implementing or fixing: Upload Widget, AdvancedImage/AdvancedVideo, transformations, overlays, image galleries, video player, or signed/unsigned uploads.
-- Use this skill when the user sees errors like "createUploadWidget is not a function", wrong imports from `@cloudinary/url-gen`, upload preset issues, or video player DOM errors.
 
 ## Instructions
 

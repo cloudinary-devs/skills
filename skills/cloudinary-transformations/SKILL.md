@@ -5,7 +5,13 @@ description: Create and debug Cloudinary transformation URLs from natural langua
 
 # Cloudinary Transformation Rules
 
-This skill helps you create valid Cloudinary transformation URLs from natural language instructions and debug transformation issues.
+## When to Use
+
+- Building Cloudinary delivery/transformation URLs
+- Converting natural language requests to transformation syntax
+- Debugging transformation URLs that aren't working
+- Optimizing images or videos with Cloudinary
+- Applying effects, overlays, resizing, or cropping
 
 ## Quick Start
 
@@ -35,13 +41,6 @@ This skill helps you create valid Cloudinary transformation URLs from natural la
 
 **For debugging:** See [references/debugging.md](references/debugging.md) for detailed troubleshooting steps.
 
-## When to Use This Skill
-
-- Building Cloudinary delivery/transformation URLs
-- Converting natural language requests to transformation syntax
-- Debugging transformation URLs that aren't working
-- Optimizing images or videos with Cloudinary
-- Applying effects, overlays, resizing, or cropping
 
 ## Gathering Requirements
 
