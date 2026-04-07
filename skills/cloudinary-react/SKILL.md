@@ -7,7 +7,7 @@ description: Provides opinionated React SDK patterns for configuration, common i
 
 ## When to Use
 
-- When a user is building or debugging Cloudinary in a **React** app (Vite, Create React App, Next.js, Parcel, etc.).
+- When a user is building or debugging Cloudinary in a **React** app (Vite, Create React App, Parcel, etc.).
 - When implementing or fixing: Upload Widget, AdvancedImage/AdvancedVideo, transformations, overlays, image galleries, video player, or signed/unsigned uploads.
 - When the user sees errors like "createUploadWidget is not a function", wrong imports from `@cloudinary/url-gen`, upload preset issues, or video player DOM errors.
 
