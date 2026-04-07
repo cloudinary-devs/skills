@@ -1,6 +1,10 @@
 ---
 name: cloudinary-docs
 description: Looks up implementation details in the latest Cloudinary docs via llms.txt. Use when building code or answering questions relating to image or video uploads, optimization, or transformations, and for Cloudinary SDKs, APIs, webhooks, or integrations.
+license: MIT
+metadata:
+  author: cloudinary
+  version: '1.0.1'
 ---
 
 # Cloudinary Documentation

@@ -1,6 +1,10 @@
 ---
 name: cloudinary-react
 description: Provides opinionated React SDK patterns for configuration, common integration scenarios, and troubleshooting for frequent errors and TypeScript pitfalls. Use when writing code or answering questions related to the Cloudinary React SDK.
+license: MIT
+metadata:
+  author: cloudinary
+  version: '1.0.1'
 ---
 
 # Cloudinary React Skill
