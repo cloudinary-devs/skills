@@ -1,6 +1,10 @@
 ---
 name: cloudinary-transformations
 description: Create and debug Cloudinary transformation URLs from natural language instructions. Use when building Cloudinary delivery URLs, applying image/video transformations, optimizing media, or debugging transformation syntax errors.
+license: MIT
+metadata:
+  author: cloudinary
+  version: '1.0.1'
 ---
 
 # Cloudinary Transformation Rules
