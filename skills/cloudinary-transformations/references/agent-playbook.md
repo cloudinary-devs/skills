@@ -50,7 +50,7 @@ Variables and conditionals:
 - Close conditionals with `if_end`.
 - Prefer named transformations when the same complex chain is reused across assets.
 
-## Footguns To Check
+## Common Pitfalls
 
 - Bare dimensions can imply default behavior. Make the crop mode explicit.
 - `c_scale` with both width and height can distort if aspect ratios differ.

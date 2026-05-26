@@ -9,11 +9,11 @@ metadata:
 
 # Cloudinary Transformation Agent Playbook
 
-This skill is an agent decision layer, not the syntax source of truth. Use Cloudinary's documentation markdown files for exact parameters, options, current limitations, and costs. Use this skill for workflow, defaults, common footguns, and debugging order.
+This skill is an agent decision layer, not the syntax source of truth. Use Cloudinary's documentation markdown files for exact parameters, options, current limitations, and costs. Use this skill for workflow, defaults, common pitfalls, and debugging order.
 
 ## Docs First
 
-When generating or debugging transformation syntax, consult the relevant Cloudinary docs via the `cloudinary-docs` skill or the docs markdown index at `https://cloudinary.com/documentation/llms.txt`.
+When generating or debugging transformation syntax, consult the relevant Cloudinary docs via the docs markdown index at `https://cloudinary.com/documentation/llms.txt`.
 
 Use these docs as the primary source:
 - Transformation reference: exact parameter names, actions, qualifiers, values.
