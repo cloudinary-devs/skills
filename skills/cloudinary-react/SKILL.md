@@ -75,7 +75,7 @@ If the user is **not** using the create-cloudinary-react CLI and only has these 
 
 **1. Environment (.env)**  
 Create a `.env` file in the project root with **Vite prefix** (required for client access):
-- `VITE_CLOUDINARY_CLOUD_NAME_=my_cloud` (required — use your actual cloud name, **never** the literal string `your_cloud_name` which causes 401)
+- `VITE_CLOUDINARY_CLOUD_NAME=my_cloud` (required — use your actual cloud name, **never** the literal string `your_cloud_name` which causes 401)
 - `VITE_CLOUDINARY_UPLOAD_PRESET=my_preset` (optional; required for unsigned upload widget — use your actual preset name)
 - **Restart the dev server** after adding or changing `.env`. Use `import.meta.env.VITE_*` in code, not `process.env`.
 - **If env var still empty in browser after restart**: Vite may cache the old value. Clear `node_modules/.vite/`, restart dev server, and do a hard refresh (Cmd+Shift+R / Ctrl+Shift+F5). If still empty, see "Vite env not reaching client" in Common Errors.
