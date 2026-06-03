@@ -479,7 +479,7 @@ Font size scales to 10% of image width.
 ### Conditional Overlay Based on Tags
 
 ```
-if_!watermark!_nin_tags/if_end/if_!premium!_in_tags/l_premium_badge/fl_layer_apply,g_north_east/if_end/f_auto/q_auto
+if_!watermark!_nin_tags/if_!premium!_in_tags/l_premium_badge/fl_layer_apply,g_north_east/if_end/if_end/f_auto/q_auto
 ```
 - Skip everything if "watermark" tag present
 - Add premium badge if "premium" tag present
@@ -602,7 +602,7 @@ Different seasonal icons based on context.
 ### Responsive Image Grid
 
 ```
-$cols_3,$gutter_20,$container_1200/c_fill,g_auto,w_$container_sub_$gutter_mul_$cols_add_1_div_$cols/if_ar_gt_1.0/ar_16:9/if_else/ar_1:1/if_end/f_auto/q_auto
+$cols_3,$gutter_20,$container_1200,$slots_$cols_add_1,$totalgutter_$slots_mul_$gutter,$avail_$container_sub_$totalgutter/c_fill,g_auto,w_$avail_div_$cols/if_ar_gt_1.0/c_fill,ar_16:9,w_$avail_div_$cols/if_else/c_fill,ar_1:1,w_$avail_div_$cols/if_end/f_auto/q_auto
 ```
 Calculates grid item width: (container - (gutter × (cols + 1))) ÷ cols
 

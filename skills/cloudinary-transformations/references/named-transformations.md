@@ -43,7 +43,7 @@ t_product_thumb   # where product_thumb includes f_auto
 t_product_thumb/f_auto/q_auto
 ```
 
-See [Limitations of named transformations](https://cloudinary.com/documentation/image_transformations#limitations_of_named_transformations.md) for complete details.
+See [Limitations of named transformations](https://cloudinary.com/documentation/image_transformations.md#limitations_of_named_transformations) for complete details.
 
 ## Baseline Transformations
 

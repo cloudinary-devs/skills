@@ -4,7 +4,7 @@ description: Create and debug Cloudinary transformation URLs from natural langua
 license: MIT
 metadata:
   author: cloudinary
-  version: '1.0.1'
+  version: '1.0.2'
 ---
 
 # Cloudinary Transformation Rules
