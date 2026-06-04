@@ -4,7 +4,7 @@ description: Provides opinionated React SDK patterns for configuration, common i
 license: MIT
 metadata:
   author: cloudinary
-  version: '1.0.1'
+  version: '1.0.2'
 ---
 
 # Cloudinary React Skill
