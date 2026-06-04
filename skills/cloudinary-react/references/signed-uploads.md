@@ -30,7 +30,7 @@ Use `uploadSignature` as a function (not `signatureEndpoint`):
 
 ```tsx
 // 1. Fetch api_key from server first
-const response = await fetch('/api/sign-image');
+const response = await fetch('/api/sign-image', { method: 'POST' });
 const data = await response.json();
 
 // 2. Configure widget
