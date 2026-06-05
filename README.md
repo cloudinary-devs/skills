@@ -1,6 +1,6 @@
 # Cloudinary Skills
 
-Agent skills that help your AI coding assistant write correct Cloudinary code, answer questions using real documentation, and generate valid transformation URLs.
+The agent skills in this package help your AI coding assistant write correct Cloudinary code, answer questions using real documentation, and generate valid transformations.
 
 ## Available Skills
 
@@ -18,7 +18,7 @@ npx skills add cloudinary-devs/skills
 
 Install all skills or select the ones you need. You can install globally or per project.
 
-**Claude and Cursor users:** The Cloudinary plugin is also available in the [Claude marketplace](https://claude.com/plugins/cloudinary) and [Cursor marketplace](https://cursor.com/marketplace/cloudinary). Note that marketplace plugins include `cloudinary-docs` and `cloudinary-transformations` only.
+> **💡 Tip:** [Cloudinary MCP servers](https://cloudinary.com/documentation/cloudinary_llm_mcp#mcp_servers) complement the Cloudinary Skills. Used together, skills and MCP servers improve the end-to-end workflow. For example, our skills spell out best practices such as using named transformations to apply the same transformation across many assets. Based on that, the model can decide which MCP tools to run to create named transformations that match your needs.
 
 ## Usage
 
