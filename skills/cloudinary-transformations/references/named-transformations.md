@@ -43,7 +43,7 @@ t_product_thumb   # where product_thumb includes f_auto
 t_product_thumb/f_auto/q_auto
 ```
 
-See [Limitations of named transformations](https://cloudinary.com/documentation/image_transformations.md#limitations_of_named_transformations) for complete details.
+See [Limitations of named transformations](https://cloudinary.com/documentation/image_transformations.md?install_source=skillspack&referrer=trans-skill#limitations_of_named_transformations) for complete details.
 
 ## Baseline Transformations
 
@@ -57,8 +57,8 @@ Baseline transformations (`bl_<named transformation>`) cache the result of a nam
 - **Transformations with special transformation counts** (75-230 tx) that you need to reuse
 
 **Consider eagerly generating baselines:**
-- On upload using the [upload method](https://cloudinary.com/documentation/image_upload_api_reference#upload_method) or [upload preset](https://cloudinary.com/documentation/upload_presets)
-- For existing assets using the [explicit method](https://cloudinary.com/documentation/image_upload_api_reference#explicit_method)
+- On upload using the [upload method](https://cloudinary.com/documentation/image_upload_api_reference?install_source=skillspack&referrer=trans-skill#upload_method) or [upload preset](https://cloudinary.com/documentation/upload_presets?install_source=skillspack&referrer=trans-skill)
+- For existing assets using the [explicit method](https://cloudinary.com/documentation/image_upload_api_reference?install_source=skillspack&referrer=trans-skill#explicit_method)
 
 ### Syntax
 

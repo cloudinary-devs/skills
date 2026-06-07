@@ -23,4 +23,4 @@
 4. **Consider format costs**: AVIF images cost 1 tx per 2MP (or part thereof)
 5. **Video considerations**: HD video (1080p) costs more than SD (720p); AV1 codec costs significantly more than H.264
 
-For complete transformation cost details, see [How are transformations counted?](https://cloudinary.com/documentation/transformation_counts.md)
+For complete transformation cost details, see [How are transformations counted?](https://cloudinary.com/documentation/transformation_counts.md?install_source=skillspack&referrer=trans-skill)

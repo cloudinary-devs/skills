@@ -32,7 +32,7 @@ crop_scale,width_400
 c_scale,w_400
 ```
 
-**Why:** Cloudinary uses abbreviated parameter names. Always check the [Transformation Reference](https://cloudinary.com/documentation/transformation_reference).
+**Why:** Cloudinary uses abbreviated parameter names. Always check the [Transformation Reference](https://cloudinary.com/documentation/transformation_reference?install_source=skillspack&referrer=trans-skill).
 
 ## Gravity Issues
 
@@ -454,7 +454,7 @@ When a transformation doesn't work:
    - Slashes between components: `c_scale,w_400/f_auto/q_auto`
 
 3. **Validate parameter names**
-   - Cross-reference with [Transformation Reference](https://cloudinary.com/documentation/transformation_reference)
+   - Cross-reference with [Transformation Reference](https://cloudinary.com/documentation/transformation_reference?install_source=skillspack&referrer=trans-skill)
    - Check for typos and abbreviations
 
 4. **Check action vs qualifier**

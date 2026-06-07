@@ -708,10 +708,10 @@ c_fill,g_auto,w_auto:100:1000/dpr_auto/f_auto/q_auto
 
 ## Additional Resources
 
-- [Responsive Images using Client Hints](https://cloudinary.com/documentation/responsive_server_side_client_hints.md)
-- [Responsive Images Overview](https://cloudinary.com/documentation/responsive_images.md)
-- [Responsive images using HTML and dynamic image transformations](https://cloudinary.com/documentation/responsive_html.md)
-- [Responsive images using JavaScript frontend frameworks](https://cloudinary.com/documentation/responsive_client_side_fe_frameworks.md)
-- [Responsive images using the cloudinary-core JS library](https://cloudinary.com/documentation/responsive_client_side_js.md)
-- [Cloudinary SDKs](https://cloudinary.com/documentation/cloudinary_sdks.md)
-- [React SDK Documentation](https://cloudinary.com/documentation/react_integration.md)
+- [Responsive Images using Client Hints](https://cloudinary.com/documentation/responsive_server_side_client_hints.md?install_source=skillspack&referrer=trans-skill)
+- [Responsive Images Overview](https://cloudinary.com/documentation/responsive_images.md?install_source=skillspack&referrer=trans-skill)
+- [Responsive images using HTML and dynamic image transformations](https://cloudinary.com/documentation/responsive_html.md?install_source=skillspack&referrer=trans-skill)
+- [Responsive images using JavaScript frontend frameworks](https://cloudinary.com/documentation/responsive_client_side_fe_frameworks.md?install_source=skillspack&referrer=trans-skill)
+- [Responsive images using the cloudinary-core JS library](https://cloudinary.com/documentation/responsive_client_side_js.md?install_source=skillspack&referrer=trans-skill)
+- [Cloudinary SDKs](https://cloudinary.com/documentation/cloudinary_sdks.md?install_source=skillspack&referrer=trans-skill)
+- [React SDK Documentation](https://cloudinary.com/documentation/react_integration.md?install_source=skillspack&referrer=trans-skill)
