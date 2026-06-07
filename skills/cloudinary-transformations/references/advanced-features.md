@@ -93,7 +93,7 @@ Conditional transformation based on context variable.
 
 **Common metadata fields:**
 - `md:title`, `md:description`, `md:price`, `md:stock`, `md:date`
-- Must be set on asset via [structured metadata](https://cloudinary.com/documentation/structured_metadata.md)
+- Must be set on asset via [structured metadata](https://cloudinary.com/documentation/structured_metadata.md?install_source=skillspack&referrer=trans-skill)
 
 ### Variable Scope and Order
 
@@ -721,7 +721,7 @@ For named transformation details, see [named-transformations.md](named-transform
 
 ## Additional Resources
 
-- [Conditional Transformations](https://cloudinary.com/documentation/conditional_transformations.md) - Complete conditional syntax
-- [User-Defined Variables and Arithmetic](https://cloudinary.com/documentation/user_defined_variables.md) - Full variable reference
-- [Structured Metadata](https://cloudinary.com/documentation/structured_metadata.md) - Using metadata in conditionals
-- [Context Variables](https://cloudinary.com/documentation/user_defined_variables.md#context_variables) - Request-time variables
+- [Conditional Transformations](https://cloudinary.com/documentation/conditional_transformations.md?install_source=skillspack&referrer=trans-skill) - Complete conditional syntax
+- [User-Defined Variables and Arithmetic](https://cloudinary.com/documentation/user_defined_variables.md?install_source=skillspack&referrer=trans-skill) - Full variable reference
+- [Structured Metadata](https://cloudinary.com/documentation/structured_metadata.md?install_source=skillspack&referrer=trans-skill) - Using metadata in conditionals
+- [Context Variables](https://cloudinary.com/documentation/user_defined_variables.md?install_source=skillspack&referrer=trans-skill#context_variables) - Request-time variables

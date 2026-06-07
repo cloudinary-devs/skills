@@ -677,7 +677,7 @@ Automatic quality with low setting for smaller files.
 
 ## DPR and Responsive
 
-**Important:** `dpr_auto` and `w_auto` parameters only work on Chromium-based browsers (Chrome, Edge, Opera, Samsung Internet) with Client Hints enabled. They do NOT work inside named transformations. For broader browser support, see the [Responsive Images documentation](https://cloudinary.com/documentation/responsive_images).
+**Important:** `dpr_auto` and `w_auto` parameters only work on Chromium-based browsers (Chrome, Edge, Opera, Samsung Internet) with Client Hints enabled. They do NOT work inside named transformations. For broader browser support, see the [Responsive Images documentation](https://cloudinary.com/documentation/responsive_images?install_source=skillspack&referrer=trans-skill).
 
 ### Specific DPR
 ```
