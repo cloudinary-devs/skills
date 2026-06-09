@@ -18,8 +18,8 @@ Choose focal point:
 - Use automatic gravity for varied content.
 - Use face/person/object-specific gravity only when it matches the asset and task.
 - Use compass gravity or explicit offsets for predictable layouts and overlays.
-- `g_auto` only works with `c_fill`, `c_lfill`, `c_fill_pad`,  `c_crop`, `c_thumb`, `c_auto` — not `c_scale`, `c_fit`, `c_lfit`, `c_mfit`, `c_limit`, `c_pad`, `c_lpad`, `c_mpad`
-- `g_auto` must be used with `c_fill_pad`
+- `g_auto` only works with `c_fill`, `c_lfill`, `c_fill_pad`,  `c_crop`, `c_thumb`, `c_auto`, `c_auto_pad` — not `c_scale`, `c_fit`, `c_lfit`, `c_mfit`, `c_limit`, `c_pad`, `c_lpad`, `c_mpad`
+- `c_fill_pad` is only valid in conjunction with automatic cropping, `g_auto`
 
 Preserve transparency:
 - Use a transparency-supporting output format.
