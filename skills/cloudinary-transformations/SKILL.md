@@ -153,8 +153,8 @@ Use **`c_fit`** when:
 
 Use **`c_pad`** when:
 - Must fit exact dimensions without cropping
-- Need to fill empty space with background color/blur/AI-generated pixels
-- Use with `b_<color>` or `b_auto` (blurred background) or `b_gen_fill`
+- Need to fill empty space with background color/blur (videos only)/AI-generated pixels
+- Use with `b_<color>`, `b_auto`, `b_blurred` (blurred background - videos only), or `b_gen_fill`
 
 Use **`c_limit`** when:
 - Set maximum dimensions but don't upscale small images
@@ -308,14 +308,15 @@ r_20,bo_5px_solid_rgb:0066ff   # Rounded with border (same component)
 ### Background Color
 
 - **`b_color,c_pad`** - Fill empty space with solid color (product images, letterboxing)
-- **`b_auto,c_pad`** - Blurred original as background (elegant alternative to solid)
+- **`b_auto,c_pad`** - Aautomatically selected background color based on one or more predominant colors in the image
 - **`b_gen_fill,c_pad`** - AI-extended background (change aspect ratio without cropping; see AI Transformations for cost)
 
 **Examples:**
 ```
 b_lightblue,c_pad,w_1.0         # Light blue background
-b_auto,c_pad,ar_16:9            # Blurred background, 16:9
+b_auto,c_pad,ar_16:9            # Automatically selected color for background, 16:9
 b_gen_fill,c_pad,ar_1:1         # AI-extended to square
+b_blurred,c_pad,ar_16:9         # Blurred background (videos only), 16:9
 ```
 
 **Critical**: Background (`b_`) is a qualifier - use **with** pad crop in same component: `b_color,c_pad,w_X`, NOT `/b_color/`.
