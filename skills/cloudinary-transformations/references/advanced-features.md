@@ -635,8 +635,8 @@ Watermark sized to 30% width × 10% height, positioned 30px from bottom-right.
 ```
 if_ar_gt_1.5/c_pad,ar_16:9,b_auto/if_else/if_ar_lt_0.67/c_pad,ar_9:16,b_auto/if_else/c_fit,w_800/if_end/if_end/f_auto/q_auto
 ```
-- Wide images: Pad to 16:9 with blur
-- Tall images: Pad to 9:16 with blur  
+- Wide images: Pad to 16:9 with automatically selected color
+- Tall images: Pad to 9:16 with automatically selected color
 - Normal: Fit to 800px
 
 ## Limitations and Gotchas
