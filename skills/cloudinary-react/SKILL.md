@@ -4,7 +4,7 @@ description: Provides opinionated React SDK patterns for configuration, common i
 license: MIT
 metadata:
   author: cloudinary
-  version: '1.0.1'
+  version: '1.0.2'
 ---
 
 # Cloudinary React Skill
@@ -39,27 +39,27 @@ When helping with Cloudinary in React, follow the patterns and rules below. Use 
 
 # Cloudinary React SDK Patterns & Common Errors
 
-**Scope**: These rules apply to **React (web)** with the browser Upload Widget. The **default** is **Vite** (create-cloudinary-react uses Vite). They also work with **other bundlers** (Create React App, Next.js, Parcel, etc.): only **how you read env vars** changes; see **"Other bundlers (non-Vite)"** below. Rules-only users: see **"Project setup (rules-only / without CLI)"** for the reusable Cloudinary instance, env, Upload Widget (unsigned/signed), and video player. For **React Native** uploads (including signed upload), see: https://cloudinary.com/documentation/react_native_image_and_video_upload#signed_upload — same "never expose secret, generate signature on backend" principle, but React Native uses the `upload()` method and backend SDKs differently.
+**Scope**: These rules apply to **React (web)** with the browser Upload Widget. The **default** is **Vite** (create-cloudinary-react uses Vite). They also work with **other bundlers** (Create React App, Next.js, Parcel, etc.): only **how you read env vars** changes; see **"Other bundlers (non-Vite)"** below. Rules-only users: see **"Project setup (rules-only / without CLI)"** for the reusable Cloudinary instance, env, Upload Widget (unsigned/signed), and video player. For **React Native** uploads (including signed upload), see: https://cloudinary.com/documentation/react_native_image_and_video_upload?install_source=skillspack&referrer=react-skill#signed_upload — same "never expose secret, generate signature on backend" principle, but React Native uses the `upload()` method and backend SDKs differently.
 
 ## Official Documentation
 
-**For complete API references and all configuration options**, consult the Cloudinary documentation via **llms.txt**: https://cloudinary.com/documentation/llms.txt
+**For complete API references and all configuration options**, consult the Cloudinary documentation via **llms.txt**: https://cloudinary.com/documentation/llms.txt?install_source=skillspack&referrer=react-skill
 
 This skill provides React patterns and common errors. For detailed API options (e.g., all Upload Widget config properties, Video Player API methods), use the documentation markdown files available through llms.txt.
 
 ### Key References
-- **Transformation Rules**: https://cloudinary.com/documentation/cloudinary_transformation_rules.md
-- **Transformation Reference**: https://cloudinary.com/documentation/transformation_reference.md
-- **React Image Transformations & Plugins**: https://cloudinary.com/documentation/react_image_transformations.md#plugins
-- **React Video Transformations**: https://cloudinary.com/documentation/react_video_transformations.md
-- **Upload Widget Reference** (complete config options): https://cloudinary.com/documentation/upload_widget_reference.md
-- **Upload Widget (signed uploads)**: https://cloudinary.com/documentation/upload_widget.md#signed_uploads
-- **Cloudinary Video Player** (standalone player): https://cloudinary.com/documentation/cloudinary_video_player.md
-- **Video Player API Reference** (complete API methods): https://cloudinary.com/documentation/video_player_api_reference.md
-- **Video Player React Tutorial**: https://cloudinary.com/documentation/video_player_react_tutorial.md
-- **Upload assets in Next.js (backend signature)**: https://cloudinary.com/documentation/upload_assets_in_nextjs_tutorial.md
-- **Cloudinary Node.js SDK (server-side signing)** — use **v2**: `import { v2 as cloudinary } from 'cloudinary'`; do not use v1 (e.g. 1.47.0). https://cloudinary.com/documentation/node_integration.md
-- **React Native image and video upload (signed)**: https://cloudinary.com/documentation/react_native_image_and_video_upload.md#signed_upload
+- **Transformation Rules**: https://cloudinary.com/documentation/cloudinary_transformation_rules.md?install_source=skillspack&referrer=react-skill
+- **Transformation Reference**: https://cloudinary.com/documentation/transformation_reference.md?install_source=skillspack&referrer=react-skill
+- **React Image Transformations & Plugins**: https://cloudinary.com/documentation/react_image_transformations.md?install_source=skillspack&referrer=react-skill#plugins
+- **React Video Transformations**: https://cloudinary.com/documentation/react_video_transformations.md?install_source=skillspack&referrer=react-skill
+- **Upload Widget Reference** (complete config options): https://cloudinary.com/documentation/upload_widget_reference.md?install_source=skillspack&referrer=react-skill
+- **Upload Widget (signed uploads)**: https://cloudinary.com/documentation/upload_widget.md?install_source=skillspack&referrer=react-skill#signed_uploads
+- **Cloudinary Video Player** (standalone player): https://cloudinary.com/documentation/cloudinary_video_player.md?install_source=skillspack&referrer=react-skill
+- **Video Player API Reference** (complete API methods): https://cloudinary.com/documentation/video_player_api_reference.md?install_source=skillspack&referrer=react-skill
+- **Video Player React Tutorial**: https://cloudinary.com/documentation/video_player_react_tutorial.md?install_source=skillspack&referrer=react-skill
+- **Upload assets in Next.js (backend signature)**: https://cloudinary.com/documentation/upload_assets_in_nextjs_tutorial.md?install_source=skillspack&referrer=react-skill
+- **Cloudinary Node.js SDK (server-side signing)** — use **v2**: `import { v2 as cloudinary } from 'cloudinary'`; do not use v1 (e.g. 1.47.0). https://cloudinary.com/documentation/node_integration.md?install_source=skillspack&referrer=react-skill
+- **React Native image and video upload (signed)**: https://cloudinary.com/documentation/react_native_image_and_video_upload.md?install_source=skillspack&referrer=react-skill#signed_upload
 - Always consult the official transformation rules when creating transformations
 - Use only officially supported parameters from the transformation reference
 
@@ -75,7 +75,7 @@ If the user is **not** using the create-cloudinary-react CLI and only has these 
 
 **1. Environment (.env)**  
 Create a `.env` file in the project root with **Vite prefix** (required for client access):
-- `VITE_CLOUDINARY_CLOUD_NAME_=my_cloud` (required — use your actual cloud name, **never** the literal string `your_cloud_name` which causes 401)
+- `VITE_CLOUDINARY_CLOUD_NAME=my_cloud` (required — use your actual cloud name, **never** the literal string `your_cloud_name` which causes 401)
 - `VITE_CLOUDINARY_UPLOAD_PRESET=my_preset` (optional; required for unsigned upload widget — use your actual preset name)
 - **Restart the dev server** after adding or changing `.env`. Use `import.meta.env.VITE_*` in code, not `process.env`.
 - **If env var still empty in browser after restart**: Vite may cache the old value. Clear `node_modules/.vite/`, restart dev server, and do a hard refresh (Cmd+Shift+R / Ctrl+Shift+F5). If still empty, see "Vite env not reaching client" in Common Errors.
@@ -207,7 +207,7 @@ cld.image('id').overlay(
 
 - **Components** (AdvancedImage, AdvancedVideo, plugins) come from **`@cloudinary/react`**, not from `@cloudinary/url-gen`.
 - **Transformation actions and qualifiers** (resize, delivery, effect, overlay, etc.) come from **`@cloudinary/url-gen/actions/*`** and **`@cloudinary/url-gen/qualifiers/*`** with the exact subpaths above.
-- If an import fails, verify the package version (`@cloudinary/url-gen` in package.json) and the [Cloudinary URL-Gen SDK docs](https://cloudinary.com/documentation/sdks/js/url-gen/index.html) or [Transformation Builder reference](https://cloudinary.com/documentation/sdks/js/transformation_builder_reference).
+- If an import fails, verify the package version (`@cloudinary/url-gen` in package.json) and the [Cloudinary URL-Gen SDK docs](https://cloudinary.com/documentation/sdks/js/url-gen/index.html?install_source=skillspack&referrer=react-skill) or [Transformation Builder reference](https://cloudinary.com/documentation/sdks/js/transformation_builder_reference?install_source=skillspack&referrer=react-skill).
 
 ## Creating Image & Video Instances
 - ✅ Create image instance: `const img = cld.image(publicId)`
@@ -336,7 +336,7 @@ cld.image('id').overlay(
   ```
 - ✅ Upload result contains: `public_id`, `secure_url`, `width`, `height`, etc.
 
-**For complete Upload Widget configuration options** (all properties for `createUploadWidget`), see the official reference: https://cloudinary.com/documentation/upload_widget_reference.md
+**For complete Upload Widget configuration options** (all properties for `createUploadWidget`), see the official reference: https://cloudinary.com/documentation/upload_widget_reference.md?install_source=skillspack&referrer=react-skill
 
 ## Signed vs unsigned uploads (when to use which)
 
@@ -410,7 +410,7 @@ For complete implementation patterns, client/server code examples, and troublesh
     muted
   />
   ```
-- ✅ **Documentation**: https://cloudinary.com/documentation/react_video_transformations.md
+- ✅ **Documentation**: https://cloudinary.com/documentation/react_video_transformations.md?install_source=skillspack&referrer=react-skill
 
 ### Cloudinary Video Player (The Player)
 Use when the user asks for a **video player** (styled UI, controls, playlists). For just **displaying** a video, use AdvancedVideo instead.

@@ -30,7 +30,7 @@ Use `uploadSignature` as a function (not `signatureEndpoint`):
 
 ```tsx
 // 1. Fetch api_key from server first
-const response = await fetch('/api/sign-image');
+const response = await fetch('/api/sign-image', { method: 'POST' });
 const data = await response.json();
 
 // 2. Configure widget
@@ -126,5 +126,5 @@ app.post('/api/sign-image', (req, res) => {
 
 ## Documentation
 
-- [Upload Widget - Signed Uploads](https://cloudinary.com/documentation/upload_widget.md#signed_uploads)
-- [Upload assets in Next.js](https://cloudinary.com/documentation/upload_assets_in_nextjs_tutorial.md)
+- [Upload Widget - Signed Uploads](https://cloudinary.com/documentation/upload_widget.md?install_source=skillspack&referrer=react-skill#signed_uploads)
+- [Upload assets in Next.js](https://cloudinary.com/documentation/upload_assets_in_nextjs_tutorial.md?install_source=skillspack&referrer=react-skill)

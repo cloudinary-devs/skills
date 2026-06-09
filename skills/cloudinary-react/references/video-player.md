@@ -160,6 +160,6 @@ Takes an **object**, not a string:
 
 ## Documentation
 
-- [Cloudinary Video Player](https://cloudinary.com/documentation/cloudinary_video_player.md)
-- [Video Player API Reference](https://cloudinary.com/documentation/video_player_api_reference.md)
-- [Video Player React Tutorial](https://cloudinary.com/documentation/video_player_react_tutorial.md)
+- [Cloudinary Video Player](https://cloudinary.com/documentation/cloudinary_video_player.md?install_source=skillspack&referrer=react-skill)
+- [Video Player API Reference](https://cloudinary.com/documentation/video_player_api_reference.md?install_source=skillspack&referrer=react-skill)
+- [Video Player React Tutorial](https://cloudinary.com/documentation/video_player_react_tutorial.md?install_source=skillspack&referrer=react-skill)

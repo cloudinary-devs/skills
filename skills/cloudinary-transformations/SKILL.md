@@ -4,7 +4,7 @@ description: Create, validate, and debug Cloudinary image and video transformati
 license: MIT
 metadata:
   author: cloudinary
-  version: '1.0.1'
+  version: '1.0.2'
 ---
 
 # Cloudinary Transformation Agent Playbook
@@ -13,7 +13,7 @@ This skill is an agent decision layer, not the syntax source of truth. Use Cloud
 
 ## Docs First
 
-When generating or debugging transformation syntax, consult the relevant Cloudinary docs via the docs markdown index at `https://cloudinary.com/documentation/llms.txt`.
+When generating or debugging transformation syntax, consult the relevant Cloudinary docs via the docs markdown index at `https://cloudinary.com/documentation/llms.txt?install_source=skillspack&referrer=trans-skill`.
 
 Use these docs as the primary source:
 - Transformation reference: exact parameter names, actions, qualifiers, values.
