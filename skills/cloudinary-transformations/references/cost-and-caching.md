@@ -25,19 +25,41 @@ Suggest named transformations when:
 - The chain is complex enough that readability and consistency matter.
 - The user wants account-level reuse or easier updates.
 
-Suggest baseline transformations when:
+Suggest baseline transformations (`bl_<named transformation>`) when:
 - An expensive operation is reused with multiple variants.
 - AI/background-removal/upscale/restoration output will be resized, cropped, recolored, or overlaid in many ways.
 - The user is building a catalog or pipeline and can pre-generate derivatives.
 
 ## Baseline Rules To Verify
 
-Before suggesting or writing a baseline URL, verify the current docs. These are common rules to check:
-- Baseline component comes first.
+Before suggesting or writing a baseline URL, verify the current docs: [bl (baseline)](https://cloudinary.com/documentation/transformation_reference_bl_baseline.md?install_source=skillspack&referrer=trans-skill). These are common rules to check:
+- Baseline component comes first. `bl_<named transformation>/<additional transformations>`
 - Baseline component contains only the baseline reference.
 - The referenced named transformation includes a concrete output format.
 - Automatic runtime parameters such as `f_auto`, `w_auto`, and `dpr_auto` remain outside the named/baseline transformation.
 - Baselines may not apply to every delivery type or transformation type.
+
+### Baseline Transformation Examples:
+
+**Example 1: Background removal + grayscale baseline, then add effects**
+```
+# Named transformation "bg_rem_gray_jxl" contains:
+e_background_removal/f_jxl/q_100/e_grayscale
+
+# Use as baseline:
+bl_bg_rem_gray_jxl/e_cartoonify/f_auto/q_auto
+```
+Result: Background removed, grayscale applied once (cached), then cartoonify effect added.
+
+**Example 3: Video baseline with trimming**
+```
+# Named transformation "first5_rotate" contains:
+du_5/f_mp4/a_15
+
+# Use as baseline:
+bl_first5_rotate/e_loop:2/f_auto/q_auto
+```
+Result: Video trimmed to 5 seconds and rotated once (cached), then looped twice.
 
 ## Quality Guidance
 

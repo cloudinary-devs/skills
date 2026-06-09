@@ -16,11 +16,11 @@ This skill is an agent decision layer, not the syntax source of truth. Use Cloud
 When generating or debugging transformation syntax, consult the relevant Cloudinary docs via the docs markdown index at `https://cloudinary.com/documentation/llms.txt?install_source=skillspack&referrer=trans-skill`.
 
 Use these docs as the primary source:
-- Transformation reference: exact parameter names, actions, qualifiers, values.
-- Image transformations, resizing/cropping, layers, effects, background removal, generative AI transformations.
-- Video manipulation/delivery, video resizing/cropping, trimming/concatenating, video layers, audio transformations.
-- Responsive images and Client Hints docs for `w_auto`, `dpr_auto`, and breakpoints.
-- Transformation counts docs for current cost behavior.
+- [Transformation Reference](https://cloudinary.com/documentation/transformation_reference.md?install_source=skillspack&referrer=trans-skill): exact parameter names, actions, qualifiers, values.
+- [Image transformations](https://cloudinary.com/documentation/image_transformations.md?install_source=skillspack&referrer=trans-skill), [Image Resizing and Cropping](https://cloudinary.com/documentation/resizing_and_cropping.md?install_source=skillspack&referrer=trans-skill), [Placing Layers on Images](https://cloudinary.com/documentation/layers.md?install_source=skillspack&referrer=trans-skill), [Image Effects and Enhancements](https://cloudinary.com/documentation/effects_and_artistic_enhancements.md?install_source=skillspack&referrer=trans-skill), [Background Removal](https://cloudinary.com/documentation/background_removal.md?install_source=skillspack&referrer=trans-skill), [Generative AI Transformations](https://cloudinary.com/documentation/generative_ai_transformations.md?install_source=skillspack&referrer=trans-skill).
+- [Video Transformations Overview](https://cloudinary.com/documentation/video_manipulation_and_delivery.md?install_source=skillspack&referrer=trans-skill), [Video Resizing and Cropping](https://cloudinary.com/documentation/video_resizing_and_cropping.md?install_source=skillspack&referrer=trans-skill), [Video Trimming and Concatenating](https://cloudinary.com/documentation/video_trimming_and_concatenating.md?install_source=skillspack&referrer=trans-skill), [Placing Layers on Videos](https://cloudinary.com/documentation/video_layers.md?install_source=skillspack&referrer=trans-skill), [Audio Transformations](https://cloudinary.com/documentation/audio_transformations.md?install_source=skillspack&referrer=trans-skill),[Video Effects and Enhancements](https://cloudinary.com/documentation/video_effects_and_enhancements.md?install_source=skillspack&referrer=trans-skill).
+- [Responsive images](https://cloudinary.com/documentation/responsive_images.md?install_source=skillspack&referrer=trans-skill) and Client Hints docs for `w_auto`, `dpr_auto`, and breakpoints.
+- [Transformation counts](https://cloudinary.com/documentation/transformation_counts.md?install_source=skillspack&referrer=trans-skill) docs for current cost behavior.
 
 Use local references only for agent judgment:
 - [references/agent-playbook.md](references/agent-playbook.md): intent mapping, defaults, and high-risk transformation patterns.
@@ -32,9 +32,10 @@ Use local references only for agent judgment:
 1. Identify asset type: image, video, raw, animated image, or fetched media.
 2. Clarify only blocking requirements: dimensions, crop behavior, focal point, transparency, output format, video duration/audio, and whether AI edits are acceptable.
 3. Look up exact syntax in Cloudinary docs when using anything beyond stable, common patterns.
-4. Build the shortest correct transformation chain.
-5. Validate the URL with the checklist below.
-6. For broken URLs, inspect `X-Cld-Error`, verify against docs, and isolate components one at a time.
+4. For resize/crop, overlays, AI, responsive, named/baseline, or video trim, read [references/agent-playbook.md](references/agent-playbook.md) before building the chain.
+5. Build the shortest correct transformation chain.
+6. Validate the URL with the checklist below.
+7. For broken URLs, inspect `X-Cld-Error`, verify against docs, and isolate components one at a time.
 
 ## Default Decisions
 
@@ -58,6 +59,7 @@ For resize/crop requests, determine:
 - At least one dimension.
 - Whether the result must fill a fixed box, fit inside a box, pad empty space, or only limit maximum size.
 - Whether the crop should favor faces, a known subject, center, a compass position, or Cloudinary automatic gravity.
+- Whether the user needs a new aspect ratio without cropping. If so, mention generative fill as an option (with cost warning).
 
 For AI requests, determine:
 - Whether the user accepts higher transformation cost.
@@ -98,6 +100,10 @@ l_logo/c_scale,w_120/fl_layer_apply,g_south_east,x_20,y_20/f_auto/q_auto
 co_white,l_text:Arial_48:Hello%20World/fl_layer_apply,g_south/f_auto/q_auto
 e_background_removal/f_png/q_auto
 c_scale,w_720/vc_auto/f_auto:video/q_auto
+ar_16:9,b_gen_fill,c_pad,w_800/f_auto/q_auto
+c_limit,w_auto/f_auto/q_auto (+ Client Hints prerequisite)
+t_name/f_auto/q_auto
+so_2.0,du_8.0/ac_none/vc_auto/f_auto:video/q_auto
 ```
 
 These examples are illustrative, not prescribed values. Choose dimensions, formats, colors, positions, and prompts from the user's actual requirements.

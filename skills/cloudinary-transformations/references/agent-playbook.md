@@ -18,7 +18,8 @@ Choose focal point:
 - Use automatic gravity for varied content.
 - Use face/person/object-specific gravity only when it matches the asset and task.
 - Use compass gravity or explicit offsets for predictable layouts and overlays.
-- Verify `g_auto` compatibility in the docs for the chosen crop mode.
+- `g_auto` only works with `c_fill`, `c_lfill`, `c_fill_pad`,  `c_crop`, `c_thumb`, `c_auto` — not `c_scale`, `c_fit`, `c_lfit`, `c_mfit`, `c_limit`, `c_pad`, `c_lpad`, `c_mpad`
+- `g_auto` must be used with `c_fill_pad`
 
 Preserve transparency:
 - Use a transparency-supporting output format.
@@ -39,7 +40,7 @@ Video:
 - Prefer automatic codec selection unless the user has a compatibility requirement.
 
 Responsive images:
-- Treat `w_auto`, `dpr_auto`, and responsive breakpoints as runtime/client-hint features.
+- Treat `w_auto`, `dpr_auto`, and responsive breakpoints as runtime/client-hint features (e.g. c_limit,w_auto/f_auto/q_auto)
 - Verify Client Hints setup and browser support before relying on them.
 - For universal support, generate explicit `srcset`/`sizes` or explicit DPR variants.
 
