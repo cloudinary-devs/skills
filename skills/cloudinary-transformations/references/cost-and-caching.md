@@ -51,7 +51,7 @@ bl_bg_rem_gray_jxl/e_cartoonify/f_auto/q_auto
 ```
 Result: Background removed, grayscale applied once (cached), then cartoonify effect added.
 
-**Example 3: Video baseline with trimming**
+**Example 2: Video baseline with trimming**
 ```
 # Named transformation "first5_rotate" contains:
 du_5/f_mp4/a_15
