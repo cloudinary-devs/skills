@@ -16,7 +16,7 @@ Fit an exact visual slot:
 
 Choose focal point:
 - Use automatic gravity for varied content.
-- Use face/person/object-specific gravity only when it matches the asset and task.
+- Use face/person/object-specific gravity only when it matches the asset and task. The user needs a subscription to the Cloudinary AI Content Analysis add-on for specific objects.
 - Use compass gravity or explicit offsets for predictable layouts and overlays.
 - `g_auto` only works with `c_fill`, `c_lfill`, `c_fill_pad`,  `c_crop`, `c_thumb`, `c_auto`, `c_auto_pad` — not `c_scale`, `c_fit`, `c_lfit`, `c_mfit`, `c_limit`, `c_pad`, `c_lpad`, `c_mpad`
 - `c_fill_pad` is only valid in conjunction with automatic cropping, `g_auto`
@@ -55,12 +55,12 @@ Variables and conditionals:
 
 - Bare dimensions can imply default behavior. Make the crop mode explicit.
 - `c_scale` with both width and height can distort if aspect ratios differ.
-- Qualifiers belong in the same component as the action they modify.
-- Action parameters generally need separate components.
+- Qualifiers belong in the same component as the action they modify, separated by commas.
+- Action parameters should be in separate components (separated by forward slashes).
 - Background values usually qualify pad/fill behavior; do not place them as unrelated standalone components.
 - Automatic runtime parameters such as `f_auto`, `w_auto`, and `dpr_auto` should stay visible in delivery URLs, especially with named transformations.
 - Different parameter orderings or small value changes can create separate derived assets and extra transformations.
-- When showing examples to users, sort parameters alphabetically within each comma-separated component to match SDK-style URLs. Treat this as presentation consistency, not a correctness requirement.
+- When showing examples to users, sort comma-separated parameters alphabetically within each component to match SDK-style URLs. Treat this as presentation consistency, not a correctness requirement.
 
 ## Minimal Recipes
 

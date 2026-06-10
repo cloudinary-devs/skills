@@ -39,7 +39,7 @@ Use local references only for agent judgment:
 
 ## Default Decisions
 
-- Add `f_auto/q_auto` near the end for most production image URLs.
+- Add `f_auto/q_auto` near the end for most production image URLs. Ensure `f_auto` and `q_auto` are in separate components, not comma-separated.
 - For video delivery, use `f_auto:video` or a specific video format. Plain `f_auto` can return an image representation.
 - Use explicit crop modes. Avoid bare `h_300,w_400`.
 - For exact fixed dimensions, prefer `c_fill,g_auto` unless the user gives a specific focal point.
@@ -58,7 +58,7 @@ Do not add optimization when:
 For resize/crop requests, determine:
 - At least one dimension.
 - Whether the result must fill a fixed box, fit inside a box, pad empty space, or only limit maximum size.
-- Whether the crop should favor faces, a known subject, center, a compass position, or Cloudinary automatic gravity.
+- Whether the crop should favor faces, a known subject (Cloudinary AI Content Analysis add-on required), center, a compass position, or Cloudinary automatic gravity.
 - Whether the user needs a new aspect ratio without cropping. If so, mention generative fill as an option (with cost warning).
 
 For AI requests, determine:
