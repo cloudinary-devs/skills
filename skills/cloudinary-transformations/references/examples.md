@@ -339,7 +339,7 @@ c_fill,g_auto,h_630,w_1200/co_white,l_text:Arial_80_bold:Breaking%20News/b_black
 ```
 c_fill,h_400,w_300/l_same_image/c_fill,e_grayscale,h_400,w_300/fl_layer_apply,g_west,x_300/f_auto/q_auto
 ```
-Creates a true side-by-side comparison (600×400) with a grayscale version. The canvas auto-expands when the overlay is offset past the base edge — set `x_<base_width>` (or `y_<base_height>` for vertical stacking). Do **not** use `fl_splice` here: it concatenates onto a **video** timeline, so on an image base it is silently ignored (the overlay composites on top instead, leaving a 300×400 result with no error). See [Video Concatenation](video-transformations.md#video-concatenation-fl_splice) for `fl_splice` usage, including splicing images into videos.
+Creates a true side-by-side comparison (600×400) with a grayscale version. Offset the overlay past the base edge to make the canvas auto-expand — set `x_<base_width>` for horizontal (or `y_<base_height>` to stack vertically).
 
 ## Video Transformations
 

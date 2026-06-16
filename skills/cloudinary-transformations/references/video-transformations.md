@@ -49,7 +49,7 @@ fps_20-25                      # FPS range
 
 ## Video Concatenation (`fl_splice`)
 
-**Requires a video base.** `fl_splice` concatenates a clip onto a video timeline — the spliced-in asset can be another video *or* an image ([splicing images into videos](https://cloudinary.com/documentation/video_concatenation#concatenate_videos_with_images); use `du_<seconds>` to set how long the image shows). It only works when the **base** of the transformation is a video. On an image-only transformation there is no timeline, so `fl_splice` is silently ignored (no `X-Cld-Error`, valid 200 response) and the overlay composites on top instead of extending the canvas. For an image side-by-side, offset the overlay past the base edge to auto-expand the canvas (`fl_layer_apply,g_west,x_<base_width>`), not `fl_splice`.
+**Requires a video base.** `fl_splice` concatenates a clip onto a video timeline; the spliced-in asset can be a video or an [image](https://cloudinary.com/documentation/video_concatenation#concatenate_videos_with_images) (set its duration with `du_<seconds>`). It is ignored on image-only transformations.
 
 **Pattern:**
 1. Declare: `fl_splice,l_video:<public_id>`
