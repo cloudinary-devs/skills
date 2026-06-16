@@ -49,6 +49,8 @@ fps_20-25                      # FPS range
 
 ## Video Concatenation (`fl_splice`)
 
+**Video only.** `fl_splice` concatenates video clips. It is silently ignored on images (no `X-Cld-Error`, valid 200 response) — the overlay composites normally instead of extending the canvas. For an image side-by-side, offset the overlay past the base edge to auto-expand the canvas (`fl_layer_apply,g_west,x_<base_width>`), not `fl_splice`.
+
 **Pattern:**
 1. Declare: `fl_splice,l_video:<public_id>`
 2. Transform overlay (optional)
