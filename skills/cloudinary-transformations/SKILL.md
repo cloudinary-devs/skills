@@ -289,7 +289,7 @@ c_fill,h_400,w_300/l_same_image/c_fill,e_grayscale,h_400,w_300/fl_layer_apply,g_
 **Important**: 
 - Color (`co_`) is a qualifier — use in the **same component** as text overlay declaration
 - **Always use `fl_relative`** when you want overlay dimensions as a percentage of the base image
-- **Side-by-side / canvas extension**: to place an overlay *beside* the base (not on top), offset it past the base edge — the canvas auto-expands. Use `g_west,x_<base_width>` for horizontal or `g_north,y_<base_height>` for vertical. Do **not** use `fl_splice` to do this on an image — `fl_splice` concatenates onto a video timeline, so on an image base it is silently ignored (composites on top, no error). It does apply when the base is a video (including splicing an image into a video — see video-transformations.md)
+- **Side-by-side / canvas extension**: to place an overlay *beside* the base, offset it past the base edge — the canvas auto-expands. Use `g_west,x_<base_width>` for horizontal or `g_north,y_<base_height>` for vertical.
 
 ### Borders & Rounding
 
@@ -341,10 +341,10 @@ a_auto_right            # Auto-fix from EXIF
 
 ### Asset Type Matters (Image vs. Video)
 
-Some flags require a **video** base. On an image they are silently ignored — the URL still returns a valid `200`, so verify the actual output (dimensions, duration, frame count) rather than assuming it worked.
+Some flags and parameters require a **video** base. On an image they are silently ignored — the URL still returns a valid `200`, so verify the actual output (dimensions, duration, frame count) rather than assuming it worked.
 
-**These flags need a video base:**
-- **`fl_splice`** - Concatenate a clip/image onto the video timeline (no image equivalent — to place media side-by-side, offset the overlay to extend the canvas: `fl_layer_apply,g_west,x_<base_width>`)
+**These need a video base:**
+- **`fl_splice`** (flag) - Concatenate a clip/image onto the video timeline (no image equivalent — to place media side-by-side, offset the overlay to extend the canvas: `fl_layer_apply,g_west,x_<base_width>`)
 - **`du_`, `so_`, `eo_`** - Trim/seek by time (duration, start offset, end offset)
 - **`fps_`** - Set frame rate
 - **`vc_`, `ac_`** - Video / audio codec
@@ -436,7 +436,7 @@ For complete syntax, arithmetic operations, nested conditionals, and real-world 
 7. ✅ **`g_auto` compatibility** (only works with `c_fill`, `c_lfill`, `c_crop`, `c_thumb`, `c_auto`)
 8. ✅ **Background as qualifier** (use with pad crop: `b_color,c_pad,w_X`, not `/b_color/`)
 9. ✅ **Format/quality at end** (prefer `f_auto/q_auto` as final components)
-10. ✅ **Flags match the base asset type** (video-oriented flags like `fl_splice`, `du_`, `fps_`, `vc_` need a video base; they no-op silently on images — see [Asset Type Matters](#asset-type-matters-image-vs-video))
+10. ✅ **Flags/parameters match the base asset type** (video-oriented syntax like the `fl_splice` flag and `du_`, `fps_`, `vc_` parameters need a video base; they no-op silently on images — see [Asset Type Matters](#asset-type-matters-image-vs-video))
 
 **Quick syntax check:**
 - Commas separate parameters within a component: `c_fill,g_auto,w_400`
