@@ -127,6 +127,15 @@ Check the [Transformation Reference](https://cloudinary.com/documentation/transf
 
 ## Core Transformations
 
+### Asset Type Matters (Image vs. Video)
+
+⚠️ Many flags and parameters behave differently — or do **nothing** — depending on whether the transformation's **base asset** is an image or a video. A misapplied flag often **fails silently**: HTTP 200, a valid asset, no `X-Cld-Error`, just the wrong output. The URL looks correct, so the mistake is easy to miss.
+
+**Rules:**
+- **Know the asset type a flag applies to.** Before using a flag, confirm it's valid for the base asset. Video-oriented flags (e.g. `fl_splice` for concatenation, `du_`/`so_`/`eo_` for timing, `fps_`, `vc_`, `ac_`) require a **video** base; on an image base they are typically ignored.
+- **A 200 is not validation.** Silent no-ops return success. When behavior depends on asset type, verify the *actual output* (e.g. dimensions, frame count) — don't assume it worked because the URL resolved. See [Self-Validation](#self-validation-checklist) and the demo-cloud check in [references/debugging.md](references/debugging.md).
+- **Same flag, different effect.** Some flags exist for both but mean different things (e.g. `fl_splice` concatenates onto a *video* timeline; for an *image* side-by-side you offset the overlay to extend the canvas instead — see [Overlays & Underlays](#overlays--underlays)). State which asset type you mean.
+
 ### Resize & Crop
 
 **Dimension value formats:**
@@ -426,6 +435,7 @@ For complete syntax, arithmetic operations, nested conditionals, and real-world 
 7. ✅ **`g_auto` compatibility** (only works with `c_fill`, `c_lfill`, `c_crop`, `c_thumb`, `c_auto`)
 8. ✅ **Background as qualifier** (use with pad crop: `b_color,c_pad,w_X`, not `/b_color/`)
 9. ✅ **Format/quality at end** (prefer `f_auto/q_auto` as final components)
+10. ✅ **Flags match the base asset type** (video-oriented flags like `fl_splice`, `du_`, `fps_`, `vc_` need a video base; they no-op silently on images — see [Asset Type Matters](#asset-type-matters-image-vs-video))
 
 **Quick syntax check:**
 - Commas separate parameters within a component: `c_fill,g_auto,w_400`
