@@ -289,7 +289,7 @@ c_fill,h_400,w_300/l_same_image/c_fill,e_grayscale,h_400,w_300/fl_layer_apply,g_
 **Important**: 
 - Color (`co_`) is a qualifier — use in the **same component** as text overlay declaration
 - **Always use `fl_relative`** when you want overlay dimensions as a percentage of the base image
-- **Side-by-side / canvas extension**: to place an overlay *beside* the base (not on top), offset it past the base edge — the canvas auto-expands. Use `g_west,x_<base_width>` for horizontal or `g_north,y_<base_height>` for vertical. Do **not** use `fl_splice` for images — it is a video-only concatenation flag and is silently ignored on images (composites on top, no error)
+- **Side-by-side / canvas extension**: to place an overlay *beside* the base (not on top), offset it past the base edge — the canvas auto-expands. Use `g_west,x_<base_width>` for horizontal or `g_north,y_<base_height>` for vertical. Do **not** use `fl_splice` to do this on an image — `fl_splice` concatenates onto a video timeline, so on an image base it is silently ignored (composites on top, no error). It does apply when the base is a video (including splicing an image into a video — see video-transformations.md)
 
 ### Borders & Rounding
 
