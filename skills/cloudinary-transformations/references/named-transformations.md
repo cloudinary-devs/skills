@@ -57,8 +57,8 @@ Baseline transformations (`bl_<named transformation>`) cache the result of a nam
 - **Transformations with special transformation counts** (75-230 tx) that you need to reuse
 
 **Consider eagerly generating baselines:**
-- On upload using the [upload method](https://cloudinary.com/documentation/image_upload_api_reference?install_source=skillspack&referrer=trans-skill#upload_method) or [upload preset](https://cloudinary.com/documentation/upload_presets?install_source=skillspack&referrer=trans-skill)
-- For existing assets using the [explicit method](https://cloudinary.com/documentation/image_upload_api_reference?install_source=skillspack&referrer=trans-skill#explicit_method)
+- On upload using the [upload method](https://cloudinary.com/documentation/image_upload_api_reference.md?install_source=skillspack&referrer=trans-skill#upload_method) or [upload preset](https://cloudinary.com/documentation/upload_presets.md?install_source=skillspack&referrer=trans-skill)
+- For existing assets using the [explicit method](https://cloudinary.com/documentation/image_upload_api_reference.md?install_source=skillspack&referrer=trans-skill#explicit_method)
 
 ### Syntax
 
