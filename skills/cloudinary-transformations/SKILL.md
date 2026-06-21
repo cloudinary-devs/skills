@@ -511,7 +511,7 @@ For complete cost details and cost reduction strategies, see [references/transfo
 ### Skill References (Progressive Disclosure)
 - [references/debugging.md](references/debugging.md) - Use when transformations return errors or unexpected results
 - [references/ai-transformations.md](references/ai-transformations.md) - Use when you need AI transformation prompt syntax, cost details, or complex AI combinations
-- [references/video-transformations.md](references/video-transformations.md) - Use when working with video codecs, trimming strategies, or concatenation
+- [references/video-transformations.md](references/video-transformations.md) - Use when working with video codecs, trimming strategies, concatenation, or creating animated images from videos
 - [references/advanced-features.md](references/advanced-features.md) - Use when building complex logic with variables, conditionals, or arithmetic
 - [references/responsive-images.md](references/responsive-images.md) - Use when implementing responsive images, configuring Client Hints, or using dpr_auto/w_auto
 - [references/transformation-costs.md](references/transformation-costs.md) - Use when optimizing for cost or explaining cost implications to users
