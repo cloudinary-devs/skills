@@ -68,15 +68,19 @@ To deliver an animated WebP from a video, use **one** of these valid combination
 
 **Path A (simplest):** `f_auto:animated` — sufficient on its own; no extension or fl_ flags required.
 ```
-du_5/f_auto:animated/q_auto          # First 5 seconds as animated WebP (or GIF where unsupported)
-du_5/e_loop/f_auto:animated          # Looping animated WebP
+du_5/f_auto:animated/q_auto                 # First 5 seconds as animated WebP (or GIF where unsupported)
+du_5/e_loop/f_auto:animated/q_auto          # Looping animated WebP
 ```
+
+Note: `f_auto:animated` delivers WebP only when the client sends a WebP Accept header. It falls back to GIF otherwise. 
 
 **Path B:** `fl_animated,fl_awebp` together, **plus** a WebP delivery signal (`f_webp`, `f_auto`, or `.webp` extension):
 ```
 du_5/fl_animated,fl_awebp/f_webp/q_auto    # Animated WebP via fl_ flags + f_webp
 du_5/e_loop/fl_animated,fl_awebp/f_auto    # Looping, with f_auto as WebP signal
 ```
+
+Note: `f_auto` is valid here because `fl_awebp` already constrains output to animated WebP.
 
 **WRONG — these do NOT produce animated WebP:**
 - `fl_animated` alone (missing `fl_awebp`)
