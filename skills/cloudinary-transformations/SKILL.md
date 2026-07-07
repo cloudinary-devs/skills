@@ -4,7 +4,7 @@ description: Create and debug Cloudinary transformation URLs from natural langua
 license: MIT
 metadata:
   author: cloudinary
-  version: '1.0.3'
+  version: '1.0.4'
 ---
 
 # Cloudinary Transformation Rules
@@ -439,7 +439,8 @@ For complete syntax, arithmetic operations, nested conditionals, and real-world 
 7. ✅ **`g_auto` compatibility** (only works with `c_fill`, `c_lfill`, `c_crop`, `c_thumb`, `c_auto`)
 8. ✅ **Background as qualifier** (use with pad crop: `b_color,c_pad,w_X`, not `/b_color/`)
 9. ✅ **Format/quality at end** (prefer `f_auto/q_auto` as final components)
-10. ✅ **Flags/parameters match the base asset type** (asset-type-specific syntax — e.g. video-only `fl_splice`, `du_`, `fps_`, `vc_` — often no-ops silently on the wrong base, in either direction; verify the output and check the reference when unsure — see [Asset Type Matters](#asset-type-matters-image-vs-video))
+10. ✅ **Flags/parameters match the base asset type** (asset-type-specific syntax — e.g. video-only `fl_splice`, `du_`, `fps_`, `vc_` — often no-ops silently on the wrong base, in either direction; verify the output and check the Asset Type Matters section above)
+11. ✅ **Transformation parameters are valid** (don't make up any parameter names - check against [Transformation Reference](https://cloudinary.com/documentation/transformation_reference.md?install_source=skillspack&referrer=trans-skill))
 
 **Quick syntax check:**
 - Commas separate parameters within a component: `c_fill,g_auto,w_400`
@@ -495,9 +496,9 @@ fetch('https://res.cloudinary.com/demo/image/upload/w_abc/sample.jpg')
 - `Resource not found` - Asset doesn't exist or public ID is incorrect
 - `Transformation limit exceeded` - Account transformation quota reached
 
-**Online tool:** Use the [X-Cld-Error Inspector](https://cloudinary.com/documentation/advanced_url_delivery_options?install_source=skillspack&referrer=trans-skill#x_cld_error_inspector_tool) to check any Cloudinary URL
+**Online tool:** Use the [X-Cld-Error Inspector](https://cloudinary.com/documentation/advanced_url_delivery_options.md?install_source=skillspack&referrer=trans-skill#x_cld_error_inspector_tool) to check any Cloudinary URL
 
-For more details, see [Error Handling](https://cloudinary.com/documentation/advanced_url_delivery_options?install_source=skillspack&referrer=trans-skill#error_handling)
+For more details, see [Error Handling](https://cloudinary.com/documentation/advanced_url_delivery_options.md?install_source=skillspack&referrer=trans-skill#error_handling)
 
 ## Transformation Costs
 
@@ -510,7 +511,7 @@ For complete cost details and cost reduction strategies, see [references/transfo
 ### Skill References (Progressive Disclosure)
 - [references/debugging.md](references/debugging.md) - Use when transformations return errors or unexpected results
 - [references/ai-transformations.md](references/ai-transformations.md) - Use when you need AI transformation prompt syntax, cost details, or complex AI combinations
-- [references/video-transformations.md](references/video-transformations.md) - Use when working with video codecs, trimming strategies, or concatenation
+- [references/video-transformations.md](references/video-transformations.md) - Use when working with video codecs, trimming strategies, concatenation, or creating animated images from videos
 - [references/advanced-features.md](references/advanced-features.md) - Use when building complex logic with variables, conditionals, or arithmetic
 - [references/responsive-images.md](references/responsive-images.md) - Use when implementing responsive images, configuring Client Hints, or using dpr_auto/w_auto
 - [references/transformation-costs.md](references/transformation-costs.md) - Use when optimizing for cost or explaining cost implications to users
