@@ -2,7 +2,6 @@
 
 Use this for browser uploads with `CldUploadWidget` or `CldUploadButton`, upload events, and choosing signed versus unsigned uploads. For the complete signature endpoint pattern, also read `signed-uploads.md`.
 
-> Source: converted from the uploaded `.cursorrules.template` and reorganized for progressive Skill loading.
 
 ## CldUploadWidget — uploading from the browser
 
@@ -62,13 +61,13 @@ import { CldUploadWidget } from 'next-cloudinary';
 ### Signed vs unsigned — when to use which
 
 **Unsigned** (simpler, no backend):
-- For: prototypes, low-risk apps, when anyone with the preset name may upload.
+- For: low-risk apps, where you want to enable end users to upload assets with your app. 
 - Trade-off: anyone who learns the preset name can upload to your cloud (subject to preset restrictions).
-- ✅ Set the preset to **Unsigned** in the dashboard, add `uploadPreset="<name>"` to the widget. Done.
+- ✅ Set the preset to **Unsigned** when creating it (via AI or in the Console) and then add `uploadPreset="<name>"` to the widget. 
 
 **Signed** (backend required):
-- For: production, authenticated users, controlled uploads.
+- For: upload by authenticated users or controlled backend uploads.
 - Trade-off: requires a running route handler. More secure.
-- ✅ Use `signatureEndpoint` + the route handler above.
+- ✅ Use `signatureEndpoint` + the route handler.
 
-**Default**: prefer unsigned unless the user explicitly asks for signed/secure uploads.
+**Default**: Prefer unsigned unless the user explicitly asks for signed/secure uploads.
