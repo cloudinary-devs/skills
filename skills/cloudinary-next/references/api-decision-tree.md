@@ -2,7 +2,6 @@
 
 Use this first when the user is unsure which Cloudinary component, helper, or SDK API to use.
 
-> Source: converted from the uploaded `.cursorrules.template` and reorganized for progressive Skill loading.
 
 ## Which Cloudinary API do I use? (decision tree)
 

@@ -2,7 +2,6 @@
 
 Use this when deciding import paths or diagnosing module/import errors.
 
-> Source: converted from the uploaded `.cursorrules.template` and reorganized for progressive Skill loading.
 
 ## Import Patterns
 

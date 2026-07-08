@@ -2,7 +2,6 @@
 
 Use this for Server Actions or route handlers that upload or delete assets using the Cloudinary Node SDK v2.
 
-> Source: converted from the uploaded `.cursorrules.template` and reorganized for progressive Skill loading.
 
 ## Server-side upload (Server Action / route handler)
 

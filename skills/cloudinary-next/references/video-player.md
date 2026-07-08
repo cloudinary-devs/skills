@@ -2,7 +2,6 @@
 
 Use this for `CldVideoPlayer` setup, required CSS, and client-only video player code.
 
-> Source: converted from the uploaded `.cursorrules.template` and reorganized for progressive Skill loading.
 
 ## CldVideoPlayer — the player
 

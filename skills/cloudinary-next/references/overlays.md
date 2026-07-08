@@ -2,8 +2,6 @@
 
 Use this when building image overlays, text overlays, badges, labels, or watermark-style transformations.
 
-> Source: converted from the uploaded `.cursorrules.template` and reorganized for progressive Skill loading.
-
 ## Image overlays — the `overlays` prop shape
 
 ```tsx

@@ -2,7 +2,6 @@
 
 Use this for Open Graph/social card images with `getCldOgImageUrl` in App Router or `CldOgImage` in Pages Router.
 
-> Source: converted from the uploaded `.cursorrules.template` and reorganized for progressive Skill loading.
 
 ## Social media cards (OG images)
 

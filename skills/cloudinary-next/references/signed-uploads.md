@@ -2,7 +2,6 @@
 
 Use this when the user needs secure browser uploads through `CldUploadWidget` with a server-side signature endpoint.
 
-> Source: converted from the uploaded `.cursorrules.template` and reorganized for progressive Skill loading.
 
 ### Signed uploads (App Router) — canonical pattern
 

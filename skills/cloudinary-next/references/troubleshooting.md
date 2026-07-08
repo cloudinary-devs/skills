@@ -15,7 +15,6 @@ Use this when the user provides an error message, broken behavior, or asks for a
 - `CldOgImage` / social card errors
 - TypeScript errors
 
-> Source: converted from the uploaded `.cursorrules.template` and reorganized for progressive Skill loading.
 
 # ⚠️ COMMON ERRORS & SOLUTIONS
 

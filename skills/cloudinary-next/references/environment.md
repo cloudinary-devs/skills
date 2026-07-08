@@ -2,7 +2,6 @@
 
 Use this when configuring `.env.local`, debugging missing Cloudinary variables, or adding TypeScript environment typings.
 
-> Source: converted from the uploaded `.cursorrules.template` and reorganized for progressive Skill loading.
 
 ## Environment Variables
 

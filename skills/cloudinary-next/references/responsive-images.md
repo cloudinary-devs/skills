@@ -2,8 +2,6 @@
 
 Use this for `sizes`, responsive layouts, and avoiding oversized or low-resolution Cloudinary image delivery.
 
-> Source: converted from the uploaded `.cursorrules.template` and reorganized for progressive Skill loading.
-
 ## Responsive images
 
 - ✅ **Always pass `sizes`** on `<CldImage>` unless it's a known fixed-size icon. Without `sizes`, the browser defaults to `100vw` and may pick an oversized variant.

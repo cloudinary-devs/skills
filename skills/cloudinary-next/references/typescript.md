@@ -2,7 +2,6 @@
 
 Use this for safe upload result narrowing, server upload result types, refs, and avoiding `any`.
 
-> Source: converted from the uploaded `.cursorrules.template` and reorganized for progressive Skill loading.
 
 ## TypeScript Patterns
 

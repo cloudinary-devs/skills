@@ -2,7 +2,6 @@
 
 Use this when starting a new Next.js + Cloudinary project or adding missing setup files to an existing project.
 
-> Source: converted from the uploaded `.cursorrules.template` and reorganized for progressive Skill loading.
 
 ## Project setup (rules-only / without CLI)
 

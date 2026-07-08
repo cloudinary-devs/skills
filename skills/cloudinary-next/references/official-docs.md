@@ -1,8 +1,5 @@
 # Official documentation
 
-> Source: converted from the uploaded `.cursorrules.template` and reorganized for progressive Skill loading.
-
-## Official Documentation
 - **Next Cloudinary docs (start here)**: https://next.cloudinary.dev
 - **Installation**: https://next.cloudinary.dev/installation
 - **CldImage configuration**: https://next.cloudinary.dev/cldimage/configuration

@@ -2,7 +2,6 @@
 
 Use this for JSX image rendering with `CldImage`, demo assets, and string URL generation with `getCldImageUrl`.
 
-> Source: converted from the uploaded `.cursorrules.template` and reorganized for progressive Skill loading.
 
 ## CldImage — basic usage
 

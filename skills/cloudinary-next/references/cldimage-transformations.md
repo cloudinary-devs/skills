@@ -2,8 +2,6 @@
 
 Use this when applying image transformations. Prefer documented `next-cloudinary` prop names over raw URL transformation parameter names.
 
-> Source: converted from the uploaded `.cursorrules.template` and reorganized for progressive Skill loading.
-
 ## CldImage — transformations (the canonical prop reference)
 
 Use **only** the prop names and shapes below (and on https://next.cloudinary.dev/cldimage/configuration). These are not the same as the underlying URL transformation params.

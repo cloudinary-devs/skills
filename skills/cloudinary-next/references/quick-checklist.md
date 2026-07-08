@@ -2,8 +2,6 @@
 
 Use this at the end of generation or review tasks to catch common Cloudinary + Next.js mistakes before finalizing.
 
-> Source: converted from the uploaded `.cursorrules.template` and reorganized for progressive Skill loading.
-
 ## Best Practices
 - ✅ Default to `<CldImage>` for any Cloudinary image. Use `getCldImageUrl` only when you need a string URL.
 - ✅ Always pass `sizes` for non-icon images.
