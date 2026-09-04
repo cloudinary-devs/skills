@@ -1,0 +1,26 @@
+name: Skills discovery
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  discovery:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Every SKILL.md is discovered by the skills CLI
+        env:
+          INSTALL_INTERNAL_SKILLS: "1"
+        run: |
+          expected=$(find skills -name SKILL.md | wc -l | tr -d ' ')
+          output=$(npx -y skills@latest add . --list 2>&1 || true)
+          found=$(printf '%s' "$output" | grep -oE 'Found [0-9]+ skills?' | grep -oE '[0-9]+' || echo 0)
+          echo "expected=$expected found=$found"
+          if [ "$found" != "$expected" ]; then
+            echo "::error::Discovery mismatch. A SKILL.md is being dropped (bad frontmatter, wrong depth, or missing name/description)."
+            printf '%s\n' "$output"
+            exit 1
+          fi
