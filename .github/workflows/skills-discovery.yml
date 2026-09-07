@@ -1,10 +1,11 @@
-name: Skills discovery
+name: Skills checks
 on:
   pull_request:
   push:
     branches: [main]
 jobs:
   discovery:
+    name: Every SKILL.md is discovered
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,3 +28,20 @@ jobs:
             printf '%s\n' "$output"
             exit 1
           fi
+
+  links:
+    name: Doc links carry tracking params
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: scripts/check-links.sh
+
+  versions:
+    name: Changed skills bump their version
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: scripts/check-versions.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"

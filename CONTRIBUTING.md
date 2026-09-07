@@ -81,19 +81,31 @@ your machine will be wrong on someone else's.
 Bump `metadata.version` on any content change to a skill, including its
 references and assets. Moving or renaming files with identical content does not
 bump the version; the lock-file hash is unchanged and `skills update` correctly
-reports nothing to do.
+reports nothing to do. CI enforces this on every PR: a skill with changed
+content and an unchanged version fails the `versions` job.
+
+## Documentation links
+
+Every link to a Cloudinary docs `.md` page or `llms.txt` must carry
+`?install_source=skillspack&referrer=<skill>-skill` so traffic from skills is
+attributable. Use the same `referrer` value throughout a skill, for example
+`trans-skill` or `react-skill`. CI fails the `links` job on any link missing
+either param.
 
 ## Local check
 
-Before opening a PR, run the same check CI runs:
+Before opening a PR, run the same checks CI runs:
 
 ```bash
 INSTALL_INTERNAL_SKILLS=1 npx -y skills@latest add . --list
+scripts/check-links.sh
+scripts/check-versions.sh origin/main HEAD
 ```
 
 The `Found N skills` line must match the number of `SKILL.md` files under
 `skills/`, and every skill name must appear in the list. A mismatch means a skill
 is being dropped: check for bad frontmatter, an unquoted colon in the
 description, a missing `name` or `description`, or a directory nested at the wrong
-depth. CI (`.github/workflows/skills-discovery.yml`) fails the PR on the same
-mismatch.
+depth. The two scripts report any untracked doc link and any changed skill whose
+version was not bumped. CI (`.github/workflows/skills-discovery.yml`) runs all
+three and fails the PR on the same conditions.
