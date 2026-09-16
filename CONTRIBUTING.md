@@ -97,15 +97,16 @@ either param.
 Before opening a PR, run the same checks CI runs:
 
 ```bash
-INSTALL_INTERNAL_SKILLS=1 npx -y skills@latest add . --list
+scripts/check-discovery.sh
 scripts/check-links.sh
 scripts/check-versions.sh origin/main HEAD
 ```
 
-The `Found N skills` line must match the number of `SKILL.md` files under
-`skills/`, and every skill name must appear in the list. A mismatch means a skill
-is being dropped: check for bad frontmatter, an unquoted colon in the
-description, a missing `name` or `description`, or a directory nested at the wrong
-depth. The two scripts report any untracked doc link and any changed skill whose
+The discovery script compares the `name` in every `SKILL.md` under `skills/`
+against the names the skills CLI actually lists, and names any skill that is
+missing. A missing skill means it is being dropped: check for bad frontmatter,
+an unquoted colon in the description, a missing `name` or `description`, or a
+directory nested at the wrong depth. The other two scripts report any untracked
+doc link (and fail if they find no links at all) and any changed skill whose
 version was not bumped. CI (`.github/workflows/skills-discovery.yml`) runs all
 three and fails the PR on the same conditions.
