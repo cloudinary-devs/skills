@@ -136,8 +136,8 @@ Check the project's dependency files for a Cloudinary package, and use the match
 
 | Dependency found | File | Code-block tag |
 |---|---|---|
-| `next-cloudinary` | `package.json` | Use the cloudinary-next skill |
-| `@cloudinary/react` | `package.json` | `react` (also see the cloudinary-react skill) |
+| `next-cloudinary` | `package.json` | Use the cloudinary-next skill if it's installed. Otherwise, see the Next.js note below this table. |
+| `@cloudinary/react` | `package.json` | `react` (use the cloudinary-react skill too, if it's installed) |
 | `@cloudinary/vue` | `package.json` | `vue` |
 | `@cloudinary/ng` | `package.json` | `angular` |
 | `cloudinary-react-native` | `package.json` | `react_native` |
@@ -154,6 +154,8 @@ Check the project's dependency files for a Cloudinary package, and use the match
 | `cloudinary_flutter` | `pubspec.yaml` | `flutter` |
 | `cloudinary_url_gen` only | `pubspec.yaml` | `dart` |
 | `Cloudinary` | `Podfile`, `Package.swift` | `swift` |
+
+**Next.js without the cloudinary-next skill:** The Transformation Reference has no Next.js examples, so don't guess `CldImage` props. Do step 2, then pass the whole transformation string to `CldImage` or `getCldImageUrl` through `rawTransformations`, for example `rawTransformations={['c_fill,g_auto,h_300,w_400/f_auto/q_auto']}`. Keep every transformation in `rawTransformations`. Don't also set the equivalent props (such as `format` or `quality`), because mixing the two produces duplicate parameters. Suggest that the user install the cloudinary-next skill for more idiomatic code.
 
 If there's no dependency file, go by the language of the file the user is editing. If it's still unclear, or the project uses more than one SDK (for example, a Node.js backend and a React frontend), ask which one the code is for.
 
