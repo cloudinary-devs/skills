@@ -40,10 +40,14 @@ should:
    `f_auto`, `q_auto`, `sp_auto`, or widths in `transformation:`, and no
    `sourceTypes: ['mp4']`. The player already applies `f_auto:video`.
 4. **Construct with `cloudinary.player()`, not `cloudinary.videoPlayer()`**, and
-   queue seeks until its Promise resolves. See [B3](#b3-load-and-configure-the-player).
+   queue seeks until its Promise resolves. In React or Next.js, take the
+   mounting pattern from the cloudinary-react or cloudinary-next skill, but
+   keep `cloudinary.player()` and the dispose guidance in references/player.md.
+   See [B3](#b3-load-and-configure-the-player).
 5. **Request `auto_transcription`, `auto_chaptering`, and `auto_video_details`
-   on the upload call** (REST or a preset: the MCP and SDKs may not pass
-   `auto_video_details`), and request add-on features in a separate call.
+   on the upload call**, and request add-on features in a separate call.
+   `auto_video_details` isn't supported by the SDKs or the MCP, so send it
+   through the REST API or an upload preset.
 6. **Pre-generate derived videos when the first viewer matters**: eager
    transformations at upload (the explicit method for existing assets), or
    warmed URLs on a test cloud. Otherwise the first request streams with the
@@ -134,9 +138,9 @@ Two rules still apply when the files come from one:
 
 ---
 
-# Phase A: get the assets onto Cloudinary
+## Phase A: get the assets onto Cloudinary
 
-## A1. Provision a cloud (fresh-cloud destinations only)
+### A1. Provision a cloud (fresh-cloud destinations only)
 
 Run `npx @cloudinary/cloud --goal "<what you are building>" --model <your-model-id>`.
 It needs no signup, writes `CLOUDINARY_URL` to `./.env`, and prints a **claim
@@ -145,7 +149,7 @@ the claim URL at the end. Leave `--ip` off when the user views media from
 the machine you run on; if you run remotely (CI, a cloud agent), pass the
 user's public IP. Provision a new cloud for every test run.
 
-## A2. Upload, and request the AI features on the way in
+### A2. Upload, and request the AI features on the way in
 
 Upload video with the free features on the same call: `auto_transcription`,
 `auto_chaptering`, and `auto_video_details`. Request add-on features
@@ -153,13 +157,14 @@ Upload video with the free features on the same call: `auto_transcription`,
 separate call and treat failure as expected. Asking for an add-on the cloud
 lacks fails the whole upload, or the whole transcription.
 
-## A3. Wait for the async features
+### A3. Wait for the async features
 
 Transcripts, chapters, and generated titles return `pending` and finish later,
-or fail. Poll each until `complete`. They need real speech: silent or
-music-only video produces none of them.
+or fail. Poll each until `complete`. They need an audio track with speech:
+silent or music-only video gives empty results (a transcript may hold a short,
+low-confidence spurious phrase).
 
-## A4. Generate derived videos before anyone watches
+### A4. Generate derived videos before anyone watches
 
 The first request for a transformed video is the slow one. Ordinary
 transformations return 200 but stream while they are generated, so the player
@@ -175,7 +180,7 @@ each step.
 
 ---
 
-# Phase B: build the site
+## Phase B: build the site
 
 **Read [references/field-guide.md](references/field-guide.md) alongside this.**
 It carries Cloudinary's own delivery best practices: the duration-based
@@ -184,7 +189,7 @@ delivery cheat sheet, the optimizations customers most often miss, the
 mobile-app delivery, and the pre-launch validation checklist. Phase B below is
 how to build; the field guide is what "built well" means.
 
-## B1. Resolve what this cloud can actually do
+### B1. Resolve what this cloud can actually do
 
 Before writing page code, settle the capability set: one explicit flag map,
 with a fallback per feature. This is what keeps a page honest on a cloud without
@@ -194,17 +199,19 @@ add-ons instead of rendering empty rails and dead caption buttons.
 will be absent every time, and that is correct rather than a regression.
 
 **On a customer cloud**, probe: attempt the operation on **one** asset and read
-the result. Never loop the catalogue: free tiers are small (Google Auto Tagging
-50/month, Video Tagging 5/month) and on a customer cloud quota is their money.
+the result. Never loop the catalogue: free add-on tiers are small, and on a
+customer cloud quota is their money. Before generating AI features across a
+library, say what it costs (`auto_video_details`, for example, counts one
+transformation per second of video).
 
 The full matrix, the detection rules, and the **MCP vs `CLOUDINARY_URL` routing
 table** are in [references/capabilities.md](references/capabilities.md). The
-routing matters concretely: `ai_video_analysis` has no MCP tool and cannot be
-signed without an API secret, so on an MCP-only build the audio description
+routing matters concretely: `ai_video_analysis` has no MCP tool and requires
+the API secret, so on an MCP-only build the audio description
 track is unavailable, and generated titles need a preset that sets
 `auto_video_details`. Everything else is reachable either way.
 
-## B2. Choose the optimization strategy
+### B2. Choose the optimization strategy
 
 An explicit decision, not a default. Retrofitting the other one means rewiring
 the player.
@@ -234,7 +241,7 @@ the file:
 | **No audio track** | background/ambient, and almost always short and autoplaying | **progressive** |
 | **Audio but no speech** (music-only) | montage or mood piece, not something followed | **progressive** |
 | **Portrait 9:16 or square** | social/short-form | **progressive** |
-| **Under ~30s** | over before a ladder could switch; never ABR | **progressive** |
+| **Under ~1 min** (never ABR under 30s) | over before a ladder could switch | **progressive** |
 | **Speech, over ~1 min, viewer-pressed play** | content: a talk, explainer, interview, course | **ABR** |
 | **No video track** (audio only) | `sp_auto`, posters and seek thumbnails return 400 | **progressive**, no `breakpoints`; see gotchas.md |
 
@@ -275,7 +282,7 @@ The measured URLs are in [references/capabilities.md](references/capabilities.md
 If the player cannot be used at all, use a native `<video>` with
 media-queried `<source>`s (see the same reference).
 
-### Configure the player; do not hand-write its delivery transformation
+#### Configure the player; do not hand-write its delivery transformation
 
 The player composes the delivery transformation from its options. Anything you
 write into `transformation:` that an option already covers lands in the *same*
@@ -287,7 +294,7 @@ component: redundant at best, and a 400 for `streaming_profile`.
 player.source(id, { sourceTypes: ['hls'],
   transformation: { streaming_profile: 'auto', effect: 'vignette:50' } });
 // RIGHT: sourceTypes adds sp_auto itself
-cloudinary.player(el, { sourceTypes: ['hls'] });   // → sp_auto/<id>.m3u8
+cloudinary.player(el, { cloudName, publicId, sourceTypes: ['hls'] }); // → sp_auto/<id>.m3u8
 ```
 
 `sp_auto` also accepts only a [limited set of other transformations](https://cloudinary.com/documentation/adaptive_bitrate_streaming.md?install_source=skillspack&referrer=video-skill#combining_transformations_with_automatic_streaming_profile_selection),
@@ -298,18 +305,22 @@ previews, `e_preview` teasers, and the native `<video>` fallback. `breakpoints`
 belongs to the progressive branch only. Set it under ABR and delivery returns
 400 (*resize is only supported for overlay*).
 
-`breakpoints` and `sourceTypes` work on the constructor and on each
-`source()` call, and constructor values are inherited by every `source()`
-call. So a page moving a viewer between a progressive and an ABR asset sets
-both explicitly per call, for example
-`player.source(id, { sourceTypes: ['hls'], breakpoints: false })`. Leaving the
-inherited value in place carries the wrong option across.
+**Use a separate player per strategy.** To switch one player instead, dispose
+it and build a new one on a fresh `<video>` element (`dispose()` removes the
+element), or reset it as below. Once
+a player has delivered a progressive source with `breakpoints`, it keeps that
+resize in its own transformation and adds it to later sources, so a following
+ABR source requests `c_limit,w_…/sp_auto` and fails with 400, even with
+`breakpoints: false` on the call. If one player must switch, call
+`player.transformation({})` and pass `{ sourceTypes: ['hls'], breakpoints: false }`
+before an ABR source, and `{ sourceTypes: ['auto'], breakpoints: true }`
+before a progressive one.
 
 Most pages want both, on **different** sources: ABR for the tour, progressive
 for the loops. Full comparison table in
 [references/capabilities.md](references/capabilities.md).
 
-## B3. Load and configure the player
+### B3. Load and configure the player
 
 Install from npm and use the **ES import**. The package ships an `exports`
 map with an `import` condition, bundles its own video.js, and loads the player
@@ -333,10 +344,11 @@ same way and puts `cloudinary` on `window`:
 ```
 
 **Construct with `cloudinary.player()`, not `cloudinary.videoPlayer()`.**
-`videoPlayer()` is the older synchronous constructor. `player()` is the
+`videoPlayer()` is the older constructor. `player()` is the
 current one: it returns a **Promise**, and it resolves *saved configuration*
 first. Pass `publicId` and it picks up the settings saved onto that asset in
-Video Player Studio; pass `profile` for a stored profile instead.
+Video Player Studio; pass `profile` for a stored profile instead. The skill
+was tested against player 4.1.0; pin the release you test against.
 
 ```js
 const player = await cloudinary.player('hero', {
@@ -375,8 +387,8 @@ asset. Constructor options persist across the swap; the per-asset metadata
 Building a new player per video is the common mistake: it costs a fresh
 video.js instance each time and leaks the old ones unless you `dispose()`.
 
-The one thing to watch when swapping is the delivery strategy above: set
-`sourceTypes` and `breakpoints` explicitly on each `source()` call.
+The one exception is switching between a progressive and an ABR source: see
+*Configure the player* in B2.
 
 Player-only options go on the constructor and are ignored by `source()`.
 Per-video options work on `source()`, and on the constructor they become
@@ -387,14 +399,15 @@ defaults every `source()` call inherits:
 | `cloudName`, `fluid`, `controls`, `showLogo`, `colors` | `sourceTypes`, `breakpoints`, `maxDpr`, `transformation` |
 | `seekThumbnails`, `chaptersButton`, `aiHighlightsGraph` | `chapters`, `title`, `description`, `textTracks`, `posterOptions`, `interactionAreas` |
 
-**`colors.text` must be a LIGHT colour.** Player chrome sits over dark video; a
-dark text token makes the controls invisible.
+**`colors.text` must contrast with `colors.base`.** The default skin is a dark
+base with light text; a dark text token on a dark base makes the controls
+invisible.
 
 Every option is in the
 [Video Player API reference](https://cloudinary.com/documentation/video_player_api_reference.md?install_source=skillspack&referrer=video-skill);
 the traps are in [references/player.md](references/player.md).
 
-## B4. Wire the experience
+### B4. Wire the experience
 
 The capabilities are only worth having if the page uses them. Patterns that
 worked, with the reasoning, in
@@ -416,7 +429,7 @@ worked, with the reasoning, in
   fetch and render it yourself for on-page search with click-to-seek.
 - **Emit JSON-LD** from the generated title, description and chapters.
 
-## B4a. Generated, supplied, or hand-authored, in that order
+### B4a. Generated, supplied, or hand-authored, in that order
 
 Video Player Studio offers the same three-tier ladder on every piece of
 content, and it is a good default for deciding where metadata comes from:
@@ -424,17 +437,17 @@ content, and it is a good default for deciding where metadata comes from:
 | panel | tier 1: generate | tier 2: supply | tier 3: author |
 | --- | --- | --- | --- |
 | Chapters | Automatically generate chapters | Import a VTT file | Type `00:00` + name |
-| Transcript | Generate | Upload | n/a |
+| Transcript | Generate | Upload (translations only) | n/a |
 | Poster | Suggested posters (AI frames) | Media Library / current frame | Upload |
 
-Two things follow. First, **every generated artefact has a supply path beside
-it**, so when a human-authored caption, chapter list or poster already exists
-(for example, carried over from the platform the video came from), use it; the
-ladder exists precisely so generation is not the only route. Second, the tiers
-are per-asset, not per-site: generating chapters for a long talk and
+Two things follow. First, **most generated artefacts have a supply path beside
+them** (in Studio the source-language transcript has none, but the player takes
+existing captions as a VTT `url`), so when a human-authored caption, chapter
+list or poster already exists (for example, from the video's old platform), use
+it. Second, the tiers are per-asset: generating chapters for a long talk and
 hand-authoring three for a short explainer is normal.
 
-## B5. Be straight about what Cloudinary does not generate
+### B5. Be straight about what Cloudinary does not generate
 
 - **Chapter→product bindings.** Auto-chaptering finds the segments; which
   product a segment sells is your data. Check the source platform's cue points
@@ -443,8 +456,9 @@ hand-authoring three for a short explainer is normal.
   Cloudinary does not track objects and hand you positions. The AI Video
   Analysis API (Beta) returns timestamped natural-language segments with no
   spatial coordinates or bounding boxes.
-- **Video background removal, virtual try-on, shade matching.** These do not
-  exist. Do not approximate them with something adjacent.
+- **AI background removal, virtual try-on, or shade matching on video.** Not
+  available for video (only chroma-key transparency on a video overlay, with
+  `e_make_transparent`). Do not approximate them with something adjacent.
 
 ## Close out
 
@@ -452,21 +466,6 @@ hand-authoring three for a short explainer is normal.
   what enabling it needs.
 - What was uploaded, and anything that had no Cloudinary equivalent.
 - On a claimable cloud: **the claim URL**, and that it expires in 24 hours.
-
-## How much of this is verified
-
-Calibrate accordingly. The guidance is not uniformly tested:
-
-- **Key Cloudinary behaviour is machine-verified.** A subset of the delivery,
-  transformation and async-output claims is asserted against live Cloudinary by
-  a test suite kept in the cloudinary-devs/skills repo (`sp_auto` rejecting a resize at every
-  width, the transcript being JSON with word-level timings, the pinned player
-  CDN URLs). If Cloudinary changes, those assertions fail rather than quietly
-  misleading you.
-- **Nothing here has been run end to end against an existing customer cloud.**
-  The from-scratch path has a worked example behind it; that one does not.
-
-Say which applies when you rely on one; don't present it all as equally sure.
 
 ## Additional Resources
 
@@ -488,6 +487,7 @@ Say which applies when you rely on one; don't present it all as equally sure.
 - [Interactive Video](https://cloudinary.com/documentation/video_player_interactive_videos.md?install_source=skillspack&referrer=video-skill) - Interaction areas
 - [Video Optimization](https://cloudinary.com/documentation/video_optimization.md?install_source=skillspack&referrer=video-skill)
 - [Adaptive Bitrate Streaming](https://cloudinary.com/documentation/adaptive_bitrate_streaming.md?install_source=skillspack&referrer=video-skill)
+- [Video Best Practices](https://cloudinary.com/documentation/video_best_practices.md?install_source=skillspack&referrer=video-skill)
 - [Eager and Incoming Transformations](https://cloudinary.com/documentation/eager_and_incoming_transformations.md?install_source=skillspack&referrer=video-skill)
 - [Video Transcription](https://cloudinary.com/documentation/video_transcription.md?install_source=skillspack&referrer=video-skill)
 - [AI Video Analysis](https://cloudinary.com/documentation/ai_video_analysis.md?install_source=skillspack&referrer=video-skill)

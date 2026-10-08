@@ -34,13 +34,13 @@ and say so honestly at the end of a run.
 
 | Capability | Needs | Absent → degrade to |
 | --- | --- | --- |
-| Adaptive streaming (`sp_auto`) | a video track (audio-only sources return 400) | progressive (`breakpoints: true`) |
+| Adaptive streaming (`sp_auto`) | a video track (audio-only sources return 400) | progressive (`breakpoints: true`; none for audio only) |
 | Auto poster (`so_auto`) | nothing | first frame, or a chosen still |
 | `e_preview` loop opening frame (long sources only) | nothing (warm it) | auto poster, then plain poster |
-| Hover previews | chapter→SKU map | static image on hover |
+| Hover previews | chapter→item map | static image on hover |
 | Chapters + rail | `auto_chaptering` (or migrated cue points) | no rail; plain scrub bar |
 | Seek thumbnails (`fl_sprite`) | nothing | off; the player copes |
-| Hotspots → cart | **your** coordinates + SKU map | off; rail does the linking |
+| Hotspots → links | **your** coordinates + item map | off; rail does the linking |
 | Machine tags / facets | Google Automatic Video Tagging add-on (Google Auto Tagging for images) | existing hand-authored tags |
 | Captions | `auto_transcription`, or migrated captions | no caption track |
 | Translated subtitles | Google Translation add-on | English captions only |
@@ -56,7 +56,7 @@ Cloudinary supplies and it does not:
   (`transcript`, `start_time`, `end_time`) with no spatial coordinates or
   bounding boxes.
 - **Chapter→product bindings** are yours. Auto-chaptering finds segment
-  boundaries; which SKU a segment is selling is business data. On a migration,
+  boundaries; which product a segment is about is business data. On a migration,
   check the source platform first: cue points and custom fields often already
   carry it.
 
@@ -74,9 +74,8 @@ subscribed. Probe by attempting the operation on **one** asset and reading the
 result, then set the flag. Never probe by looping the catalogue: free tiers are
 small monthly quotas, and on a customer cloud the quota is their money.
 
-There is no Admin API that lists entitlements: `/addons`, `/add_ons`,
-`/subscriptions`, `/entitlements` all 404. Attempting the operation is the only
-detection available.
+There is no documented API that lists a cloud's add-ons. Attempting the
+operation is the only detection available.
 
 ## Access routing: MCP vs `CLOUDINARY_URL`
 
@@ -89,7 +88,7 @@ return
 | Step | Over MCP | With `CLOUDINARY_URL` |
 | --- | --- | --- |
 | Upload with `auto_transcription` / `auto_chaptering` | yes | yes |
-| Upload with `auto_video_details` | **no parameter** (use an upload preset that sets it) | yes |
+| Upload with `auto_video_details` | **no parameter** (use an upload preset that sets it) | yes, via the REST upload endpoint or a preset (not the SDKs) |
 | Poll asset for async status | yes | yes |
 | Asset update / tags / context | yes | yes |
 | Delivery URLs, warming derivations | yes (plain HTTP) | yes |
@@ -99,7 +98,7 @@ return
 
 Consequence worth stating to the user rather than discovering late: on an
 MCP-only build the **audio description track is simply unavailable**, because
-`POST /v2/video/<cloud>/ai_video_analysis` cannot be signed, and generated
+`POST /v2/video/<cloud>/ai_video_analysis` needs the API secret, and generated
 titles and descriptions need an upload preset that sets `auto_video_details`.
 Everything else in the matrix is reachable either way.
 
@@ -186,17 +185,18 @@ the browser picks by viewport. That gives the same optimizations without the pla
 ```html
 <video controls autoplay muted playsinline preload="metadata">
   <source media="(max-width: 640px)"
-    src=".../video/upload/c_limit,w_640/f_auto/q_auto/v1/<id>.mp4">
+    src=".../video/upload/c_limit,w_640/f_auto:video/q_auto/v1/<id>">
   <source media="(max-width: 1280px)"
-    src=".../video/upload/c_limit,w_1280/f_auto/q_auto/v1/<id>.mp4">
+    src=".../video/upload/c_limit,w_1280/f_auto:video/q_auto/v1/<id>">
   <source
-    src=".../video/upload/c_limit,w_1920/f_auto/q_auto/v1/<id>.mp4">
+    src=".../video/upload/c_limit,w_1920/f_auto:video/q_auto/v1/<id>">
 </video>
 ```
 
-Use `f_auto` for the format/codec pick (`f_auto:video` is only needed when the
-URL has no file extension), `q_auto` for quality, and `c_limit,w_…` to cap
-dimensions. Leave out `type="video/mp4"`: `f_auto` may return WebM, and a
+Use `f_auto:video` for the format/codec pick (it delivers video with or
+without a file extension, matching the cloudinary-transformations skill),
+`q_auto` for quality, and `c_limit,w_…` to cap dimensions. Leave out
+`type="video/mp4"`: `f_auto:video` may return WebM, and a
 wrong type hint can make a browser skip the source. For ABR without the
 player, generate the manifest with `sp_auto` and hand the `.m3u8` to a
 compatible third-party player.
@@ -235,10 +235,13 @@ component, because a streaming profile must be alone in its component
 ("streaming_profile must be the only directive in the transformation
 component").
 
-Both can be set per source: `source()` options override the constructor's, and
-constructor values are inherited by every `source()` call. So when a page moves
-a viewer between strategies, pass both explicitly on each call, for example
-`player.source(id, { sourceTypes: ['hls'], breakpoints: false })` for ABR.
+Keep the two strategies on separate players. Once a player has delivered a
+progressive source with `breakpoints`, it keeps that resize in its own
+transformation and adds it to later sources, so a following ABR source still
+returns 400, even with `breakpoints: false` on the `source()` call. To switch
+one player anyway, call `player.transformation({})` and pass
+`{ sourceTypes: ['hls'], breakpoints: false }` before an ABR source (verified
+on player 4.1.0).
 
 `maxDpr` (a number, default 2.0) is a child of breakpoints: Video Player Studio
 reveals Max DPR only *after* breakpoints is enabled. With ABR neither exists;
@@ -250,12 +253,12 @@ A page usually wants ABR for the main tour and progressive for the loops:
 
 ```js
 // main player, LONG source: adapts while watching
-cloudinary.player(el, { publicId: 'tour', sourceTypes: ['hls'], breakpoints: false });
+cloudinary.player(el, { cloudName, publicId: 'tour', sourceTypes: ['hls'] });
 ```
 
 ```html
 <!-- preview loop cut from that long source: one small file, no manifest -->
-<video src=".../e_preview:duration_10.0/f_auto/q_auto/tour.mp4" muted loop playsinline></video>
+<video src=".../e_preview:duration_10.0/f_auto:video/q_auto/tour" autoplay muted loop playsinline></video>
 ```
 
 That is the common configuration, not a compromise. What is *not* available is

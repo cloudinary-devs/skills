@@ -62,7 +62,7 @@ fails the **whole** transcription (no transcript, no captions), where plain
 `auto_video_details` is worth requesting here rather than leaving to the player.
 The player's `title: true` / `description: true` read the asset's context
 metadata and only trigger generation if no value is found, so an
-un-pre-generated title is a request happening for the first time mid-demo.
+un-pre-generated title is generated for the first time in front of a viewer.
 
 ```
 upload image:                    # no add-on needed
@@ -86,8 +86,8 @@ replacement for curated facets.
    like a broken upload rather than a missing entitlement.
 2. **Then try add-ons separately**, and treat failure as expected.
 3. **Add-ons cannot be enabled by an agent.** It is a console action, which on a
-   claimable cloud means claiming it first. No Admin API exists: `/addons`,
-   `/add_ons`, `/subscriptions`, `/entitlements` all 404.
+   claimable cloud means claiming it first. There is no documented API for
+   checking or enabling add-ons.
 4. **A default upload preset can rewrite every asset on ingest**, adding a
    watermark or downsizing, whenever an upload doesn't name a preset. Pass an
    explicit clean `upload_preset`. See [gotchas.md](gotchas.md).
@@ -140,7 +140,16 @@ its headers, not its status. A finished video has `content-length` and
 
 ```sh
 UA='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0 Safari/537.36'
-until curl -sI -A "$UA" "$URL" | grep -qi '^accept-ranges: bytes'; do sleep 5; done
+for i in $(seq 1 60); do      # give up after about 5 minutes
+  H=$(curl -sI -A "$UA" "$URL")
+  if echo "$H" | grep -q '^HTTP/[0-9.]* 200'; then
+    echo "$H" | grep -qi '^accept-ranges: bytes' && break   # fully generated
+  elif ! echo "$H" | grep -q '^HTTP/[0-9.]* 423'; then
+    echo "$H" | grep -i '^HTTP\|x-cld-error'; break       # a real error
+  fi
+  sleep 5
+done
+[ "$i" = 60 ] && echo "gave up: $URL is still generating"
 ```
 
 `f_auto` picks the format from the request's `User-Agent` and `Accept`

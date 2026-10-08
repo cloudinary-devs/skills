@@ -51,8 +51,8 @@ Recommendations follow from the use case, so establish it first:
   works there if the app sends an `Accept` header listing the formats the
   device supports. See *Mobile apps are a different problem* below.
 - **Preloading everything.** Preloading improves perceived start time but
-  consumes units for videos nobody watches. The player's `preload` defaults to
-  `auto`, so make it a deliberate decision: `preload: 'none'` or `lazy` for
+  consumes units for videos nobody watches. The player preloads metadata by
+  default, so make it a deliberate decision: `preload: 'none'` or `lazy` for
   players below the fold or behind a click.
 
 ## `f_auto` causes a transformation-usage spike, so say so in advance
@@ -68,9 +68,8 @@ not surprise them.
 - **Default automatic format** adds `f_auto` to every delivered video without
   touching delivery URLs. Because that counts as a transformation, Default video
   quality also applies. It is available only on plans that use the *video
-  seconds* metric. It is not compatible with strict transformations, and while
-  it is on, eager transformations generated without a format aren't
-  delivered. `fl_original` bypasses it.
+  seconds* metric. It is not compatible with strict transformations or with
+  eager transformations. `fl_original` bypasses it.
 - **Default video quality** lets Cloudinary pick quality and codec (`vc_auto`)
   automatically. Available on all plans, but **only applies when another
   transformation is present in the URL**.
@@ -87,13 +86,15 @@ player shows the wrong duration and cannot seek, and async derivations
 Switch to **eager transformations at upload** (or the explicit method
 afterwards) when a launch or campaign will drive a traffic surge, when videos
 are long or high-resolution (2K/4K), when transformations are slow to build, or
-whenever the first viewer's playback matters. Two rules:
+whenever the first viewer's playback matters. Three rules:
 
 - **`f_auto` in an eager transformation generates nothing.** There is no
   browser at upload time, so name each format you need instead, with its
   codec (for example `f_webm,vc_vp9` and `f_mp4,vc_h264`).
 - If you can't pre-generate, add `fl_no_stream` to the delivery URL so
   Cloudinary waits for the finished file before responding.
+- **Check Optimize by default first.** If it is on, eager derivatives aren't
+  the ones delivered, so pre-generating them does nothing for viewers.
 
 ## Mobile apps are a different problem
 

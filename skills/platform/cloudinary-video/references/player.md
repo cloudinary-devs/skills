@@ -11,8 +11,8 @@ construct a player and they are **not** the same function:
 
 | | `cloudinary.videoPlayer()` | `cloudinary.player()` |
 | --- | --- | --- |
-| Status | older constructor | **current**; the bundle tags its own analytics `newPlayerMethod: true` |
-| Returns | the player, synchronously in the UMD full bundle (a buffering proxy via ES import) | a **Promise** resolving to the player |
+| Status | older constructor | **current** |
+| Returns | a player synchronously from the full bundle (`player-full.min.js`, `cld-video-player.min.js`, or the `/full` import); a buffering proxy from `player.min.js` and the default ES import | a **Promise** resolving to the player |
 | Saved configuration | none, options only | fetches saved config before constructing |
 
 ```js
@@ -36,8 +36,7 @@ the Studio without hard-coding it.
 
 `profile` loads a stored *profile* instead: either a built-in
 (`cld-default`, `cld-looping`, `cld-adaptive-stream`, `cld-live-streaming`) or
-one saved on the cloud, fetched from
-`/_applet_/video_service/video_player_profiles/<name>.json`.
+one saved on the cloud.
 
 **Profiles are writable over HTTP, with no console needed.** When the same
 presentation repeats across many assets, that is the signal to create one
@@ -50,8 +49,8 @@ curl -X PUT https://api.cloudinary.com/v2/video/<cloud>/player/profiles/<name> \
   -d '{"playerOptions":{…},"sourceOptions":{…}}'
 ```
 
-Basic auth with the API key and secret; both `playerOptions` and
-`sourceOptions` are required and take arbitrary player/source keys. Full
+Basic auth with the API key and secret; the body takes `playerOptions` and
+`sourceOptions`, holding player and source keys. Full
 reference: [Video Player profiles](https://cloudinary.com/documentation/video_player_profiles_reference.md?install_source=skillspack&referrer=video-skill)
 
 Precedence, and the trap: **specifying a `profile` overrides the asset's own
@@ -138,25 +137,16 @@ curl -X PUT https://api.cloudinary.com/v2/video/<cloud>/player/config/video/<ass
 `asset_id` from the Admin API: the resource endpoint returns it alongside the
 public ID.
 
-The player reads the same config at delivery time from
-`/_applet_/video_service/video_player_config/video/<type>/<base64(publicId)>.json`
-(observed, undocumented, may change), which is handy for verifying what a page
-will actually receive. **An empty
-`{"playerOptions":{},"sourceOptions":{}}` and HTTP 200 means nothing is saved**:
-the fetch fails silently by design, so a page falls back to its local
-options and looks fine while inheriting nothing.
+Read the config back with a GET to check what a page will receive. **An empty
+`{"playerOptions":{},"sourceOptions":{}}` with HTTP 200 means nothing is
+saved**: the player's own fetch fails silently in the same way, so a page falls
+back to its local options and looks fine while inheriting nothing.
 
-### Confirming saved config actually applied
+### Checking captions
 
-Two checks that avoid false alarms:
-
-- The player's analytics beacon to `analytics-api-s.cloudinary.com/video_player_source`
-  (observed, undocumented, may change) spells it out: `newPlayerMethod=true`, `videoConfig=true`, and
-  `fetchedConfig=<comma-separated keys>` listing the `playerOptions` keys that
-  came from the saved config (`sourceOptions` keys are not listed).
-- **Do not test captions with `videoEl.textTracks`**: it reads empty because
-  video.js manages them as *remote* tracks. Use
-  `videojs.getPlayer(id).remoteTextTracks()`.
+**Do not test captions with `videoEl.textTracks`**: it reads empty because
+video.js manages them as *remote* tracks. Use
+`videojs.getPlayer(id).remoteTextTracks()`.
 
 ## Constructor and `source()` options
 
@@ -174,10 +164,10 @@ the constructor. The traps that cost real builds:
   `['hls']` or `['dash']` for adaptive streaming.
 - **`breakpoints` is progressive-only.** Under `sourceTypes: ['hls']` the
   streaming profile's ladder governs resolution, and setting `breakpoints` too
-  yields a 400, even when both are set as player options. Constructor values
-  are inherited, so a player built with `breakpoints: true` needs
-  `breakpoints: false` on any ABR `source()` call. See the comparison in
-  [capabilities.md](capabilities.md).
+  yields a 400, even when both are set as player options. Once a player has
+  delivered a progressive source with `breakpoints`, an ABR `source()` call
+  needs `player.transformation({})` first as well as `breakpoints: false`.
+  Better, use a separate player per strategy (SKILL.md B2).
 - **Don't add `streaming_profile` for `sp_auto`.** `sourceTypes: ['hls']` adds
   it for you. Pass `transformation: { streaming_profile: … }` only to pick a
   named profile, and keep it alone in its component: combined with a resize or
@@ -186,16 +176,18 @@ the constructor. The traps that cost real builds:
   2.0, and enabling `breakpoints` already accounts for the device pixel ratio.
   Pass a lower number only to deliberately cap DPR. Never pass `true`: it is
   coerced to 1 and caps DPR at 1x.
-- **`colors.text` must be a light colour.** Player chrome sits over dark video,
-  so a dark text token makes the controls invisible.
+- **`colors.text` must contrast with `colors.base`.** The default skin is a
+  dark base with light text; a dark text token on a dark base makes the
+  controls invisible.
 - **`chapters: true` loads `<publicId>-chapters.vtt`**, which is what
   `auto_chaptering` produces.
 - **Omitting `url` on `textTracks.captions` makes the player use the
   `.transcript` file** for that public ID. Setting `maxWords` also triggers that
   lookup. The player fetches it from its own service endpoint, not from
   `…/raw/upload/<publicId>.transcript`, so a page that also renders the
-  transcript downloads it twice. Translated transcripts live at
-  `<publicId>.<lang>.transcript` and must be passed explicitly. Pair
+  transcript downloads it twice. For a translation, add a `subtitles` entry
+  with its `language` (for example `'es'`) and no `url`; the player fetches the
+  translated transcript itself. Pair
   `wordHighlight: true` with `maxWords` so the caption box does not fill;
   neither works on translated transcripts. `textTracks.options.theme` takes
   `default`, `videojs-default`, `yellow-outlined`, `player-colors`, or `3d`.
@@ -203,10 +195,15 @@ the constructor. The traps that cost real builds:
   [build-patterns.md](build-patterns.md).
 - **`interactionAreas` coordinates are percentages** of the video frame, not
   pixels. Cloudinary does not supply them (see SKILL.md B5).
-- **`preload` defaults to `auto`**, so every non-autoplaying player starts
-  downloading video at load. For players below the fold or behind a click, set
-  `preload: 'none'` or use `lazy` (`cloudinary.player()` only), which shows a
-  lightweight poster until the viewer clicks or scrolls to it. The lazy
+- **`preload` defaults to `metadata` in player 4.1.0** (the API reference
+  still says `auto`), so every non-autoplaying player fetches video metadata at
+  load. For players below the fold or behind a click, set `preload: 'none'` or
+  use `lazy` (`cloudinary.player()` only), which shows a lightweight poster:
+  `lazy: true` loads the player on click, `lazy: { loadOnScroll: true }` when
+  it scrolls into view. With `lazy`, `await cloudinary.player()` resolves to a
+  placeholder, not the player: its `source()` does nothing, and
+  `await placeholder.loadPlayer()` builds the player, starts playback, and
+  resolves to the player. Use that for seeking or reading state. The lazy
   placeholder ignores `posterOptions` and defaults to the untransformed middle
   frame (`<publicId>.jpg`, full resolution), so pass an explicit sized `poster`
   URL such as `…/video/upload/so_auto/c_limit,w_1280/f_auto/q_auto/<publicId>.jpg`.
@@ -238,13 +235,14 @@ shows that cleanup.
   player source they are redundant, and pairing them with
   `sourceTypes:['mp4']` re-adds by hand what forcing MP4 just removed. See
   [capabilities.md](capabilities.md).
-- Prefer `f_auto/q_auto` as **separate components** over `f_auto,q_auto`.
-  Both are accepted and, as of September 2026, deliver byte-identical results
-  for image and video alike. This is a convention for readability and for
-  matching Cloudinary's own docs, **not** a correctness rule. Do not tell a
-  user the combined form is broken; it is not.
-- `sp_auto` is the streaming profile. It cannot be combined with a resize.
+- Write `f_auto/q_auto` as **separate components**. The combined
+  `f_auto,q_auto` is accepted too, but for video it can produce a different
+  encode.
 - `e_preview[:duration_<s>][:max_seg_<n>][:min_seg_dur_<s>]`: AI summary reel,
-  video only, default duration 5.0s.
+  video only, default duration 5.0s. It needs a source long enough to
+  summarise; on a 13-second clip it returned a 500.
 - For video, `g_auto` works only with `c_fill` and `c_fill_pad`, once per
   transformation, and not for positioning overlays.
+
+For everything else about transformation syntax, use the
+cloudinary-transformations skill.

@@ -65,24 +65,14 @@ else
   _no "resize + sp_auto was not rejected as documented" "$(echo "$ERR" | grep -i '^HTTP\|x-cld-error')"
 fi
 
-# "Prefer f_auto/q_auto separate; the combined form is a convention, NOT a
-#  correctness rule." Assert the equivalence, so that if Cloudinary ever does
-#  start rejecting the combined form the guidance gets revisited.
+# "Write f_auto/q_auto as separate components; the combined form is accepted
+#  too" (player.md). Assert both deliver; the bytes can differ for video.
 SEP=$(http "$PUB/video/upload/f_auto/q_auto/$VID.mp4")
 JOINT=$(http "$PUB/video/upload/f_auto,q_auto/$VID.mp4")
 claim "f_auto/q_auto (separate) delivers ($SEP)" \
   "$([ "$SEP" = "200" ] && echo yes || echo no)" "expected 200, got $SEP"
-if [ "$JOINT" = "200" ]; then
-  # Same bytes? Then they are genuinely interchangeable and player.md is right
-  # to call it a convention rather than a rule.
-  L1=$(curl -s -o /dev/null -w '%{size_download}' -L --max-time 60 "$PUB/video/upload/f_auto/q_auto/$VID.mp4")
-  L2=$(curl -s -o /dev/null -w '%{size_download}' -L --max-time 60 "$PUB/video/upload/f_auto,q_auto/$VID.mp4")
-  [ "$L1" = "$L2" ] \
-    && _ok "f_auto,q_auto (combined) is equivalent: convention, not a rule" \
-    || _no "combined form delivers different bytes ($L1 vs $L2)" "player.md claims equivalence"
-else
-  _no "f_auto,q_auto combined now returns $JOINT" "player.md says both are accepted, so guidance is stale"
-fi
+claim "f_auto,q_auto (combined) is accepted ($JOINT)" \
+  "$([ "$JOINT" = "200" ] && echo yes || echo no)" "player.md says both forms are accepted; got $JOINT"
 
 # "sp_auto returns a manifest with a rendition ladder"
 body_has "sp_auto manifest lists renditions" \

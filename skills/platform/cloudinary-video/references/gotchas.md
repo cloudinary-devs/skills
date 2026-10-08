@@ -24,14 +24,14 @@ What does work: pass an explicit clean preset by name (check what exists on
 the account), change the default upload preset, or clear the offending preset's
 incoming transformation in Console > Settings > Upload.
 
-Note the watermark also **degrades Cloudinary's own AI**. Google Auto Tagging on
-a watermarked image returned 3 tags where the clean original returned 27.
+Note the watermark also **degrades Cloudinary's own AI**: auto-tagging a
+watermarked image returns far fewer tags than the clean original.
 
 ## Re-uploading to the same public ID can keep serving the old file
 
 After you overwrite, rename, or delete an asset, delivered versions can stay
-cached on the CDN for up to 30 days. On one account, a path kept serving the old
-788px watermarked asset after a fresh upload.
+cached on the CDN for up to 30 days, so a fresh upload can keep delivering the
+old file.
 
 Deliver the versioned URL from the upload response (`/v<version>/`), or upload
 with `invalidate: true`. Unsigned uploads never overwrite an existing public ID.
@@ -40,9 +40,8 @@ dimensions, not the upload response.
 
 ## Add-on quotas are small and easy to burn
 
-Free add-on tiers are small monthly quotas, and Image to Video gives a one-time
-trial allocation (16 credits on a Free plan, 32 on a paid plan). Check the
-add-on's page in the Console before looping over an asset list.
+Free add-on tiers are small monthly quotas. Check the add-on's page in the
+Console before looping over an asset list.
 
 Repeated re-uploads to fix something else will exhaust these. Get the upload
 parameters right before running the batch.
@@ -68,7 +67,8 @@ Async derivations return **423** on the first request until they are built:
 `e_preview`, `g_auto` crops, DASH, `sp_auto` at 2K/4K (`maxres_1440p` or
 `maxres_2160p`), and videos longer than 30 minutes (progressive) or 60 minutes
 (ABR). A default `sp_auto` HLS manifest returns 200. `e_preview` on a 3-minute video took
-minutes. Poll until 200.
+minutes, and on a very short source (a 13-second clip) it returned 500 instead.
+Poll until 200.
 
 For anything going into a launch or a traffic spike, the real fix is **eager
 transformations at upload** rather than warming by polling; see
@@ -144,18 +144,18 @@ Always close the tag.
 
 ## The Cloudinary player proxies only some videojs methods
 
-`player.currentTime()`, `player.play()`, `player.mute()`, `player.unmute()` and
-`player.isMuted()` are Cloudinary player methods. `player.muted()` and
-`player.controls()` are **not**: calling them throws
+`player.currentTime()`, `player.play()`, `player.controls()`, `player.mute()`,
+`player.unmute()` and `player.isMuted()` are Cloudinary player methods.
+`player.muted()` is **not**: calling it throws
 `TypeError: player.muted is not a function`, which aborts the rest of your
 click handler and looks like "the button does nothing".
 
-Use `player.mute()` / `player.unmute()`, and reach the underlying videojs player
-for anything else:
+Use `player.mute()` / `player.unmute()`, and reach the underlying video.js
+instance, `player.videojs`, for anything else the Cloudinary player doesn't
+expose:
 
 ```js
-var vjs = window.videojs && window.videojs.getPlayer('hero');
-if (vjs) { try { vjs.controls(true); } catch (e) {} }
+player.videojs.playbackRate(1.5);
 ```
 
 Setting `muted`/`volume` directly on the underlying `<video>` element also
@@ -187,7 +187,7 @@ chaptering can work.
 
 The agent never holds the API secret when it works through the Cloudinary MCP
 servers, so it can only do what the MCP has a tool for.
-Any other endpoint (a v2 route, a beta API) cannot be signed and returns:
+Any other endpoint that needs the secret (a v2 route, a beta API) returns:
 
 ```
 {"error":{"message":"error while authenticating: api_secret not provided"}}

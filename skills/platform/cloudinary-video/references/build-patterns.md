@@ -98,6 +98,7 @@ a player feature:
   fires several times a second and re-rendering on each is visible jank.
 
 ```js
+let lastId;
 player.on('timeupdate', () => {
   const t = player.currentTime();
   const match = chapters.find((c) => t >= c.start && t < c.end);
@@ -140,19 +141,20 @@ cue-level time, so seek to a cue's `words[0].start_time` (or a word's own
 So the split is: **captions, word highlighting and translated subtitles are the
 player's job; an on-page searchable transcript is yours.**
 
-Translated transcripts live at `<publicId>.<lang>.transcript` and must be
-passed explicitly as `subtitles` entries.
+Translated transcripts live at `<publicId>.<lang>.transcript`. Add each as a
+`subtitles` entry with its `language`; the player fetches it without a `url`.
 
 Always give it a failure path. The transcript can be pending, failed, or absent
 (no audio track), and a permanently "Loading transcript…" panel is worse than
 an honest "Transcript unavailable."
 
-## Audio description as a subtitles track
+## Audio description as a descriptions track
 
-The player has no native descriptions kind, so the visual transcription from
-`ai_video_analysis` (describing what is *on screen* rather than what is said)
-goes in as another `subtitles` entry, labelled so it is not mistaken for a
-translation. Requires an API secret; unavailable over MCP alone.
+The visual transcription from `ai_video_analysis` describes what is *on
+screen* rather than what is said. Write it to a VTT file and add it as a
+`descriptions` text track (`textTracks: { descriptions: [{ label, url }] }`),
+which the player lists in its audio-descriptions menu and screen readers can
+read. Generating it requires the API secret; it is unavailable over MCP alone.
 
 ## Structured data comes free once the metadata exists
 
@@ -166,10 +168,14 @@ the block.
 
 For decorative loops (tiles, background clips, a feature panel), the reflex is
 an `IntersectionObserver` that plays on enter and pauses on exit. The player
-has this: `autoplayMode: 'on-scroll'`, alongside `muted`, `loop` and
-`controls: false`. (Not `autoplay: 'on-scroll'`: that value is treated as plain
-`autoplay: true`, so the clip always autoplays.) Save that on each asset and the observer disappears, along
-with the lazy `src` assignment people bolt onto it.
+has this: `autoplayMode: 'on-scroll'`, alongside `muted`, `loop`,
+`controls: false`, and `seekThumbnails: false`. (Not `autoplay: 'on-scroll'`:
+that value is treated as plain `autoplay: true`, so the clip always autoplays.)
+Save those settings on each asset and the observer disappears, along with the
+lazy `src` assignment people bolt onto it. For a loop that should play as soon
+as the page loads, such as a hero, use `profile: 'cld-looping'` and pass
+`seekThumbnails: false` locally (the profile doesn't set it, and a profile
+replaces the asset's saved settings).
 
 That also keeps every clip on the player's own optimizations (`f_auto:video`,
 breakpoints) rather than a hand-written URL on a bare `<video>`; a page mixing
@@ -197,12 +203,3 @@ presented as a quiet disclosure rather than a showcase of transcription.
 Also watch for **copy that duplicates the footage**. Campaign films usually
 carry a burned-in end-card; if your headline repeats the line the video already
 says, the page reads as a mistake. Read the frames before writing the hero.
-
-## Framework note
-
-Build the `<video>` element imperatively and do **not** dispose the player on
-effect cleanup. Colors, adaptive streaming and interaction areas are lazy
-plugins that reach for the element after the effect returns; disposing pulls it
-out from under them (`Invalid target for null#one`). Route callbacks through
-refs so the effect can have an empty dependency list and build exactly one
-player for the page's lifetime.
