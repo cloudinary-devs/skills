@@ -12,6 +12,7 @@ Skills are grouped by category below. The category is a folder in this repo only
 |---|---|
 | `cloudinary-docs` | Selects the most relevant markdown pages from the current documentation using the latest llms.txt. Use when answering Cloudinary questions or integrating Cloudinary into code. |
 | `cloudinary-transformations` | Turns natural language image and video transformation requirements into valid URL transformation strings that follow Cloudinary best practices. Use when building delivery URLs, applying transformations, optimizing media, or debugging transformation syntax errors. |
+| `cloudinary-video` | Reference for building video experiences with the Cloudinary Video Player. Use when adding or improving video on a page or site, choosing adaptive or progressive delivery, or generating captions, chapters, and titles for video. |
 
 ### Frameworks
 

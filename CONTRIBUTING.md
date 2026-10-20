@@ -92,6 +92,12 @@ attributable. Use the same `referrer` value throughout a skill, for example
 `trans-skill` or `react-skill`. CI fails the `links` job on any link missing
 either param.
 
+## Tests
+
+A skill's tests, if it has any, live in `tests/<skill-name>/` at the repo root,
+not inside the skill directory, so they don't ship to users who install the
+skill.
+
 ## Local check
 
 Before opening a PR, run the same checks CI runs:
