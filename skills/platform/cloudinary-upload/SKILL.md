@@ -18,6 +18,8 @@ metadata:
 - Deciding how uploaded assets are named and organized into folders
 - Generating upload signatures for signed uploads
 - Uploading large files (> 100 MB) or from remote URLs
+- Bulk uploads and migrations that need parallelism and rate-limit handling
+- Restricting access to uploaded assets (`private`, `authenticated`) or moderating user-generated uploads
 - Debugging upload failures (error responses, silent failures, unexpected behavior)
 
 ## Quick Start
@@ -27,9 +29,9 @@ metadata:
 Unless the user has a specific reason not to, every upload configuration you generate should:
 
 1. **Use an upload preset.** Whenever more than one asset will be uploaded with the same parameters, put those parameters in a preset and pass only `upload_preset` in the request. See [Upload Presets](#upload-presets).
-2. **Set `resource_type` explicitly** (`image`, `video`, `raw`, or `auto`). Never rely on the default. See [`resource_type`](#resource_type--set-this-explicitly).
-3. **Decide naming deliberately.** Either set a deterministic `public_id`, or set `use_filename: true`. Never let production assets fall back to random IDs by accident. See [Naming and Folders](#naming-and-folders).
-4. **Restrict what can be uploaded**: `allowed_formats` and `max_bytes` in the preset, especially for unsigned uploads.
+2. **Upload each original once.** Never upload pre-resized or pre-converted copies (thumbnails, WebP versions, cropped variants). Derive every variant from the single original with transformations. See [Transformations on Upload](#transformations-on-upload).
+3. **Set `resource_type` explicitly** (`image`, `video`, `raw`, or `auto`). Backend SDKs default to `image`, which fails for video and raw files. See [`resource_type`](#resource_type--set-this-explicitly).
+4. **Restrict what can be uploaded** with `allowed_formats` in the preset, especially for unsigned uploads.
 5. **Pre-generate derived assets with `eager`** when the delivery transformations are known up front, and use `eager_async: true` for video. See [Transformations on Upload](#transformations-on-upload).
 6. **Keep the API secret server-side.** Signed uploads run on the server; browsers use unsigned presets or a server-issued signature.
 
@@ -81,6 +83,7 @@ POST https://api.cloudinary.com/v1_1/<cloud_name>/<resource_type>/upload
 **Remote/fetch upload (signed, server-side):**
 ```
 POST https://api.cloudinary.com/v1_1/<cloud_name>/<resource_type>/upload
+  upload_preset: <preset_name>          (recommended)
   api_key: <api_key>
   timestamp: <unix_timestamp_in_seconds>
   signature: <generated_signature>
@@ -113,7 +116,7 @@ An upload preset is a named, centrally managed set of upload parameters. Pass `u
 - Keep upload behavior consistent across every SDK, widget, and REST call in the project
 - Let the team change folders, transformations, moderation, or limits in the Console without redeploying code
 - Are the only way to control non-allow-listed parameters for unsigned uploads, and the only way to lock them down
-- Make the security posture auditable: one place to check `allowed_formats`, `max_bytes`, and folder placement
+- Make the security posture auditable: one place to check `allowed_formats`, moderation, and folder placement
 
 Configure at **Cloudinary Console → Settings → Upload → Upload presets**, or programmatically with the Admin API `upload_presets` methods.
 
@@ -126,7 +129,6 @@ Proactively suggest these when creating a preset; ask about the ones that depend
 | `asset_folder` (dynamic folder mode) or `folder` (fixed folder mode) | Organizes uploads. See [Naming and Folders](#naming-and-folders) for which one applies. |
 | `use_filename: true` + `unique_filename` | Readable public IDs derived from the original filename, with or without a random suffix. |
 | `allowed_formats` | Rejects unexpected file types. Essential for unsigned presets. |
-| `max_bytes` | Caps file size. Essential for unsigned presets. |
 | `eager` (+ `eager_async: true` for video) | Pre-generates the derived assets your app will deliver. See [Transformations on Upload](#transformations-on-upload). |
 | `transformation` (incoming) | Normalizes user-generated content before storage (cap dimensions, clip duration). |
 | `tags`, `context`, `metadata` | Default classification applied to every upload through the preset. |
@@ -148,6 +150,8 @@ When the same parameter is in both the preset and the request:
 **Important:** This means an unsigned request cannot override the preset's `folder`, `asset_folder`, or `tags`. If a value must vary per upload in an unsigned flow, either leave it out of the preset or use a signed upload.
 
 ## Transformations on Upload
+
+**Upload once, transform on demand.** Store a single high-quality original per asset and derive every size, crop, and format from it with transformations. Do not resize, compress, or convert files before upload, and do not upload multiple versions of the same asset: it multiplies storage, fragments the Media Library, and loses the quality headroom that later transformations depend on.
 
 Cloudinary generates transformations lazily on first delivery request by default. Two upload-time options change that:
 
@@ -176,16 +180,16 @@ eager_notification_url: https://example.com/webhooks/cloudinary
 
 ## Naming and Folders
 
-### Choose the naming strategy
+### Naming options
 
-| Strategy | Set | Result |
+| Option | Set | Result |
 |---|---|---|
-| Deterministic ID (recommended for app-managed assets) | `public_id: products/sku-1234` | Predictable URLs; combine with `overwrite: false` to skip duplicates or `overwrite: true, invalidate: true` to replace |
+| Random (default) | nothing | Random `public_id`. In dynamic folder mode, `display_name` keeps the Console name readable |
+| Explicit ID | `public_id: sku-1234` | Predictable URLs; combine with `overwrite: false` to skip duplicates or `overwrite: true, invalidate: true` to replace |
 | Original filename | `use_filename: true` | `public_id` derived from the uploaded filename with a random suffix appended |
 | Original filename, no suffix | `use_filename: true, unique_filename: false` | Exact filename as `public_id`; collisions are governed by `overwrite` |
-| Random (default) | nothing | Random `public_id`. Acceptable for throwaway or user-generated content, not for SEO or predictable delivery |
 
-Set the strategy in the preset so every upload path agrees. `filename_override` stores an original-filename value different from the uploaded file's name and works with `use_filename`.
+Set the option in the preset so every upload path agrees. `filename_override` stores an original-filename value different from the uploaded file's name and works with `use_filename`.
 
 ### `public_id` rules and traps
 
@@ -218,13 +222,15 @@ Every product environment is in one of two folder modes. **All accounts created 
 
 ## `resource_type` — Set This Explicitly
 
-**Default is `image`.** Cloudinary will attempt to process any upload as an image unless you override.
+**Backend SDKs default to `image`.** Over REST, `resource_type` is part of the endpoint path, so it is always chosen explicitly.
 
 | File type | Required `resource_type` |
 |---|---|
 | JPEG, PNG, GIF, WebP, SVG, etc. | `image` (default — still set explicitly) |
+| PDF | `image` (enables PDF transformations such as page extraction) |
+| Password-protected PDF | `raw` (uploading as `image` is not supported; delivered as-is with no PDF transformations) |
 | MP4, MOV, AVI, WebM, and audio (MP3, WAV, FLAC) | `video` |
-| PDF, ZIP, text, and other non-media files | `raw` |
+| ZIP, text, and other non-media files | `raw` |
 | Unknown or mixed | `auto` (Cloudinary detects) |
 
 **Failure modes when wrong:**
@@ -306,18 +312,59 @@ Upload an asset directly from a public URL without downloading it first. Pass th
 
 **Not the same as `type: fetch` delivery.** Fetch delivery URLs (`/image/fetch/<url>`) proxy a remote asset on the fly without storing it as an upload. Use a remote upload when you want the asset in your Media Library with its own `public_id`.
 
+## Access Control
+
+Access is set at upload with the `type` parameter (the delivery type), and it becomes part of the delivery URL:
+
+| `type` | Original | Derived versions | Use for |
+|---|---|---|---|
+| `upload` (default) | Public | Public | Anything meant to be publicly delivered |
+| `private` | Signed URL only | Public by default; lock down with Strict Transformations | Protecting the original while serving watermarked or resized versions |
+| `authenticated` | Signed URL or token | Signed URL or token | Content that must never be publicly accessible (paid, personal, internal) |
+
+- Set `type` in the preset so every upload path agrees. Changing it later means renaming with `to_type`, which changes the delivery URL.
+- Signed delivery URLs need the API secret, so generate them on the server. Use the cloudinary-transformations skill for URL building.
+- For time-limited, token, or cookie access on top of these types, see the [Control Access to Media](https://cloudinary.com/documentation/control_access_to_media.md?install_source=skillspack&referrer=upload-skill) docs.
+
+## Parallel Uploads and Rate Limiting
+
+The Upload API accepts one file per request. For bulk uploads and migrations, run requests in parallel:
+
+- Start at about 10 concurrent uploads and increase gradually.
+- On HTTP **420 (Rate limited)**, lower concurrency and retry the failed uploads with exponential backoff. Do not treat 420 as a permanent failure.
+- For migrations, set an explicit `public_id` per source file with `overwrite: false`, so retrying a request that actually succeeded doesn't create a duplicate.
+
+## Moderation
+
+For user-generated content, moderate on upload instead of after publishing:
+
+1. Set `moderation` in the preset (`manual`, or an add-on such as AWS Rekognition). New assets start with status `pending`.
+2. Set `notification_url` so your app receives the approval or rejection.
+3. Do not publish or link to an asset until its moderation status is `approved`. Store the status alongside your record of the asset.
+4. For rejected images that are already referenced, deliver a placeholder with `d_<default_image>`.
+
+## Analysis on Upload
+
+Upload can also run analysis and AI add-ons, such as categorization, auto-tagging, color and quality analysis, object, face, and logo detection, and video and audio transcription and translation. These need add-on subscriptions and have their own parameters. Look them up with the cloudinary-docs skill instead of guessing parameter names, and set them in the preset once chosen.
+
 ## Signed Upload Signature
 
 Signatures authenticate server-side upload requests. **The API secret must never appear in client-side code.** If an SDK is available, let it sign the request; only implement this by hand for raw REST calls.
 
-**What to include in the signature string:**
-- All request parameters **except**: `file`, `cloud_name`, `resource_type`, `api_key`
-- Do not include `signature` itself
+**Minimal recommended signed request:** with an upload preset holding the upload parameters, the only parameters to sign are `timestamp` and `upload_preset`:
+```
+timestamp=1718100000&upload_preset=product-imagesYOUR_API_SECRET
+```
+Hash that string with SHA-1 or SHA-256 and send the hex digest as `signature`.
+
+**Which upload parameters to sign:**
+- Every non-empty request parameter **except** `file`, `cloud_name`, `resource_type`, `api_key`, and `signature` itself
+- Sign each value exactly as it is sent: array values such as `tags` are comma-separated (`tags=a,b`); multiple `eager` transformations are pipe-separated
 
 **How to generate:**
-1. Collect all upload parameters (excluding the four above)
+1. Collect the parameters to sign
 2. Sort parameters alphabetically by key
-3. Join as `key=value` pairs with `&` between them
+3. Join as `key=value` pairs with `&` between them, encoding any `&` inside a value as `%26`
 4. Append your API secret directly (no separator): `sorted_params_stringYOUR_API_SECRET`
 5. SHA-1 or SHA-256 hash the result
 
@@ -339,20 +386,19 @@ For the complete algorithm with edge cases and examples, see [references/signed-
 - **Never** include `api_secret` in client-side code, browser requests, or mobile apps
 - **Never** commit it to version control (check `.env` files, config files)
 - **Never** log it. Check logging middleware and error handlers
-- If exposed: rotate immediately in Cloudinary Console → Settings → Security → Access Keys
+- If exposed: ask the user to rotate it immediately in Cloudinary Console → Settings → API Keys
 
 ### Unsigned preset exposure
 - The upload preset name is visible in browser network requests and source code
 - Anyone can reuse it to upload to your account (quota abuse)
 - Unsigned uploads cannot overwrite existing assets, which limits the damage
-- Lock the preset down: `allowed_formats`, `max_bytes`, `asset_folder` or `folder`, and `moderation` for user-generated content
+- Lock the preset down: `allowed_formats`, `asset_folder` or `folder`, and `moderation` for user-generated content
 - Use signed uploads for sensitive applications or when upload volume abuse is a concern
 
 ### Checklist before going live
 - API secret is server-side only
 - Upload preset is set to unsigned only if truly needed client-side
 - `allowed_formats` restricts file types to what your app expects
-- `max_bytes` set in the preset to prevent oversized uploads
 
 ## Async Uploads
 
@@ -381,7 +427,7 @@ cloudinary.uploader.upload("file.jpg", notification_url="https://...", **{"async
 
 1. ✅ **Upload preset used** for any repeated upload pattern; request-time params limited to what genuinely varies per upload
 2. ✅ **`resource_type` explicitly set**, matching the actual file type
-3. ✅ **Naming strategy is deliberate**: deterministic `public_id`, `use_filename`, or an explicit decision to accept random IDs
+3. ✅ **Each original uploaded once**; no pre-resized or pre-converted copies, variants come from transformations
 4. ✅ **Folder parameter matches the folder mode**: `asset_folder` (+ `public_id_prefix` if needed) in dynamic mode, `folder` only in fixed mode
 5. ✅ **Unsigned request only contains allow-listed parameters**, and nothing in the request expects to override a preset value that the preset wins
 6. ✅ **No `f_auto` in `eager` or incoming `transformation`**; `f_auto` belongs on the delivery URL
@@ -393,7 +439,7 @@ cloudinary.uploader.upload("file.jpg", notification_url="https://...", **{"async
 12. ✅ **`notification_url` set when `async: true`**
 13. ✅ **`overwrite: true` not expected in an unsigned flow**; it is silently forced to `false`
 14. ✅ **Large file (> 100 MB) → SDK large-upload method or chunked upload**
-15. ✅ **`allowed_formats` and `max_bytes` set on any unsigned preset**
+15. ✅ **`allowed_formats` set on any unsigned preset**
 
 ## Debugging Workflow
 
@@ -423,8 +469,9 @@ Is the `resource_type` in the URL correct for the file being uploaded?
 ### Step 5: Verify the signature (signed uploads only)
 1. Did you exclude `file`, `cloud_name`, `resource_type`, `api_key` from the signature string?
 2. Are parameters sorted alphabetically before joining?
-3. Is the API secret appended directly with no separator?
-4. Is the timestamp within the last hour?
+3. Is every value signed exactly as sent (comma-separated `tags`, `&` inside values encoded as `%26`, empty parameters left out)?
+4. Is the API secret appended directly with no separator?
+5. Is the timestamp within the last hour?
 
 See [references/signed-uploads.md](references/signed-uploads.md) for the full algorithm.
 
@@ -432,10 +479,9 @@ See [references/signed-uploads.md](references/signed-uploads.md) for the full al
 Open Cloudinary Console → Settings → Upload → [your preset] and verify:
 - Preset mode matches usage (signed vs unsigned)
 - `allowed_formats` isn't blocking the file type
-- `max_bytes` limit isn't exceeded
 - Eager transformations don't contain `f_auto`
 
-### Step 7: Eager asset not being used on delivery
+### Step 7: Check eager and delivery transformations match
 - Does the delivery URL use the identical transformation string (same parameter order, same format component)?
 - Delivering with `f_auto`? Pre-generate each format you expect `f_auto` to pick (for example `f_webp`, `f_avif`, `f_jpg`) as separate eager variants, and deliver without a file extension so the extension does not become part of the transformation string.
 - Was `eager_async` used? The derived asset may not exist yet; check the `eager_notification_url` webhook.
@@ -468,7 +514,7 @@ See [references/chunked-uploads.md](references/chunked-uploads.md) for arithmeti
 **Always:**
 - Recommend an upload preset for any repeated upload pattern
 - Set `resource_type` explicitly
-- Set `allowed_formats` and `max_bytes` on unsigned presets
+- Set `allowed_formats` on unsigned presets
 - Use `eager_async: true` for video eager transformations
 - Build delivery URLs with the cloudinary-transformations skill so they match eager output
 

@@ -20,7 +20,7 @@ HTTP status is typically 400 (bad request) or 401 (auth failure).
 | `Signature has expired` | Timestamp > 1 hour old, or timestamp in milliseconds | Use `Math.floor(Date.now() / 1000)` in JS; regenerate signature |
 | `Missing required parameter - signature` | Signed upload missing signature field | Add `signature` to request |
 | `Missing required parameter - timestamp` | Signed upload missing timestamp field | Add `timestamp` (seconds) to request |
-| `Unknown API key` | Wrong or missing `api_key` | Verify api_key in Cloudinary Console → Settings → Security |
+| `Unknown API key` | Wrong or missing `api_key` | Ask the user to confirm the API key and secret pair in Cloudinary Console → Settings → API Keys, and that it belongs to the same cloud as `cloud_name` |
 
 ### Upload Preset Errors
 
@@ -35,7 +35,6 @@ HTTP status is typically 400 (bad request) or 401 (auth failure).
 | Error message | Root cause | Fix |
 |---|---|---|
 | `Invalid image file` | Wrong `resource_type` for uploaded file | Set `resource_type: "video"` for videos, `"raw"` for non-media files |
-| `File size too large` | Exceeds `max_bytes` in preset | Increase preset limit or reduce file size |
 | `Invalid file type` | File extension not in `allowed_formats` | Add format to preset's `allowed_formats`, or use a different file |
 | `Resource not found` | Wrong `public_id` or asset doesn't exist | Check `public_id` for whitespace; verify asset exists |
 
@@ -48,11 +47,13 @@ HTTP status is typically 400 (bad request) or 401 (auth failure).
 
 ### Account & Quota Errors
 
+These need action from the account owner. Tell the user what to do; the agent cannot fix them in code.
+
 | Error message | Root cause | Fix |
 |---|---|---|
-| `Account is not active` | New account not email-verified | Verify email address in Cloudinary Console |
-| `Quota exceeded` | Storage or bandwidth limit reached | Upgrade plan or delete unused assets |
-| `Transformation credits exceeded` | Eager transformations over quota | Reduce eager transforms or upgrade plan |
+| `Account is not active` | New account not email-verified | Ask the user to verify their email address from the Cloudinary sign-up email |
+| `Quota exceeded` | Storage or bandwidth limit reached | Ask the user to upgrade their plan or delete unused assets |
+| `Transformation credits exceeded` | Eager transformations over quota | Reduce eager transformations, or ask the user to upgrade their plan |
 
 ## Silent Failures (No Error, Wrong Behavior)
 
@@ -68,7 +69,6 @@ HTTP status is typically 400 (bad request) or 401 (auth failure).
 | `overwrite: true` has no effect | Forced `false` for unsigned uploads | Switch to signed upload if overwrite is needed |
 | Format not converted as expected | File type is in `allowed_formats` — stored as-is | Remove file type from `allowed_formats` if conversion is needed |
 | Async upload result never arrives | `notification_url` not set | Add `notification_url` to request or preset |
-| Video transformation returns still image | Used `f_auto` instead of `f_auto:video` | Use `f_auto:video` for video outputs (handled by cloudinary-transformations skill) |
 
 ## Debugging Checklist
 
