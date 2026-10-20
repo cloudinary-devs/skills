@@ -8,6 +8,10 @@ about the player's API surface (see [player.md](player.md)).
 
 Recommendations follow from the use case, so establish it first:
 
+- **What should the video achieve, and how will they measure it?** For example,
+  more engagement or conversions, checked with an A/B test or a before-and-after
+  comparison. More video usually means higher usage costs, so the customer
+  needs a way to show the return.
 - **What types of video?** In e-commerce, typically short product videos on
   PDPs, plus campaign/content videos on homepages and landing pages.
 - **How long are they?** Under a minute, or longer? This drives the delivery
@@ -68,10 +72,12 @@ not surprise them.
 - **Default automatic format** adds `f_auto` to every delivered video without
   touching delivery URLs. Because that counts as a transformation, Default video
   quality also applies. It is available only on plans that use the *video
-  seconds* metric. It is not compatible with strict transformations or with
-  eager transformations. `fl_original` bypasses it.
+  seconds* metric, and is enabled through Cloudinary support. It is ignored
+  when the URL has a format parameter or a named transformation, and it is not
+  compatible with strict transformations or with eager transformations.
+  `fl_original` bypasses it.
 - **Default video quality** lets Cloudinary pick quality and codec (`vc_auto`)
-  automatically. Available on all plans, but **only applies when another
+  automatically. It is available on all plans, but **only applies when another
   transformation is present in the URL**.
 
 ## Eager vs on-the-fly
@@ -99,9 +105,10 @@ whenever the first viewer's playback matters. Three rules:
 ## Mobile apps are a different problem
 
 A webview is the web: web rules apply. Native apps use a mobile SDK player (iOS,
-Android, Flutter, React Native) or the app's own player. The SDK players send
-analytics by default and can play `sp_auto` HLS (on by default in Flutter, off
-by default on Android and iOS).
+Android, Flutter, React Native) or the app's own player. The iOS and Android
+SDK players send Cloudinary video analytics by default (in React Native it's
+optional), and the SDK players can play `sp_auto` HLS (on by default in
+Flutter, off by default on Android and iOS).
 
 **`f_auto` does not work the same way.** The app must tell Cloudinary what the
 device supports. Detect support at runtime rather than hardcoding it, then
@@ -114,11 +121,13 @@ either name it in the URL:
 
 …or send an `Accept` header (e.g. `video/webm; codecs="vp9"`,
 `video/mp4; codecs="hvc1"`, `video/mp4; codecs="avc1"`). For AV1, use the URL
-form.
+form, and don't count on `q_auto` there: automatic quality supports H.264,
+H.265, and VP9 only.
 
-**Responsive breakpoints are not supported in the mobile SDKs.** Request
-explicit widths per device instead (`c_limit,w_640` / `w_1280` / `w_1920`), and
-pick the smallest that suits the screen.
+**The mobile SDK player docs describe no equivalent of the web player's
+`breakpoints` option.** Request explicit widths per device instead
+(`c_limit,w_640` / `w_1280` / `w_1920`), and pick the smallest that suits the
+screen.
 
 ## What the player gives you for free
 
@@ -130,7 +139,10 @@ pick the smallest that suits the screen.
   AI-generated).
 - **Customization**: skins, colour schemes, fonts, titles/subtitles display.
 - **Video Player Studio**: a visual configurator that emits the player config,
-  rather than hand-writing it. Also handles transcripts and chapters.
+  rather than hand-writing it. Also handles transcripts and chapters: its
+  Transcript and Localization editor lets people review and correct a generated
+  transcript, line by line and word by word, before viewers see it. Treat a
+  generated transcript as a draft.
 
 ## Validate before launch
 

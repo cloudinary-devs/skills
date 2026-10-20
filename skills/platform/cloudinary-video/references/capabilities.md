@@ -130,8 +130,8 @@ progressive), except that under 30 seconds is always progressive:
 
 | Duration | Approach |
 | --- | --- |
-| **Under about 1 minute** (and never ABR under 30 seconds) | **Progressive**, the player's default: the player's own `f_auto:video`, plus `breakpoints: true`. Product videos, campaign films, promos, social-style clips, anything inline or autoplaying. |
-| **About 1 minute or more**, especially viewer-selected and not autoplaying | **ABR** (`sp_auto` via `sourceTypes:['hls']`). Long-form, where a network can realistically degrade mid-watch. |
+| **Under about 1 minute** (and never ABR under 30 seconds) | **Progressive**, the player's default: the player's own `f_auto:video`, plus `breakpoints: true`. Product videos on listing and product pages, hero banners, background loops, campaign films, promos, social clips, ad banners, GIF replacements, and shareable or downloadable links: anything inline or autoplaying. |
+| **About 1 minute or more**, especially viewer-selected and not autoplaying | **ABR** (`sp_auto` via `sourceTypes:['hls']`). Long-form, where a network can realistically degrade mid-watch: reviews, tutorials, unboxing videos, training, interviews, and documentaries. |
 
 `sp_auto` is the only mechanism that responds to bandwidth dropping *while
 someone is watching*, but that advantage needs a watch long enough for it to

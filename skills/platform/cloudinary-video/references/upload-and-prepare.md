@@ -43,6 +43,11 @@ VPN or secure gateway. That is the user's to resolve; see
 Ask for the AI features **on the upload call**. Re-running them afterwards costs
 a second operation against a quota.
 
+For videos already on Cloudinary, don't re-upload to get a transcript.
+Transcription can also be started with the explicit method on an existing
+asset, from Video Player Studio, from the player itself when it configures text
+tracks, or from a MediaFlows block.
+
 ```
 upload video:                    # no add-on needed
   auto_transcription: true       # transcript + captions
