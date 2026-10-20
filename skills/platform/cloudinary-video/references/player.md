@@ -207,6 +207,9 @@ the constructor. The traps that cost real builds:
   placeholder ignores `posterOptions` and defaults to the untransformed middle
   frame (`<publicId>.jpg`, full resolution), so pass an explicit sized `poster`
   URL such as `…/video/upload/so_auto/c_limit,w_1280/f_auto/q_auto/<publicId>.jpg`.
+- **`controls` defaults to `false`.** Without `controls: true` (or a `controls`
+  attribute on the `<video>`), a player that doesn't autoplay shows no play
+  button or control bar.
 - **`seekThumbnails` defaults to `true`, even with `controls: false`.** A
   decorative loop (including the `cld-looping` profile) still fetches an
   `fl_sprite` thumbnail track it never shows. Set `seekThumbnails: false` on

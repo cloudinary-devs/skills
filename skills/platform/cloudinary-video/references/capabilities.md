@@ -195,9 +195,9 @@ the browser picks by viewport. That gives the same optimizations without the pla
 
 Use `f_auto:video` for the format/codec pick (it delivers video with or
 without a file extension, matching the cloudinary-transformations skill),
-`q_auto` for quality, and `c_limit,w_…` to cap dimensions. Leave out
-`type="video/mp4"`: `f_auto:video` may return WebM, and a
-wrong type hint can make a browser skip the source. For ABR without the
+`q_auto` for quality, and `c_limit,w_…` to cap dimensions. A
+`type="video/mp4"` hint is fine even though `f_auto:video` may serve WebM:
+Chrome plays the WebM it receives. For ABR without the
 player, generate the manifest with `sp_auto` and hand the `.m3u8` to a
 compatible third-party player.
 

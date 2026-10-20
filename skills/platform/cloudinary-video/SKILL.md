@@ -316,9 +316,8 @@ ABR source requests `c_limit,w_…/sp_auto` and fails with 400, even with
 before an ABR source, and `{ sourceTypes: ['auto'], breakpoints: true }`
 before a progressive one.
 
-Most pages want both, on **different** sources: ABR for the tour, progressive
-for the loops. Full comparison table in
-[references/capabilities.md](references/capabilities.md).
+Most pages want both, on **different** players: ABR for the tour, progressive
+for the loops ([references/capabilities.md](references/capabilities.md)).
 
 ### B3. Load and configure the player
 
@@ -399,12 +398,13 @@ defaults every `source()` call inherits:
 | `cloudName`, `fluid`, `controls`, `showLogo`, `colors` | `sourceTypes`, `breakpoints`, `maxDpr`, `transformation` |
 | `seekThumbnails`, `chaptersButton`, `aiHighlightsGraph` | `chapters`, `title`, `description`, `textTracks`, `posterOptions`, `interactionAreas` |
 
-**`colors.text` must contrast with `colors.base`.** The default skin is a dark
-base with light text; a dark text token on a dark base makes the controls
-invisible.
+**Set `controls: true` on any player a viewer starts.** It defaults to `false`,
+so a click-to-watch player renders with no play button or control bar. A
+`controls` attribute on the `<video>` element works too. **`colors.text` must
+contrast with `colors.base`**: a dark text token on the default dark base makes
+the controls invisible.
 
-Every option is in the
-[Video Player API reference](https://cloudinary.com/documentation/video_player_api_reference.md?install_source=skillspack&referrer=video-skill);
+Every option is in the [Video Player API reference](https://cloudinary.com/documentation/video_player_api_reference.md?install_source=skillspack&referrer=video-skill);
 the traps are in [references/player.md](references/player.md).
 
 ### B4. Wire the experience
