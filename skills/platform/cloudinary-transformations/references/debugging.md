@@ -439,6 +439,36 @@ https://res.cloudinary.com/demo/image/upload/sample.jpg
 
 If there is a video with public ID `sample` then `https://res.cloudinary.com/demo/video/upload/sample.jpg` is the correct way to deliver an image thumbnail from the video.
 
+## Checking the X-Cld-Error Header
+
+The `X-Cld-Error` header contains error details when a transformation fails. To check it:
+
+**Using browser DevTools:**
+1. Open Developer Tools (Network tab)
+2. Request the transformation URL
+3. Look for `X-Cld-Error` in Response Headers
+
+**Using code (fetch the URL):**
+```javascript
+fetch('https://res.cloudinary.com/demo/image/upload/w_abc/sample.jpg')
+  .then(response => {
+    const error = response.headers.get('x-cld-error');
+    if (error) {
+      console.log('Cloudinary Error:', error);
+    }
+  });
+```
+
+**Common X-Cld-Error messages:**
+- `Invalid width - abc` - Width parameter expects a number
+- `Invalid transformation syntax` - Malformed transformation string
+- `Resource not found` - Asset doesn't exist or public ID is incorrect
+- `Transformation limit exceeded` - Account transformation quota reached
+
+**Online tool:** Use the [X-Cld-Error Inspector](https://cloudinary.com/documentation/advanced_url_delivery_options.md?install_source=skillspack&referrer=trans-skill#x_cld_error_inspector_tool) to check any Cloudinary URL
+
+For more details, see [Error Handling](https://cloudinary.com/documentation/advanced_url_delivery_options.md?install_source=skillspack&referrer=trans-skill#error_handling)
+
 ## Debugging Workflow
 
 When a transformation doesn't work:

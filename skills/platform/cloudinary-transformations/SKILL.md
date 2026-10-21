@@ -1,10 +1,10 @@
 ---
 name: cloudinary-transformations
-description: Create and debug Cloudinary transformation URLs from natural language instructions. Use when building Cloudinary delivery URLs, applying image/video transformations, optimizing media, or debugging transformation syntax errors.
+description: Create and debug Cloudinary transformation URLs and the equivalent SDK code from natural language instructions. Use when building Cloudinary delivery URLs, writing transformation code with a Cloudinary SDK, applying image/video transformations, optimizing media, or debugging transformation syntax errors.
 license: MIT
 metadata:
   author: cloudinary
-  version: '1.0.4'
+  version: '1.1.0'
 ---
 
 # Cloudinary Transformation Rules
@@ -12,6 +12,7 @@ metadata:
 ## When to Use
 
 - Building Cloudinary delivery/transformation URLs
+- Writing transformation code with a Cloudinary SDK (see the Generating SDK Code section)
 - Converting natural language requests to transformation syntax
 - Debugging transformation URLs that aren't working
 - Optimizing images or videos with Cloudinary
@@ -65,39 +66,16 @@ Before generating a transformation URL, if not already specified, clarify these 
 - "Any important focal point? (faces, center, specific area)"
 
 ### For AI Transformation Requests
-**Background removal:**
-- Output format needs (PNG for transparency vs JPG with solid background)
-- What to do with transparent area (keep transparent, add color, or gen_fill)
-
-**Generative fill:**
-- Target dimensions or aspect ratio
-- How much extension needed
-
-**Generative replace:**
-- What object to replace (from)
-- What to replace it with (to)
-- Preserve original shape? (for clothing/objects)
-
-**Generative remove:**
-- What object(s) to remove
-- Remove all instances or just one?
-
-**Generative background replace:**
-- Describe desired background (or use auto-generation)
-- Need reproducibility? (consider seed parameter)
+- **Background removal:** Output format (PNG for transparency, or JPG with a solid background) and what to do with the transparent area (keep, add color, or `b_gen_fill`)
+- **Generative fill:** Target dimensions or aspect ratio, and how much extension is needed
+- **Generative replace:** What to replace (from), what to replace it with (to), and whether to preserve the original shape (clothing/objects)
+- **Generative remove:** What object(s) to remove, and all instances or just one
+- **Generative background replace:** The desired background (or auto-generation), and whether it must be reproducible (consider the seed parameter)
 
 ### For Video Transformation Requests
-**Trimming:**
-- Start and end time, or duration
-- Seconds or percentage of video
-
-**Codec/format:**
-- Output format needs (MP4, WebM, etc.)
-- Quality requirements (use `vc_auto` if unsure)
-
-**Audio:**
-- Keep or remove audio track
-- If for autoplay, suggest removing audio (`ac_none`)
+- **Trimming:** Start and end time, or duration (seconds or percentage of the video)
+- **Codec/format:** Output format (MP4, WebM, etc.) and quality requirements (use `vc_auto` if unsure)
+- **Audio:** Keep or remove the audio track. For autoplay, suggest removing it (`ac_none`)
 
 ### Always Recommend
 Unless user specifies otherwise:
@@ -124,6 +102,12 @@ https://res.cloudinary.com/<cloud_name>/<asset_type>/<delivery_type>/<transforma
 **Qualifier parameters**: Modify action behavior (in the same component as the action, using commas as separators)
 
 Check the [Transformation Reference](https://cloudinary.com/documentation/transformation_reference.md?install_source=skillspack&referrer=trans-skill) to determine if a parameter is an action or qualifier.
+
+## Generating SDK Code
+
+If the user is working in code, give them SDK code rather than a hand-built URL string. Design and validate the transformation in URL syntax first (the URL is the canonical form), then translate it.
+
+**Before writing any SDK code, read [references/sdk-code.md](references/sdk-code.md).** It explains how to work out the user's SDK and how to get the exact syntax and imports from the Transformation Reference. Each SDK has its own names and syntax for the same transformation, so don't guess SDK syntax from the URL parameters.
 
 ## Core Transformations
 
@@ -441,6 +425,7 @@ For complete syntax, arithmetic operations, nested conditionals, and real-world 
 9. ✅ **Format/quality at end** (prefer `f_auto/q_auto` as final components)
 10. ✅ **Flags/parameters match the base asset type** (asset-type-specific syntax — e.g. video-only `fl_splice`, `du_`, `fps_`, `vc_` — often no-ops silently on the wrong base, in either direction; verify the output and check the Asset Type Matters section above)
 11. ✅ **Transformation parameters are valid** (don't make up any parameter names - check against [Transformation Reference](https://cloudinary.com/documentation/transformation_reference.md?install_source=skillspack&referrer=trans-skill))
+12. ✅ **SDK code comes from the reference** (if writing SDK code, the syntax matches the user's SDK tab on the parameter's reference page; see the Generating SDK Code section)
 
 **Quick syntax check:**
 - Commas separate parameters within a component: `c_fill,g_auto,w_400`
@@ -451,60 +436,14 @@ See [references/debugging.md](references/debugging.md) for detailed examples of 
 
 ## Debugging Checklist
 
-When a transformation isn't working:
+When a transformation isn't working, first run the Self-Validation Checklist above. Then check:
 
-1. **Verify URL structure**: Check that all required URL parts are present:
-   - Cloud name: `/<cloud_name>/`
-   - Asset type: `/image/` or `/video/` or `/raw/`
-   - Delivery type: `/upload/` or `/fetch/` etc.
-   - Public ID at the end
-2. **Check the X-Cld-Error header**: Cloudinary reports errors in the `X-Cld-Error` HTTP response header
-3. **Check parameter names** against [Transformation Reference](https://cloudinary.com/documentation/transformation_reference.md?install_source=skillspack&referrer=trans-skill)
-4. **Check crop mode**: Specify crop mode explicitly; avoid both dimensions with `c_scale` (causes distortion if aspect ratios don't match)
-5. **Verify gravity compatibility**: `g_auto` doesn't work with `c_scale`, `c_fit`, `c_limit`, `c_pad`
-6. **Check action vs qualifier**: Only one action per component, qualifiers in same component
-7. **Verify overlay pattern**: Must end with `fl_layer_apply` component
-8. **Check variable names**: No underscores, must start with letter
-9. **Verify URL encoding**: Text overlays need URL-encoded strings (spaces = `%20`)
-10. **Check auto parameters in named transformations**: `f_auto`, `dpr_auto`, and `w_auto` don't work inside named transformations - use them directly in URLs
-11. **Verify Client Hints for `dpr_auto`/`w_auto`**: These only work on Chromium browsers with Client Hints enabled; fallback to `dpr_1.0` otherwise (see [references/responsive-images.md](references/responsive-images.md) for configuration)
-12. **Video returns image instead of video**: Use `f_auto:video` (not just `f_auto`) for video transformations - plain `f_auto` may return an image thumbnail
+1. **The `X-Cld-Error` header**: Cloudinary reports errors in this HTTP response header
+2. **Auto parameters in named transformations**: `f_auto`, `dpr_auto`, and `w_auto` don't work inside named transformations. Use them directly in URLs
+3. **Client Hints for `dpr_auto`/`w_auto`**: These only work on Chromium browsers with Client Hints enabled, and fall back to `dpr_1.0` otherwise (see [references/responsive-images.md](references/responsive-images.md))
+4. **Video returns an image**: Use `f_auto:video` (not just `f_auto`) for video transformations
 
-### Checking X-Cld-Error Header
-
-The `X-Cld-Error` header contains error details when a transformation fails. To check it:
-
-**Using browser DevTools:**
-1. Open Developer Tools (Network tab)
-2. Request the transformation URL
-3. Look for `X-Cld-Error` in Response Headers
-
-**Using code (fetch the URL):**
-```javascript
-fetch('https://res.cloudinary.com/demo/image/upload/w_abc/sample.jpg')
-  .then(response => {
-    const error = response.headers.get('x-cld-error');
-    if (error) {
-      console.log('Cloudinary Error:', error);
-    }
-  });
-```
-
-**Common X-Cld-Error messages:**
-- `Invalid width - abc` - Width parameter expects a number
-- `Invalid transformation syntax` - Malformed transformation string
-- `Resource not found` - Asset doesn't exist or public ID is incorrect
-- `Transformation limit exceeded` - Account transformation quota reached
-
-**Online tool:** Use the [X-Cld-Error Inspector](https://cloudinary.com/documentation/advanced_url_delivery_options.md?install_source=skillspack&referrer=trans-skill#x_cld_error_inspector_tool) to check any Cloudinary URL
-
-For more details, see [Error Handling](https://cloudinary.com/documentation/advanced_url_delivery_options.md?install_source=skillspack&referrer=trans-skill#error_handling)
-
-## Transformation Costs
-
-**Important:** Warn users about high-cost transformations before generating URLs. AI effects cost significantly more than standard transformations (50-230 tx vs 1 tx).
-
-For complete cost details and cost reduction strategies, see [references/transformation-costs.md](references/transformation-costs.md)
+For how to read the `X-Cld-Error` header and common error messages, see [references/debugging.md](references/debugging.md#checking-the-x-cld-error-header).
 
 ## Additional Resources
 
@@ -517,36 +456,11 @@ For complete cost details and cost reduction strategies, see [references/transfo
 - [references/transformation-costs.md](references/transformation-costs.md) - Use when optimizing for cost or explaining cost implications to users
 - [references/named-transformations.md](references/named-transformations.md) - Use when creating reusable transformations or reducing costs for repeated operations
 - [references/examples.md](references/examples.md) - Use when you need real-world examples beyond the Quick Start (social cards, e-commerce, responsive images)
+- [references/sdk-code.md](references/sdk-code.md) - Read before writing transformation code with any Cloudinary SDK
+- [references/documentation-links.md](references/documentation-links.md) - Use when you need the full Cloudinary docs for an image or video transformation area
 
 ### Core Cloudinary Documentation
 - [Transformation Reference](https://cloudinary.com/documentation/transformation_reference.md?install_source=skillspack&referrer=trans-skill) - All parameters
-
-### Image Transformations
-- [Image Transformations Overview](https://cloudinary.com/documentation/image_transformations.md?install_source=skillspack&referrer=trans-skill)
-- [Resizing and Cropping](https://cloudinary.com/documentation/resizing_and_cropping.md?install_source=skillspack&referrer=trans-skill)
-- [Placing Layers on Images](https://cloudinary.com/documentation/layers.md?install_source=skillspack&referrer=trans-skill)
-- [Effects and Enhancements](https://cloudinary.com/documentation/effects_and_artistic_enhancements.md?install_source=skillspack&referrer=trans-skill)
-- [Background Removal](https://cloudinary.com/documentation/background_removal.md?install_source=skillspack&referrer=trans-skill)
-- [Generative AI Transformations](https://cloudinary.com/documentation/generative_ai_transformations.md?install_source=skillspack&referrer=trans-skill)
-- [Face-Detection Based Transformations](https://cloudinary.com/documentation/face_detection_based_transformations.md?install_source=skillspack&referrer=trans-skill)
-- [Custom Focus Areas](https://cloudinary.com/documentation/custom_focus_areas.md?install_source=skillspack&referrer=trans-skill)
-- [Transformation Refiners](https://cloudinary.com/documentation/transformation_refiners.md?install_source=skillspack&referrer=trans-skill)
-- [Animated Images](https://cloudinary.com/documentation/animated_images.md?install_source=skillspack&referrer=trans-skill)
-- [Transformations on 3D Models](https://cloudinary.com/documentation/transformations_on_3d_models.md?install_source=skillspack&referrer=trans-skill)
-- [Conditional Transformations](https://cloudinary.com/documentation/conditional_transformations.md?install_source=skillspack&referrer=trans-skill)
-- [User-Defined Variables and Arithmetic](https://cloudinary.com/documentation/user_defined_variables.md?install_source=skillspack&referrer=trans-skill)
-- [Custom Functions](https://cloudinary.com/documentation/custom_functions.md?install_source=skillspack&referrer=trans-skill)
-
-### Video Transformations
-- [Video Transformations Overview](https://cloudinary.com/documentation/video_manipulation_and_delivery.md?install_source=skillspack&referrer=trans-skill)
-- [Resizing and Cropping](https://cloudinary.com/documentation/video_resizing_and_cropping.md?install_source=skillspack&referrer=trans-skill)
-- [Trimming and Concatenating](https://cloudinary.com/documentation/video_trimming_and_concatenating.md?install_source=skillspack&referrer=trans-skill)
-- [Placing Layers on Videos](https://cloudinary.com/documentation/video_layers.md?install_source=skillspack&referrer=trans-skill)
-- [Effects and Enhancements](https://cloudinary.com/documentation/video_effects_and_enhancements.md?install_source=skillspack&referrer=trans-skill)
-- [Audio Transformations](https://cloudinary.com/documentation/audio_transformations.md?install_source=skillspack&referrer=trans-skill)
-- [Converting Videos to Animated Images](https://cloudinary.com/documentation/videos_to_animated_images.md?install_source=skillspack&referrer=trans-skill)
-- [Conditional Transformations](https://cloudinary.com/documentation/video_conditional_expressions.md?install_source=skillspack&referrer=trans-skill)
-- [User-Defined Variables and Arithmetic](https://cloudinary.com/documentation/video_user_defined_variables.md?install_source=skillspack&referrer=trans-skill)
 
 ## Common Mistakes & Best Practices
 
@@ -555,9 +469,3 @@ For complete cost details and cost reduction strategies, see [references/transfo
 - ❌ `c_scale,g_auto,w_400` → ✅ `c_fill,g_auto,w_400` (g_auto doesn't work with c_scale)
 - ❌ `l_logo/fl_layer_apply,g_north_west` → ✅ `l_logo/c_scale,w_100/fl_layer_apply,g_north_west`
 - ❌ `b_lightblue/e_trim` → ✅ `b_lightblue,c_pad,w_1.0/e_trim` (background as qualifier)
-
-**Always:**
-- Prefer `f_auto/q_auto` in separate components over `f_auto,q_auto`
-- Use `g_auto` for smart cropping unless specific focal point needed
-- Specify crop mode with width/height; prefer one dimension with `c_scale`
-- Never guess parameter names - verify against documentation
