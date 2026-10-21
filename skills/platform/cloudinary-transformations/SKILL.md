@@ -169,6 +169,7 @@ Use the rest of this skill to build and validate the transformation string (for 
 2. Each example on a parameter page is followed by code blocks tagged with the SDK name (`nodejs`, `react`, `python`, `php`, etc.). Read the block for the user's SDK, choosing the example closest to what you need.
 3. Combine the snippets into one expression, following the chaining pattern the snippets show. For example, `@cloudinary/url-gen` chains action methods (`.resize(...).delivery(...)`). The Node.js, Python and Ruby SDKs take an array of transformation objects (`transformation: [{...}, {...}]`), one per URL component.
 4. Replace the example public IDs (such as `docs/camera-640.jpg`) and values with the user's.
+5. Add the imports. Some snippets include per-transformation imports (for example, `import { fill } from "@cloudinary/url-gen/actions/resize"` or PHP's `use Cloudinary\Transformation\Resize;`). Copy them and merge duplicates. The snippets never show the SDK's base import or setup (such as `CloudinaryImage`, `require('cloudinary').v2`, or the Kotlin and Dart SDK imports). Reuse the one already in the user's code. If there isn't one, get it from that SDK's docs page rather than guessing.
 
 **Watch out for:**
 - **Tag vs URL:** Many snippets generate an HTML tag (`cloudinary.image()` in Node.js, `.image()` in Python, `cl_image_tag` in Ruby). If the user needs only the URL, use the SDK's URL method instead (`cloudinary.url()`, `.build_url()`, `cl_image_path`).
