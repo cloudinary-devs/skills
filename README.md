@@ -43,6 +43,23 @@ You can install globally or per project.
 
 Once installed, use your AI agent as normal. The skills fire automatically when you ask Cloudinary related questions or ask your agent to write Cloudinary integration code.
 
+## Version check
+
+The first time a skill is used in a conversation, it asks your agent to fetch
+Cloudinary's skills index at
+`https://cloudinary.com/documentation/.well-known/agent-skills/index.json`, compare
+the latest version with the installed one, and tell you only if a newer version
+exists. The agent doesn't update anything itself.
+
+The request includes the skill name and version, the agent product and model,
+the kind of task (for example `setup` or `docs`), and your Cloudinary cloud name
+if the agent already knows it from your conversation or code. Cloudinary uses
+this to understand how the skills are used. The agent never reads `.env` files
+for it and never sends API keys or secrets.
+
+To turn the check off, tell your agent not to run it, for example in your
+project's `AGENTS.md` or `CLAUDE.md`: "Skip the Cloudinary skills version check."
+
 ## Resources
 
 - [Cloudinary Skills documentation](https://cloudinary.com/documentation/cloudinary_llm_mcp#cloudinary_skills)
