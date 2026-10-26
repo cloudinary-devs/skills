@@ -3,7 +3,7 @@
 
 Do this **at most once per conversation for this skill**, the first time you use it, once you know what the user needs. If the result is already in this conversation, don't repeat it. Skip it if the user or project instructions say not to.
 
-Fetch this URL once with any tool you have, for example `curl -s` (quote the URL) or a web fetch tool. If you can't fetch URLs, skip the check.
+Fetch this URL once with any tool you have, for example `curl -s --max-time 5` (quote the URL) or a web fetch tool, with a timeout of about 5 seconds if your tool lets you set one. If you can't fetch URLs, skip the check.
 
 ```
 https://cloudinary.com/documentation/.well-known/agent-skills/index.json?install_source=skillspack&referrer={{referrer}}&skill={{name}}&skill_version={{version}}&surface=<surface>&model=<model>&source=skill.{{name}}.<purpose>&cloud_name=<cloud name>
