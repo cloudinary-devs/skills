@@ -185,9 +185,9 @@ eager_notification_url: https://example.com/webhooks/cloudinary
 | Option | Set | Result |
 |---|---|---|
 | Random (default) | nothing | Random `public_id`. In dynamic folder mode, `display_name` keeps the Console name readable |
-| Explicit ID | `public_id: sku-1234` | Predictable URLs; combine with `overwrite: false` to skip duplicates or `overwrite: true, invalidate: true` to replace |
+| Explicit ID | `public_id: sku-1234` | Predictable URLs; combine with `overwrite: false` to skip re-uploads of the same file, or `overwrite: true, invalidate: true` to replace it with an updated version — see [Overwrite and duplicates](#overwrite-and-duplicates) |
 | Original filename | `use_filename: true` | `public_id` derived from the uploaded filename with a random suffix appended |
-| Original filename, no suffix | `use_filename: true, unique_filename: false` | Exact filename as `public_id`; collisions are governed by `overwrite` |
+| Original filename, no suffix | `use_filename: true, unique_filename: false` | Exact filename as `public_id`; collisions are governed by `overwrite` — see [Overwrite and duplicates](#overwrite-and-duplicates) |
 
 Set the option in the preset so every upload path agrees. `filename_override` stores an original-filename value different from the uploaded file's name and works with `use_filename`.
 
@@ -216,9 +216,17 @@ Every product environment is in one of two folder modes. **All accounts created 
 
 ### Overwrite and duplicates
 
-- `overwrite` defaults to `false`. With a deterministic `public_id`, a repeat upload is skipped and the response includes the existing asset. This is the recommended way to avoid duplicates; no existence check is needed.
-- To replace an asset in place: signed upload with `overwrite: true` and `invalidate: true` so CDN copies are refreshed.
-- Unsigned uploads always treat `overwrite` as `false`.
+Before setting `overwrite`, decide what a same-name upload actually means:
+
+| Same `public_id` as an existing asset... | Means | Setting |
+|---|---|---|
+| ...is a different, unrelated file that happens to share a name | Not a duplicate — give it its own identity | `unique_filename: true` (or omit `public_id` and let Cloudinary assign one) |
+| ...is the exact same file being uploaded again (e.g. a retried request) | A true duplicate — skip it | `overwrite: false` with a deterministic `public_id`. The repeat upload is skipped and the response includes the existing asset; no existence check needed |
+| ...is an updated or corrected version of that same asset | Not a duplicate — replace it | Signed upload with `overwrite: true, invalidate: true` so CDN copies refresh, and `unique_filename: false` so the `public_id` doesn't drift |
+
+Defaulting to `overwrite: false` to "avoid duplicates" is only correct for the middle case. Applied to the third case, it silently keeps the stale asset — the upload succeeds, returns the old version, and the update is lost with no error.
+
+Unsigned uploads always treat `overwrite` as `false`, so replacing an existing asset requires a signed upload regardless of what's set.
 
 ## `resource_type` — Set This Explicitly
 
@@ -443,80 +451,7 @@ cloudinary.uploader.upload("file.jpg", notification_url="https://...", **{"async
 
 ## Debugging Workflow
 
-When an upload fails or behaves unexpectedly, follow these steps in order:
-
-### Step 1: Read the error response
-Cloudinary errors are in the response body:
-```json
-{"error": {"message": "..."}}
-```
-Note the exact message before doing anything else. See [references/troubleshooting.md](references/troubleshooting.md) for error message → fix mappings.
-
-### Step 2: Check `resource_type`
-Is the `resource_type` in the URL correct for the file being uploaded?
-- URL contains `/image/upload/` but the file is a video → change to `/video/upload/`
-- Use `/auto/upload/` if the file type varies
-
-### Step 3: Check upload type (signed vs unsigned)
-- **Unsigned:** Is `upload_preset` in the request? Is it spelled correctly and set to unsigned in the Console?
-- **Signed:** Are `api_key`, `timestamp`, and `signature` all present? Is the timestamp in seconds?
-
-### Step 4: Check parameter validity and precedence
-- **Unsigned:** Are any non-allow-listed parameters in the request? Remove them or move them to the preset.
-- **Unsigned:** Is a request parameter being "ignored"? Check whether the preset defines the same parameter; the preset wins for most of them.
-- **All:** Is `public_id` free of whitespace? Is the folder parameter right for the folder mode?
-
-### Step 5: Verify the signature (signed uploads only)
-1. Did you exclude `file`, `cloud_name`, `resource_type`, `api_key` from the signature string?
-2. Are parameters sorted alphabetically before joining?
-3. Is every value signed exactly as sent (comma-separated `tags`, `&` inside values encoded as `%26`, empty parameters left out)?
-4. Is the API secret appended directly with no separator?
-5. Is the timestamp within the last hour?
-
-See [references/signed-uploads.md](references/signed-uploads.md) for the full algorithm.
-
-### Step 6: Check preset configuration
-Open Cloudinary Console → Settings → Upload → [your preset] and verify:
-- Preset mode matches usage (signed vs unsigned)
-- `allowed_formats` isn't blocking the file type
-- Eager transformations don't contain `f_auto`
-
-### Step 7: Check eager and delivery transformations match
-- Does the delivery URL use the identical transformation string (same parameter order, same format component)?
-- Delivering with `f_auto`? Pre-generate each format you expect `f_auto` to pick (for example `f_webp`, `f_avif`, `f_jpg`) as separate eager variants, and deliver without a file extension so the extension does not become part of the transformation string.
-- Was `eager_async` used? The derived asset may not exist yet; check the `eager_notification_url` webhook.
-
-### Step 8: Check chunked upload (large files only)
-- Is `Content-Range` in the form `bytes <start>-<end>/<total>`?
-- Is the range inclusive on both ends?
-- Is `X-Unique-Upload-Id` the same value across all chunks?
-- Are all chunks except the last ≥ 5 MB?
-
-See [references/chunked-uploads.md](references/chunked-uploads.md) for arithmetic details.
-
-### Step 9: Remote upload checks
-- Is the URL ≤ 255 characters?
-- Are special characters URL-encoded?
-- Is the URL publicly accessible without authentication?
-
-## Common Mistakes & Best Practices
-
-**Avoid:**
-- ❌ Passing `folder`, `tags`, `eager`, `allowed_formats` on every request → ✅ Put them in an upload preset and pass `upload_preset`
-- ❌ `eager: c_fill,w_600,h_400,f_auto` → ✅ `eager: c_fill,h_400,w_600,f_webp|c_fill,h_400,w_600,f_jpg` (no `f_auto` at upload; explicit formats)
-- ❌ Eager `c_fill,h_400,w_600`, delivery `c_fill,w_600,h_400` → ✅ Identical strings, or `t_card` in both
-- ❌ `folder: products` in a dynamic-folder environment → ✅ `asset_folder: products` (+ `public_id_prefix: products` if the path belongs in the URL)
-- ❌ `public_id: photo.jpg` → ✅ `public_id: photo` (extension only for `raw`)
-- ❌ Expecting `overwrite: true` in an unsigned upload → ✅ Signed upload for overwrites
-- ❌ Hand-rolling chunked upload in Node or Python → ✅ SDK `upload_large()`
-- ❌ Incoming `transformation` to "optimize" originals → ✅ `eager` to warm derived assets; keep the original unless normalizing user-generated content
-
-**Always:**
-- Recommend an upload preset for any repeated upload pattern
-- Set `resource_type` explicitly
-- Set `allowed_formats` on unsigned presets
-- Use `eager_async: true` for video eager transformations
-- Build delivery URLs with the cloudinary-transformations skill so they match eager output
+When an upload fails or behaves unexpectedly, read the error response body first (`{"error": {"message": "..."}}`), then see [references/troubleshooting.md](references/troubleshooting.md) for the error → fix mappings, common mistakes, and the full step-by-step debugging workflow.
 
 ## Related Skills
 
