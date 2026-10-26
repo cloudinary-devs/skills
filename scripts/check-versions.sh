@@ -6,7 +6,7 @@ set -u
 base="${1:?base ref}"; head="${2:?head ref}"
 
 version_at() { # <ref> <path> -> version string or empty
-  git show "$1:$2" 2>/dev/null | sed -nE "s/^  version: *['\"]?([^'\"]+)['\"]?[[:space:]]*$/\1/p" | head -1
+  git show "$1:$2" 2>/dev/null | sed -nE "1,/^---\$/{s/^[[:space:]]+version:[[:space:]]*['\"]?([^'\"]+)['\"]?[[:space:]]*\$/\1/p;}" | head -1
 }
 skill_name_of() { # <ref> <path> -> name of the skill (dir holding nearest SKILL.md), or empty
   local d; d=$(dirname "$2")

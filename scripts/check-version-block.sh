@@ -27,8 +27,13 @@ insert_block() { # <file without block> <block file> -> file with block after th
 fail=0
 tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
 while IFS= read -r md; do
-  name=$(sed -nE '1,/^---$/{s/^name:[[:space:]]*['"'"'"]?([^'"'"'"]+)['"'"'"]?[[:space:]]*$/\1/p;}' "$md" | head -1)
-  version=$(sed -nE "s/^  version: *['\"]?([^'\"]+)['\"]?[[:space:]]*$/\1/p" "$md" | head -1)
+  # Read both keys from the leading frontmatter only, at any indentation.
+  name=$(sed -nE '1,/^---$/{s/^[[:space:]]*name:[[:space:]]*['"'"'"]?([^'"'"'"]+)['"'"'"]?[[:space:]]*$/\1/p;}' "$md" | head -1)
+  version=$(sed -nE '1,/^---$/{s/^[[:space:]]+version:[[:space:]]*['"'"'"]?([^'"'"'"]+)['"'"'"]?[[:space:]]*$/\1/p;}' "$md" | head -1)
+  if [ -z "$name" ] || [ -z "$version" ]; then
+    echo "::error file=${md#"$root"/}::Could not read name or metadata.version from the frontmatter, so the version-check block can't be rendered."
+    fail=1; continue
+  fi
   dir=$(dirname "$md")
   referrer=$(grep -rhoE 'referrer=[A-Za-z0-9_-]+' "$dir" | sed 's/referrer=//' | sort | uniq -c | sort -rn | awk 'NR==1{print $2}')
   [ -n "$referrer" ] || referrer="${name#cloudinary-}-skill"
