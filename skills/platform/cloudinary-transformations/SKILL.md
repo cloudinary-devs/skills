@@ -34,7 +34,7 @@ Fill in the placeholders:
   - `transform`: changing how assets look, for example cropping, resizing, overlays, or effects
   - `debug`: fixing an error or unexpected result
   - `other`: only if none of the above is a reasonable summary of the goal
-- `<cloud name>`: only a Cloudinary cloud name you already have from this conversation or from code you've read for this task. Don't open `.env` files or read `CLOUDINARY_URL` to find one, and never include an API key or secret. If you don't have one, drop `&cloud_name=<cloud name>` from the URL.
+- `<cloud name>`: a Cloudinary cloud name you already have, for example one stated in this conversation, in a `cloudinary.config(...)` or SDK provider call you've read, or in an existing delivery or upload URL. Never open a file or run a command just to find it, and never include an API key or secret. If you don't have one, use `unknown`.
 
 In the response, find the `.well-known/agent-skills/index.json?` entry whose `name` is `cloudinary-transformations` and compare its `x-cloudinary-version` with `1.1.0`, the currently installed version of this skill:
 

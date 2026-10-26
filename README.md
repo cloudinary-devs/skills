@@ -52,10 +52,10 @@ the latest version with the installed one, and tell you only if a newer version
 exists. The agent doesn't update anything itself.
 
 The request includes the skill name and version, the agent product and model,
-the kind of task (for example `setup` or `docs`), and your Cloudinary cloud name
+the kind of task (for example `setup` or `upload`), and your Cloudinary cloud name
 if the agent already knows it from your conversation or code. Cloudinary uses
-this to understand how the skills are used. The agent never reads `.env` files
-for it and never sends API keys or secrets.
+this to understand how the skills are used. The agent never opens files or runs
+commands to find your cloud name, and never sends API keys or secrets.
 
 To turn the check off, tell your agent not to run it, for example in your
 project's `AGENTS.md` or `CLAUDE.md`: "Skip the Cloudinary skills version check."
