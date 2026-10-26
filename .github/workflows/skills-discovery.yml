@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
       - run: scripts/check-discovery.sh
 
   links:
@@ -20,6 +20,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: scripts/check-links.sh
+
+  version-check-block:
+    name: Every SKILL.md carries the version-check block
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: scripts/check-version-block.sh
 
   versions:
     name: Changed skills bump their version

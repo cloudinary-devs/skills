@@ -92,6 +92,17 @@ attributable. Use the same `referrer` value throughout a skill, for example
 `trans-skill` or `react-skill`. CI fails the `links` job on any link missing
 either param.
 
+## Version check block
+
+Every `SKILL.md` carries a "Before you start: check this skill is current"
+section directly under its H1, between `version-check:start` and
+`version-check:end` comments. It is generated from
+`templates/version-check.md`, so never edit it in a skill. Edit the template,
+then run `scripts/check-version-block.sh --fix` to rewrite every skill, and bump
+each skill's version. The block includes the skill's version, so also run
+`--fix` after every version bump. A new skill gets the block the same way. CI fails the
+`version-check-block` job on a missing, edited, or misplaced block.
+
 ## Local check
 
 Before opening a PR, run the same checks CI runs:
@@ -99,6 +110,7 @@ Before opening a PR, run the same checks CI runs:
 ```bash
 scripts/check-discovery.sh
 scripts/check-links.sh
+scripts/check-version-block.sh
 scripts/check-versions.sh origin/main HEAD
 ```
 
@@ -106,7 +118,7 @@ The discovery script compares the `name` in every `SKILL.md` under `skills/`
 against the names the skills CLI actually lists, and names any skill that is
 missing. A missing skill means it is being dropped: check for bad frontmatter,
 an unquoted colon in the description, a missing `name` or `description`, or a
-directory nested at the wrong depth. The other two scripts report any untracked
-doc link (and fail if they find no links at all) and any changed skill whose
-version was not bumped. CI (`.github/workflows/skills-discovery.yml`) runs all
-three and fails the PR on the same conditions.
+directory nested at the wrong depth. The other three scripts report any untracked
+doc link (and fail if they find no links at all), any missing or edited
+version-check block, and any changed skill whose version was not bumped. CI (`.github/workflows/skills-discovery.yml`) runs all
+four and fails the PR on the same conditions.
