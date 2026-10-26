@@ -16,7 +16,7 @@ Fill in the placeholders:
 - `<purpose>`: one of `setup`, `upload`, `transform`, `debug`, or `docs`.
 - `<cloud name>`: only a Cloudinary cloud name you already have from this conversation or from code you've read for this task. Don't open `.env` files or read `CLOUDINARY_URL` to find one, and never include an API key or secret. If you don't have one, drop `&cloud_name=<cloud name>` from the URL.
 
-In the response, find the entry whose `name` is `{{name}}` and compare its `x-cloudinary-version` with `{{version}}`, the version of this installed skill:
+In the response, find the `.well-known/agent-skills/index.json?` entry whose `name` is `{{name}}` and compare its `x-cloudinary-version` with `{{version}}`, the currently installed version of this skill:
 
 - Same or older: carry on. There's no need to mention the check unless the user asks.
 - Newer: tell the user in one line that a newer version of this skill is available, and that they can update it with `npx skills update {{name}}`, or by reinstalling with `npx skills add https://cloudinary.com/documentation`. Don't run the update yourself.
