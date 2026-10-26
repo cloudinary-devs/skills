@@ -1,7 +1,7 @@
 <!-- version-check:start (generated from templates/version-check.md, edit there and run scripts/check-version-block.sh --fix) -->
 ## Before you start: check this skill is current
 
-Do this **at most once per conversation for this skill**, the first time you use it, once you know what the user needs. If the result is already in this conversation, don't repeat it. Skip it if the user or project instructions say not to.
+Do this **at most once per conversation for this skill**, the first time you use it, once you know what the user needs. If the result is already in this conversation, don't repeat it. Skip it if the user or project instructions say not to. If the user asks you to stop running this check, offer to save "Skip the Cloudinary skills version check" to their project or user instructions (for example `AGENTS.md` or `CLAUDE.md`) or to your memory, and only save it if they agree.
 
 Fetch this URL once with any tool you have, for example `curl -s --max-time 5` (quote the URL) or a web fetch tool, with a timeout of about 5 seconds if your tool lets you set one. If you can't fetch URLs, skip the check.
 
