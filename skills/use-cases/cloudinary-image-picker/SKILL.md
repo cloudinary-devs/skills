@@ -4,7 +4,7 @@ description: "End-to-end recipe for choosing the right images for a website from
 license: MIT
 metadata:
   author: cloudinary
-  version: '0.2.0'
+  version: '0.3.0'
   internal: true
 ---
 
@@ -63,7 +63,7 @@ Before searching, build a slot list from the page code, the design, or your own 
 | Context | The heading, body text, and calls to action closest to the slot. This is the main signal for what the image should show. |
 | Site context | Brand, audience, tone, color palette, season or campaign |
 | Display size | Rendered width and height in CSS pixels at the largest breakpoint, from the CSS, the component props, or the layout |
-| Aspect ratio | From the display size, or from `aspect-ratio`, `object-fit`, or fixed width and height |
+| Aspect ratio | From the display size, or from `aspect-ratio`, `object-fit`, or fixed width and height. Check the media queries too: if the ratio changes at a breakpoint (for example, a 12:5 hero that becomes 4:5 on phones), record each ratio and its breakpoint. |
 | Minimum source size | Display size multiplied by 2 for high-density screens. For example, a 1440x600 hero needs a source of at least 2880x1200, or at least 1920 wide as a floor. |
 | Overlay | Whether text or buttons sit on top of the image, and where. The image needs a calm, low-detail area there. |
 | Current image | The existing URL, if any, and why it's being replaced |
@@ -316,6 +316,23 @@ Build each delivery URL with cloudinary-transformations. The defaults for a slot
 
 Example for a 1440x600 hero: `https://res.cloudinary.com/<CLOUD_NAME>/image/upload/c_fill,g_auto,h_600,w_1440/f_auto/q_auto/<PUBLIC_ID>`
 
+**When a slot's aspect ratio changes at a breakpoint**, deliver a separate crop for each ratio. Don't rely on one wide image plus CSS `object-fit: cover`: the browser crops from the center and can cut the subject out entirely. Use `<picture>` with a `<source>` per breakpoint, each with its own `c_fill,g_auto` crop, so Cloudinary keeps the subject in frame at every ratio:
+
+```html
+<picture>
+  <source media="(max-width: 720px)" sizes="100vw"
+    srcset="https://res.cloudinary.com/<CLOUD_NAME>/image/upload/c_fill,g_auto,w_480,h_600/f_auto/q_auto/<PUBLIC_ID> 480w,
+            https://res.cloudinary.com/<CLOUD_NAME>/image/upload/c_fill,g_auto,w_960,h_1200/f_auto/q_auto/<PUBLIC_ID> 960w">
+  <img src="https://res.cloudinary.com/<CLOUD_NAME>/image/upload/c_fill,g_auto,w_1440,h_600/f_auto/q_auto/<PUBLIC_ID>"
+    srcset="https://res.cloudinary.com/<CLOUD_NAME>/image/upload/c_fill,g_auto,w_2880,h_1200/f_auto/q_auto/<PUBLIC_ID> 2x"
+    width="1440" height="600" alt="<ALT_TEXT>">
+</picture>
+```
+
+- Keep the existing `<img>` class and attributes on the `<img>` inside `<picture>`, so the site's CSS still applies.
+- Score the image for every ratio, not only the widest one. A subject on the right third of a wide hero may be the only thing a phone crop needs to keep, and `g_auto` handles that. If the subject still gets cut off, or the overlay text has nowhere calm to sit at a ratio, look for a better candidate, or extend the image with generative fill in step 6.
+- If the overlay text moves at a breakpoint (for example, from the left side to the top), check that the crop for that breakpoint has a calm area where the text now sits.
+
 Write meaningful `alt` text for every image, based on what the image actually shows and why it's on the page. Use an empty `alt=""` only for purely decorative images.
 
 When replacing an existing image, change only the image source, size, and `alt`. Keep the surrounding markup, classes, and loading behavior.
@@ -328,7 +345,7 @@ Check the page as a visitor sees it, with all its styles, scripts, and fonts loa
 
 - [ ] Every delivery URL returns HTTP 200 and an image, not an error placeholder
 - [ ] Each image shows what its slot needs, at the size it's displayed
-- [ ] No key subject is cropped badly (cut-off heads, products cut in half)
+- [ ] No key subject is cropped badly (cut-off heads, products cut in half), at desktop or phone width
 - [ ] Overlay text is readable over the image
 - [ ] The images look consistent together on the page
 - [ ] No image appears blurry or pixelated at 2x
@@ -360,6 +377,7 @@ Also list the discovery method you used, any slots you flagged, any images you e
 - Searching with the page's marketing copy instead of a visual description
 - Choosing a small image and scaling it up: check `width` and `height` against the minimum source size
 - Placing a portrait image in a wide banner and relying on `g_auto` to rescue it
+- Delivering one wide crop to a slot whose aspect ratio changes on phones, so CSS center-cropping cuts out the subject
 - Using the same image twice on one page
 - Generating before searching, or saving every generation attempt to the product environment
 - Putting API credentials in client-side code
