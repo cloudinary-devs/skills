@@ -4,7 +4,7 @@ description: "End-to-end recipe for choosing the right images for a website from
 license: MIT
 metadata:
   author: cloudinary
-  version: '0.3.0'
+  version: '0.4.0'
   internal: true
 ---
 
@@ -260,7 +260,17 @@ Every `text_to_image` and `image_to_image` call uses Image Generation quota, and
 
 - After the first call, work out how many more images the remaining quota allows, and plan around it: generate the slots that matter most first (hero, then products, then decorative backgrounds).
 - Count retries against the budget. If the budget can't cover every slot plus a retry each, tell the user which slots you'll leave as library near-misses, before you spend it.
+- The cost per image varies with the model, the resolution, and the endpoint, so read `used_by_request` after each call instead of assuming a fixed price. Request only the resolution the slot needs: a 4K image can cost several times as much as a 1K one.
 - Report the quota used and remaining at the end.
+
+#### Generate matching sets from one reference
+
+When several slots need images that look alike, such as product cards, a gallery, or a set of article headers:
+
+1. Generate or choose **one** image that sets the look: the setting, props, light, and palette. Often this is the hero, or the first card.
+2. Make the rest with the `image_to_image` endpoint, passing that image as the reference, and describe only what changes for each slot: "Same kraft bag, table, and light as [1], with dark espresso beans and a small espresso cup beside it".
+
+This keeps the set consistent, which separate `text_to_image` prompts rarely do, and it's often much cheaper per image. Check `used_by_request` on the first one to confirm the saving before you make the rest.
 
 **Write the prompt** from the slot inventory, not from the search query. A good prompt states:
 
@@ -380,4 +390,5 @@ Also list the discovery method you used, any slots you flagged, any images you e
 - Delivering one wide crop to a slot whose aspect ratio changes on phones, so CSS center-cropping cuts out the subject
 - Using the same image twice on one page
 - Generating before searching, or saving every generation attempt to the product environment
+- Generating a matching set (product cards, gallery) with separate text prompts, so the images don't match and cost more, instead of using one image as the `image_to_image` reference
 - Putting API credentials in client-side code
