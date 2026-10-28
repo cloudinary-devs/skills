@@ -1,10 +1,10 @@
 ---
 name: cloudinary-next
-description: Guidance for building, debugging, and reviewing next.js apps that use cloudinary through next-cloudinary and the cloudinary node sdk v2. Use for tasks involving CldImage, CldVideoPlayer, CldUploadWidget, CldUploadButton, CldOgImage, GetCldImageUrl, GetCldOgImageUrl, GetCldVideoUrl, signed uploads, server uploads, deletes, transformations, responsive images, overlays, social cards, environment variables, and common Cloudinary errors.
+description: Guidance for building, debugging, and reviewing next.js apps that use cloudinary through next-cloudinary and the cloudinary node sdk v2. Use for tasks involving CldImage, CldVideoPlayer, CldUploadWidget, CldUploadButton, CldOgImage, GetCldImageUrl, GetCldOgImageUrl, GetCldVideoUrl, signed uploads, server uploads, deletes, transformations, responsive images, overlays, social cards, environment variables, upgrading next-cloudinary from v6 to v7, and common Cloudinary errors.
 license: MIT
 metadata:
   author: cloudinary
-  version: '1.0.0'
+  version: '1.1.0'
 ---
 
 # Cloudinary Next
@@ -17,6 +17,11 @@ This skill is organized for progressive loading. Do not load every reference fil
 
 ## Core workflow
 
+0. Check versions before writing code (once per session):
+   - Read the installed `next-cloudinary` version from `node_modules/next-cloudinary/package.json`. If it isn't installed yet, read the range in the project's `package.json`. Read the Next.js version the same way from `next`.
+   - **next-cloudinary 7.x**: follow this skill as written.
+   - **next-cloudinary 6.x**: also load `references/v6.md`. Where it differs from the rest of this skill, `references/v6.md` wins. If the project could upgrade, mention it once using `references/migrating-to-v7.md`, then carry on with the user's task on v6.
+   - **Not installed yet**: install the major version that matches the project's Next.js version (see `references/project-setup.md`).
 1. Classify the user's goal before writing code:
    - render a transformed Cloudinary image in JSX
    - generate a Cloudinary URL string
@@ -39,11 +44,11 @@ This skill is organized for progressive loading. Do not load every reference fil
 - Use `next-cloudinary` for Next.js components and URL helpers: `CldImage`, `CldVideoPlayer`, `CldUploadWidget`, `CldUploadButton`, `CldOgImage`, `getCldImageUrl`, `getCldOgImageUrl`, and `getCldVideoUrl`.
 - Use the Cloudinary Node SDK v2 only for server-side operations: `import { v2 as cloudinary } from 'cloudinary'`.
 - Never expose `CLOUDINARY_API_SECRET` to the browser. Never create `NEXT_PUBLIC_CLOUDINARY_API_SECRET`.
-- Put upload widgets, video player UI, and any component with React event handlers behind a Client Component boundary with `'use client'`.
-- `CldImage` may be used from a Server Component for static rendering, but if you add client-only props such as `onLoad` or local state, move it into a Client Component.
+- Functions can't be passed from a Server Component to a client component. Any file that passes event handlers (`onSuccess`, `onLoad`, `onPlay`, …), refs, or the render-function child of `CldUploadWidget` needs `'use client'`.
+- In v7, `CldImage`, `CldVideoPlayer`, `CldUploadButton` and `CldUploadWidget` include `'use client'` themselves, so they can be rendered from a Server Component as long as no functions are passed (Server Actions passed to the `*Action` props are fine). In v6, every `next-cloudinary` component, including `CldImage`, must be rendered from a Client Component.
 - Do not import `cloudinary` in Client Components or Edge runtime code. Server Actions and route handlers that import `cloudinary` must run on the Node.js runtime.
 - Use documented `next-cloudinary` prop names and shapes. Do not infer prop names from Cloudinary URL transformation parameters.
-- Use `onSuccess` for upload widget success handling. Do not use deprecated upload callback names unless the installed version explicitly documents them.
+- Use `onSuccess` for upload widget success handling. `onUpload` was deprecated in v6 and removed in v7.
 - For deletes, pass a public ID, not a delivery URL. Pass `resource_type` when deleting videos or raw assets, and use `invalidate: true` when CDN cache invalidation is desired.
 
 ## Reference map
@@ -51,6 +56,8 @@ This skill is organized for progressive loading. Do not load every reference fil
 Load the smallest useful set of references:
 
 - `references/official-docs.md` — official documentation links and the global prop-name rule.
+- `references/v6.md` — how projects on next-cloudinary v6 differ from this skill's v7 guidance.
+- `references/migrating-to-v7.md` — upgrading a project from v6 to v7: prerequisites, breaking changes, what to change, and when to stay on v6.
 - `references/api-decision-tree.md` — choose the correct Cloudinary API/component/helper for a user goal.
 - `references/project-setup.md` — install packages, configure Next.js image domains, configure upload presets, and create starter setup files.
 - `references/environment.md` — environment variables and TypeScript process env typing.
@@ -70,7 +77,7 @@ Load the smallest useful set of references:
 
 ## Output expectations
 
-When generating code, include the file path, the complete relevant code block, and a short note about where the code runs: Client Component, Server Component, Server Action, or route handler.
+When generating code, include the file path, the complete relevant code block, and a short note about where the code runs: Client Component, Server Component, Server Action, or route handler. If the code would differ between next-cloudinary v6 and v7, say which version it targets.
 
 When reviewing code, report issues in this order: secret exposure, server/client boundary mistakes, import/runtime mistakes, incorrect component/helper choice, incorrect prop/event names, missing TypeScript narrowing, and missing cache invalidation or resource type handling.
 
