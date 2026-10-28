@@ -4,7 +4,7 @@ description: "End-to-end recipe for choosing the right images for a website from
 license: MIT
 metadata:
   author: cloudinary
-  version: '0.5.0'
+  version: '0.5.1'
   internal: true
 ---
 
@@ -261,7 +261,7 @@ Every `text_to_image` and `image_to_image` call uses Image Generation quota, and
 
 - After the first call, work out how many more images the remaining quota allows, and plan around it: generate the slots that matter most first (hero, then products, then decorative backgrounds).
 - Count retries against the budget. If the budget can't cover every slot plus a retry each, tell the user which slots you'll leave as library near-misses, before you spend it.
-- The cost per image varies with the model, the resolution, and the endpoint, so read `used_by_request` after each call instead of assuming a fixed price. Request only the resolution the slot needs: a 4K image can cost several times as much as a 1K one.
+- The cost per image varies with the model, the resolution, and the endpoint, so read `used_by_request` after each call instead of assuming a fixed price. Request only the resolution the slot needs, and never more than `2K`: in testing, one 4K hero cost 19 units, about as much as 7 smaller images together. For wider slots, generate at `2K` and upscale (see below).
 - Report the quota used and remaining at the end.
 
 #### Generate matching sets from one reference
@@ -299,7 +299,7 @@ curl -s -X POST "https://api.cloudinary.com/v2/generate/$CLOUDINARY_CLOUD_NAME/t
 ```
 
 - Set `aspect_ratio` to the slot's ratio, or the nearest supported one, and choose a `resolution` that meets the minimum source size. `2K` is about 2048 pixels on the long side, which is enough for slots up to about 1000 CSS pixels wide at 2x.
-- For wider slots, such as a full-width hero, request the highest resolution the API supports. If the result is still under the minimum source size, upscale the approved image with `e_upscale` before saving it, or save it as is and flag the slot in the report.
+- For wider slots, such as a full-width hero, still generate at `2K`, which costs far less than `4K`. If the approved image is under the slot's minimum source size, upscale it when you save it: `e_upscale` always multiplies each dimension by 4, so follow it with `c_limit` to stop at the minimum source size, and save that derived image. For example, for a 1440x600 hero, save `e_upscale/c_limit,w_2880/<PUBLIC_ID>` rather than the full 8192-pixel result. Upscaling doesn't use Image Generation quota.
 - For text-heavy or vector needs, `mode: auto` picks a suitable model. Only pin a `model.id` if the user asks.
 - If an existing image is close to what you need, adapt it in step 6 instead of generating from scratch.
 
