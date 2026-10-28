@@ -4,7 +4,7 @@ description: "End-to-end recipe for choosing the right images for a website from
 license: MIT
 metadata:
   author: cloudinary
-  version: '0.4.0'
+  version: '0.5.0'
   internal: true
 ---
 
@@ -77,8 +77,9 @@ Ask one short, batched question before you search. Skip a scope or style questio
 - **Scope**: limit the search to a folder, tag, or collection? (for example, only assets tagged `approved` or `CC0`)
 - **Style**: photography or illustration, people or no people, color mood?
 - **Write permission**: may you edit existing images or generate new ones when nothing in the library fits, and save the results to the product environment as new assets? Mention the quota cost (see [Check the generation budget](#check-the-generation-budget)).
+- **AI disclosure**: when you have write permission, ask whether the site should show a visible "AI" label on AI-generated and AI-edited images. Some regulations, such as Article 50 of the EU AI Act, require AI-generated media to be disclosed to the people viewing it. Don't give legal advice: if the user isn't sure, suggest they check with their legal or compliance team. See [Add a visible AI label](#add-a-visible-ai-label).
 
-If the user says to go ahead without answering, search all public images, and edit or generate where needed. If they decline write permission, use library images only and flag any slots that don't reach the acceptance score.
+If the user says to go ahead without answering, search all public images, and edit or generate where needed, without an AI label. If they decline write permission, use library images only and flag any slots that don't reach the acceptance score.
 
 ### 3. Write search queries per slot
 
@@ -248,7 +249,7 @@ curl -s -X POST "https://api.cloudinary.com/v2/generate/$CLOUDINARY_CLOUD_NAME/i
 Then:
 
 1. **Check the result**: open the transformation URL (the first request can take a while, since the edit runs then) or the `image_to_image` preview URL, and view it. Score it with the step 5 rubric. If it scores under 14, try a different fix or a clearer prompt, up to 2 attempts, then go to step 7.
-2. **Save the approved result as a new asset**, using the same upload call as in step 7, with `tags=ai-edited,image-picker`. Don't overwrite the original. Saving also means the responsive sizes in step 8 resize one fixed image, instead of running the generative edit again for every width.
+2. **Save the approved result as a new asset**, using the same upload call as in step 7, with `tags=ai-edited,image-picker` and `ai_generated=true`. Don't overwrite the original. Saving also means the responsive sizes in step 8 resize one fixed image, instead of running the generative edit again for every width.
 
 ### 7. Generate images for unfilled slots
 
@@ -312,8 +313,11 @@ curl -s -X POST "https://api.cloudinary.com/v1_1/$CLOUDINARY_CLOUD_NAME/image/up
   -F "file=<PREVIEW_SECURE_URL>" \
   -F "public_id=<SITE_NAME>/<SLOT_ID>" \
   -F "tags=ai-generated,image-picker" \
-  -F "context=alt=<ALT_TEXT>|prompt=<PROMPT>"
+  -F "context=alt=<ALT_TEXT>|prompt=<PROMPT>" \
+  -F "ai_generated=true"
 ```
+
+Always pass `ai_generated=true` when you save a generated or AI-edited image, whether or not the user wants a visible label. It sets the asset's [AI-generated field](https://cloudinary.com/documentation/content_provenance_and_authenticity.md?install_source=skillspack&referrer=image-picker-skill#provenance_and_ai_fields), which search and the conditional AI label in step 8 rely on. Re-uploading a preview URL doesn't set it automatically, and the field can't be added to an asset after upload.
 
 ### 8. Deliver with slot-sized transformations
 
@@ -347,6 +351,49 @@ Write meaningful `alt` text for every image, based on what the image actually sh
 
 When replacing an existing image, change only the image source, size, and `alt`. Keep the surrounding markup, classes, and loading behavior.
 
+#### Add a visible AI label
+
+If the user wants AI disclosure (step 2), add an "AI" label in the bottom-right corner of every generated or AI-edited image, as a [conditional overlay](https://cloudinary.com/documentation/content_provenance_and_authenticity.md?install_source=skillspack&referrer=image-picker-skill#adding_a_visible_ai_disclosure) applied at delivery. The original asset is never changed.
+
+**1. Make sure the labels are in the product environment.** There are four versions of the label, all round "AI" badges on a transparent canvas:
+
+| Public ID | Look | Use on |
+|---|---|---|
+| `ai-labels/LABEL_AI_white_transparent` | Translucent white circle, black "AI" | A calm, dark corner |
+| `ai-labels/LABEL_AI_black_transparent` | Translucent black circle, white "AI" | A calm, light corner |
+| `ai-labels/LABEL_AI_white` | Solid white circle, black "AI" | A busy or mid-tone corner that's darker overall |
+| `ai-labels/LABEL_AI_black` | Solid black circle, white "AI" | A busy or mid-tone corner that's lighter overall |
+
+Check for each label with the Admin API (`GET /resources/image/upload/ai-labels/<NAME>`). Upload any that are missing, from Cloudinary's copies, keeping the same names:
+
+```bash
+for n in white_transparent black_transparent white black; do
+  curl -s -X POST "https://api.cloudinary.com/v1_1/$CLOUDINARY_CLOUD_NAME/image/upload" \
+    -u "$CLOUDINARY_API_KEY:$CLOUDINARY_API_SECRET" \
+    -F "file=https://res.cloudinary.com/demo/image/upload/v1792417795/docs/icons/LABEL_AI_$n.png" \
+    -F "public_id=ai-labels/LABEL_AI_$n" \
+    -F "overwrite=false" \
+    -F "tags=image-picker"
+done
+```
+
+Don't set `ai_generated` on the labels themselves.
+
+**2. Choose a label for each crop.** View the bottom-right corner of each delivered crop: the label sits on the crop, not the original, and each breakpoint crop has a different corner. Judge the corner's brightness and how busy it is, and pick from the table. When in doubt, choose a solid label: readability matters more than subtlety. The labels don't need to match each other across a page.
+
+**3. Size the label.** Aim for a label about 48 to 64 CSS pixels across on screen. Scale it in pixels relative to the crop's delivered width: for example, `w_64` on a crop delivered at 1x, and `w_128` on the 2x crop of the same slot. The badge has transparent padding built in, so it doesn't need an extra offset from the corner.
+
+**4. Add the overlay after the crop and before `f_auto/q_auto`**, so it lands in the corner of the crop the visitor sees:
+
+```
+c_fill,g_auto,h_600,w_1440/if_ctx:!cld_ai_generated!_eq_!true!/l_ai-labels:LABEL_AI_black_transparent/c_scale,w_64/fl_layer_apply,g_south_east/if_end/f_auto/q_auto/<PUBLIC_ID>
+```
+
+- The condition shows the label only when the asset's AI-generated field is `true`, so the same URL pattern is safe to use on library images too. It depends on the asset having been saved with `ai_generated=true` (step 7).
+- For an AI-generated asset saved without `ai_generated=true`, drop the `if_ctx` and `if_end` components and add the overlay unconditionally.
+- Add the overlay to every URL for the slot: each `srcset` width, each `<source>` crop, and CSS `background-image` URLs.
+- Add the disclosure to the alt text too, so screen reader users get it: for example, "AI-generated image: two hikers on an autumn trail".
+
 ### 9. Self-check the rendered page
 
 Before handing back, open the page and check it, using a browser tool if you have one, or by fetching and viewing each delivery URL if not.
@@ -357,6 +404,7 @@ Check the page as a visitor sees it, with all its styles, scripts, and fonts loa
 - [ ] Each image shows what its slot needs, at the size it's displayed
 - [ ] No key subject is cropped badly (cut-off heads, products cut in half), at desktop or phone width
 - [ ] Overlay text is readable over the image
+- [ ] If AI labels are on: every generated or AI-edited image shows its label, clearly readable, not hidden under text or buttons, and not clipped by CSS cropping, at desktop and phone width
 - [ ] The images look consistent together on the page
 - [ ] No image appears blurry or pixelated at 2x
 
@@ -372,7 +420,7 @@ End with a short table, one row per slot:
 | `menu-banner` | Adapted | `bakery-site/menu-banner` | 16/20 | Library photo was 4:3; extended to 21:9 with generative fill |
 | `about-team` | Generated | `bakery-site/about-team` | 15/20 | No team photos in the library; generated a matching portrait |
 
-Also list the discovery method you used, any slots you flagged, any images you edited or generated and saved (with their public IDs and the original asset for edits), the Image Generation quota used and remaining, and anything the user should review, such as generated images of people presented as real staff or customers.
+Also list the discovery method you used, any slots you flagged, any images you edited or generated and saved (with their public IDs and the original asset for edits), the Image Generation quota used and remaining, which images carry an AI label (and which label version), and anything the user should review, such as generated images of people presented as real staff or customers.
 
 ## Common Mistakes
 
@@ -392,3 +440,5 @@ Also list the discovery method you used, any slots you flagged, any images you e
 - Generating before searching, or saving every generation attempt to the product environment
 - Generating a matching set (product cards, gallery) with separate text prompts, so the images don't match and cost more, instead of using one image as the `image_to_image` reference
 - Putting API credentials in client-side code
+- Saving a generated image without `ai_generated=true`, so the conditional AI label never shows and the flag can't be added later
+- Placing the AI label before the crop, so it's cropped out, or choosing its version from the full image instead of the corner of each crop
