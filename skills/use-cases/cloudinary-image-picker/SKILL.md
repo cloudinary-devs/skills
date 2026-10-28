@@ -4,7 +4,7 @@ description: "End-to-end recipe for choosing the right images for a website from
 license: MIT
 metadata:
   author: cloudinary
-  version: '0.1.0'
+  version: '0.2.0'
   internal: true
 ---
 
@@ -41,7 +41,7 @@ Copy this checklist and track progress:
 
 ```
 - [ ] 1. Inventory image slots
-- [ ] 2. Confirm scope with the user (if needed)
+- [ ] 2. Confirm scope and write permission with the user
 - [ ] 3. Write search queries per slot
 - [ ] 4. Search and collect candidates
 - [ ] 5. Score candidates and choose
@@ -70,15 +70,15 @@ Before searching, build a slot list from the page code, the design, or your own 
 
 Read the copy closely and connect the dots. A section titled "Fresh from our kitchen" above a bakery menu needs warm, close-up food photography, not a generic "food" image. A "Meet the team" grid needs consistent head-and-shoulders portraits, not mixed group shots.
 
-### 2. Confirm scope with the user
+### 2. Confirm scope and permissions with the user
 
-Ask one short, batched question only when the answer changes the search. Skip it when the user already said, or when the request is clearly open. Useful questions:
+Ask one short, batched question before you search. Skip a scope or style question when the user already answered it, but **always ask for write permission** unless the user already gave it: editing and generating create new assets in their product environment and use add-on quota, and without explicit permission your agent's safety checks may block the upload at the end of the run, after the quota is already spent.
 
-- Limit the search to a folder, tag, or collection? (for example, only assets tagged `approved` or `CC0`)
-- Any style preference: photography or illustration, people or no people, color mood?
-- May you generate new images when nothing in the library fits, and save them to the product environment?
+- **Scope**: limit the search to a folder, tag, or collection? (for example, only assets tagged `approved` or `CC0`)
+- **Style**: photography or illustration, people or no people, color mood?
+- **Write permission**: may you edit existing images or generate new ones when nothing in the library fits, and save the results to the product environment as new assets? Mention the quota cost (see [Check the generation budget](#check-the-generation-budget)).
 
-If the user doesn't answer or says to go ahead, search all public images and generate where needed.
+If the user says to go ahead without answering, search all public images, and edit or generate where needed. If they decline write permission, use library images only and flag any slots that don't reach the acceptance score.
 
 ### 3. Write search queries per slot
 
@@ -108,7 +108,7 @@ Pick the first method that works for the product environment and the user's scop
 | C. Search API on tags and captions | The scope is larger, and assets have auto-tags or captions | Content keywords |
 | D. Search API on existing tags and names | None of the above | Whatever keywords the uploader added |
 
-To test for Visual Search, run one visual search call. An error saying the feature isn't enabled means it's unavailable: move on without mentioning it again. To size the scope, run a Search API call with the scope expression and read `total_count`.
+To test for Visual Search, run one visual search call with a broad query that should match something in any library, such as `outdoor` or `person`. Treat it as unavailable if the call returns an error saying the feature isn't enabled, or if it returns no results: the feature may be off, or the images may not be indexed yet. Move on without mentioning it again. To size the scope, run a Search API call with the scope expression and read `total_count`.
 
 #### A. Visual Search
 
@@ -142,7 +142,8 @@ curl -s -X POST "https://api.cloudinary.com/v1_1/$CLOUDINARY_CLOUD_NAME/resource
 ```
 
 - Drop images that are too small for every slot (`width` and `height` below the smallest slot's display size) before viewing.
-- View each remaining image once as a small thumbnail (`c_limit,w_300/f_jpg/q_auto`) and write a one-line description of it. Reuse these descriptions for every slot instead of viewing the images again.
+- View the remaining images as **contact sheets**: download small thumbnails (`c_limit,w_300/f_jpg/q_auto`) and tile 12 to 20 of them into one grid image, each labeled with its public ID and pixel size (for example, with ImageMagick `montage` or Pillow). Viewing a few sheets is much faster than viewing each image on its own.
+- Write a one-line description of each image from the sheets. Reuse these descriptions for every slot instead of viewing the images again. View a shortlisted image on its own, at a larger size, before you score it.
 - Match descriptions against each slot's needs to build its shortlist.
 
 #### C. Search API on tags and captions
@@ -188,7 +189,9 @@ Maximum score: 20. Rules:
 - **Accept** the highest scorer if it reaches **14 or more**.
 - **Don't reuse** one asset in two slots on the same page, unless the design intends it.
 - **Check crop fit** by comparing aspect ratios: a 4:3 source in a 21:9 hero loses most of its height. `g_auto` helps, but can't add pixels that aren't there.
+- **Third-party logos and brand names** on products (for example, a brand logo on sunglasses) score 0 on Clean for a store or brand site, because they misrepresent what's for sale.
 - If no candidate reaches 14, but one scores 10 or more and an edit could fix what it's missing, the slot goes to step 6. Otherwise, it goes to step 7.
+- **An accepted image with a fixable flaw also goes to step 6**, when you have write permission. For example: a visible logo (remove it), or a product shot whose background doesn't match the other product cards (replace the background). Passing the acceptance score doesn't mean the image can't be improved.
 
 **Optional second opinion**: if the [Cloudinary AI Vision add-on](https://cloudinary.com/documentation/cloudinary_ai_vision_addon.md?install_source=skillspack&referrer=image-picker-skill) is available, use it to check slot-specific details on the top 2 or 3 candidates, for example, whether there's empty space for a headline. Ask yes-or-no questions with `ai_vision_general`:
 
@@ -211,6 +214,7 @@ Record the score and a one-line reason for each choice. You need them for the re
 Editing an existing image is often better than generating a new one: it keeps a real photo, matches the rest of the library, and costs less. Consider it for:
 
 - A near-miss candidate from step 5 that has the right subject but one fixable problem
+- An accepted candidate with a fixable flaw, such as a logo, or a background that doesn't match the images next to it
 - The slot's current image, when you're replacing or refreshing it. For example, a summer hero can become an autumn one by changing its background or season, while keeping the same people and layout.
 
 Match the problem to the fix:
@@ -250,6 +254,14 @@ Then:
 
 Use the [Image Generation API](https://cloudinary.com/documentation/image_generation_addon.md?install_source=skillspack&referrer=image-picker-skill) when no existing asset fits. If the user said not to generate, leave the best candidate in place and flag the slot in the report.
 
+#### Check the generation budget
+
+Every `text_to_image` and `image_to_image` call uses Image Generation quota, and a free plan's allotment runs out after a handful of images. Every response reports the quota in `limits.addons_quota` (`used_by_request`, `remaining`, `limit`).
+
+- After the first call, work out how many more images the remaining quota allows, and plan around it: generate the slots that matter most first (hero, then products, then decorative backgrounds).
+- Count retries against the budget. If the budget can't cover every slot plus a retry each, tell the user which slots you'll leave as library near-misses, before you spend it.
+- Report the quota used and remaining at the end.
+
 **Write the prompt** from the slot inventory, not from the search query. A good prompt states:
 
 1. Subject and action: "a barista pouring latte art into a ceramic cup"
@@ -275,7 +287,8 @@ curl -s -X POST "https://api.cloudinary.com/v2/generate/$CLOUDINARY_CLOUD_NAME/t
   }'
 ```
 
-- Set `aspect_ratio` to the slot's ratio, or the nearest supported one, and choose a `resolution` that meets the minimum source size.
+- Set `aspect_ratio` to the slot's ratio, or the nearest supported one, and choose a `resolution` that meets the minimum source size. `2K` is about 2048 pixels on the long side, which is enough for slots up to about 1000 CSS pixels wide at 2x.
+- For wider slots, such as a full-width hero, request the highest resolution the API supports. If the result is still under the minimum source size, upscale the approved image with `e_upscale` before saving it, or save it as is and flag the slot in the report.
 - For text-heavy or vector needs, `mode: auto` picks a suitable model. Only pin a `model.id` if the user asks.
 - If an existing image is close to what you need, adapt it in step 6 instead of generating from scratch.
 
@@ -309,7 +322,9 @@ When replacing an existing image, change only the image source, size, and `alt`.
 
 ### 9. Self-check the rendered page
 
-Before handing back, open the page and check it, using a browser tool if you have one, or by fetching and viewing each delivery URL if not:
+Before handing back, open the page and check it, using a browser tool if you have one, or by fetching and viewing each delivery URL if not.
+
+Check the page as a visitor sees it, with all its styles, scripts, and fonts loaded. Use the project's dev server if it has one. For a static site, serve the folder over local HTTP (for example, `python3 -m http.server`) rather than opening the file directly: some browser tools load a `file://` page without its stylesheet, which hides crop and overlay problems. If the page renders unstyled, fix that before checking anything else. Take a screenshot at desktop width and one at phone width.
 
 - [ ] Every delivery URL returns HTTP 200 and an image, not an error placeholder
 - [ ] Each image shows what its slot needs, at the size it's displayed
@@ -330,12 +345,15 @@ End with a short table, one row per slot:
 | `menu-banner` | Adapted | `bakery-site/menu-banner` | 16/20 | Library photo was 4:3; extended to 21:9 with generative fill |
 | `about-team` | Generated | `bakery-site/about-team` | 15/20 | No team photos in the library; generated a matching portrait |
 
-Also list any slots you flagged, any images you edited or generated and saved (with their public IDs and the original asset for edits), and anything the user should review, such as generated images of people.
+Also list the discovery method you used, any slots you flagged, any images you edited or generated and saved (with their public IDs and the original asset for edits), the Image Generation quota used and remaining, and anything the user should review, such as generated images of people presented as real staff or customers.
 
 ## Common Mistakes
 
 - Assuming Visual Search is available: test it, and fall back to another discovery method without fuss
+- Starting to generate without asking for write permission, then being blocked from saving after the quota is spent
 - Running an auto-tagging or captioning pass on the user's assets without asking
+- Accepting a product shot with a third-party logo, or a background that clashes with the cards next to it, instead of fixing it in step 6
+- Checking the page from a `file://` URL that loads without its stylesheet
 - Generating from scratch when an edit to an existing image would fix the problem
 - Overwriting the original asset with an edited version, or leaving a generative edit in a `srcset` URL so it runs again for every width
 - Choosing from the public ID or tags without viewing the image
