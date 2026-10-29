@@ -62,12 +62,18 @@ import { v2 as cloudinary, type UploadApiResponse, type UploadApiErrorResponse }
 ### Refs
 
 ```tsx
-import type { CldVideoPlayerProps } from 'next-cloudinary';
 import { useRef } from 'react';
+import type { CloudinaryVideoPlayer } from 'next-cloudinary';
 
-const playerRef = useRef<unknown>(null);     // Cloudinary player instance — type as unknown until you need methods
-const videoRef = useRef<HTMLVideoElement>(null);
+const playerRef = useRef<CloudinaryVideoPlayer | null>(null); // pass as <CldVideoPlayer playerRef={playerRef} />
+const videoRef = useRef<HTMLVideoElement | null>(null);
 ```
+
+- ❌ **WRONG**: `useRef<unknown>(null)` for `playerRef` — `CldVideoPlayer` rejects it (`Type 'RefObject<unknown>' is not assignable…`).
+
+### New type errors after upgrading to v7
+
+v7's types are stricter in a few places (`overlay` removed, `assetType` values, `analytics: false`, `CloudinaryLoaderCldOptions.src`). See `references/migrating-to-v7.md`.
 
 ### Avoid `any`
 - ❌ **WRONG**: `const result: any = …`
