@@ -5,7 +5,7 @@ Use this for `CldVideoPlayer` setup, required CSS, events, refs, and known limit
 
 ## CldVideoPlayer — the player
 
-Wraps the Cloudinary Video Player: v4.1.2 in next-cloudinary v7, v1.11.1 in v6. **Required**: `width`, `height`, `src`. **Always** import the CSS once on the page (or in a layout).
+Wraps the Cloudinary Video Player: v4 in next-cloudinary v7, v1.x in v6. **Required**: `width`, `height`, `src`. **Always** import the CSS once on the page (or in a layout).
 
 ```tsx
 'use client';
@@ -40,5 +40,5 @@ const videoRef = useRef<HTMLVideoElement | null>(null);
 ## v7 notes (Video Player v4)
 
 - **Studio posters**: a custom poster saved for a video in the Video Player Studio is shown automatically. Other saved Studio settings (colours, controls, etc.) are not applied; set them with props instead.
-- **Custom CSS**: v7 moved the player from v1.11.1 to v4.1.2. If the project styles the player with its own CSS, check that it still applies.
-- **Known limitation (7.0): `aspectRatio`**: setting `aspectRatio` makes the poster image fail to load; the video itself plays normally. A fix is planned for a follow-up release. Workaround: also set a crop mode, e.g. `cropMode="fill"`. This also crops the video to that ratio, and `cropMode` isn't in the TypeScript types yet, so it needs a cast. Don't add `aspectRatio` to a player unless the user asks for it.
+- **Custom CSS**: v7 moved the player from v1.x to v4. If the project styles the player with its own CSS, check that it still applies.
+- **Known limitation (7.0.x): `aspectRatio`**: in next-cloudinary 7.0.x, setting `aspectRatio` makes the poster image fail to load; the video itself plays normally. A fix is planned for a follow-up release. Don't add `aspectRatio` to a player unless the user asks for it, and if the poster matters, remove it. Fallback if the ratio is required: also set a crop mode, e.g. `cropMode="fill"`. This also crops the video to that ratio, and `cropMode` isn't in the TypeScript types yet, so it needs a cast.

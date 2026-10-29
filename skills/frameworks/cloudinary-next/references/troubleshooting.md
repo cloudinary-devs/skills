@@ -181,12 +181,12 @@ Use this when the user provides an error message, broken behavior, or asks for a
 ### "Cannot find module 'next-cloudinary/dist/cld-video-player.css'"
 - ✅ Solution: install `next-cloudinary`. This path works in v6 and v7; v7 also accepts `next-cloudinary/cld-video-player.css`.
 
-### Poster image is broken when `aspectRatio` is set (v7.0)
+### Poster image is broken when `aspectRatio` is set (v7.0.x)
 - ❌ Problem: known limitation with Video Player v4. The video itself plays normally.
 - ✅ Solution: remove `aspectRatio` if it isn't needed, or also set a crop mode such as `cropMode="fill"`, which crops the video to that ratio. `cropMode` isn't in the TypeScript types yet, so it needs a cast. A fix is planned for a follow-up release.
 
 ### Custom poster from the Video Player Studio isn't shown
-- ✅ Checks: v7 shows Studio posters automatically; v6 (Video Player 1.11.1) doesn't. A `poster` prop set in code takes precedence.
+- ✅ Checks: v7 shows Studio posters automatically; v6 (Video Player v1.x) doesn't. A `poster` prop set in code takes precedence.
 
 ### Player styles are broken / unstyled controls
 - ❌ Problem: CSS not imported.

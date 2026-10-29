@@ -15,7 +15,7 @@ Check before recommending anything:
 
 ## What the upgrade gives them
 
-- `CldVideoPlayer` uses Cloudinary Video Player v4 (v6 uses 1.11.1). Custom posters saved in the Video Player Studio are shown automatically.
+- `CldVideoPlayer` uses Cloudinary Video Player v4 (v6 uses v1.x). Custom posters saved in the Video Player Studio are shown automatically.
 - Components include `'use client'`, so they can be rendered from Server Components when no functions are passed.
 - Fixes: the video player re-initialises after unmount/remount (for example navigating away and back), `q_auto` no longer repeats in video URLs with a `transformation` array, and overlay text with several commas no longer breaks image URLs.
 - More complete TypeScript types, and `seed` for `fillBackground`.
@@ -33,8 +33,8 @@ Search the project for:
 | `analytics: false` passed to `getCldImageUrl` or `getCldVideoUrl` | No longer accepted. It never disabled analytics in v6: remove it. |
 | Code that calls `cloudinaryLoader` directly or uses `CloudinaryLoaderCldOptions` | `src` is now required. |
 | Option types imported from `@cloudinary-util/url-loader` | Some names and shapes changed. Prefer the types exported by `next-cloudinary`. |
-| Custom CSS targeting the video player | The player moved from v1.11.1 to v4.1.2 (three majors). Check the styles still apply. |
-| `CldVideoPlayer` with `aspectRatio` | Known limitation in 7.0: the poster image fails to load (the video plays normally). See `references/video-player.md`. |
+| Custom CSS targeting the video player | The player moved from v1.x to v4 (three majors). Check the styles still apply. |
+| `CldVideoPlayer` with `aspectRatio` | Known limitation in 7.0.x: the poster image fails to load (the video plays normally). See `references/video-player.md`. |
 
 `'use client'` wrappers that only existed so a component could render in a Server Component can stay; removing them is optional.
 

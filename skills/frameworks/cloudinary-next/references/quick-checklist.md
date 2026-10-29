@@ -32,12 +32,12 @@ When something isn't working, check:
 - [ ] **`<CldVideoPlayer>`**: `"use client"` + `import 'next-cloudinary/dist/cld-video-player.css'`
 - [ ] **`<CldUploadWidget>` unsigned**: preset is **Unsigned** in the dashboard, name matches `uploadPreset` exactly
 - [ ] **`<CldUploadWidget>` signed**: `signatureEndpoint="/api/sign-cloudinary-params"`; route returns `{ signature }`; uses Node SDK v2 (`import { v2 as cloudinary } from 'cloudinary'`); runs on Node runtime
-- [ ] **Use `onSuccess`** (not deprecated `onUpload`); narrow `result.info` with a type guard before reading `public_id`
+- [ ] **Use `onSuccess`** (`onUpload` was removed in v7 and is deprecated in v6); narrow `result.info` with a type guard before reading `public_id`
 - [ ] **Server uploads**: `"use server"` (or route handler), Node runtime, convert `File` → `Buffer` before `upload_stream`
 - [ ] **Delete**: `cloudinary.uploader.destroy(publicId, { resource_type, invalidate: true })`; `result === 'ok'` on success
 - [ ] **OG images**: App Router → `getCldOgImageUrl` in `generateMetadata`; Pages Router → `<CldOgImage>` outside `<Head>`
 - [ ] **Overlays**: `publicId` (image) or `text` (text) per overlay; gravity uses underscores (`"south_east"`); blend modes go in `appliedEffects`
-- [ ] **Installing Cloudinary packages**: next-cloudinary v7 on Next.js 16, `next-cloudinary@6` on Next.js 15 or earlier; use caret in `package.json`; valid names are `next-cloudinary` and `cloudinary`
+- [ ] **Installing Cloudinary packages**: `next-cloudinary@7` on Next.js 16, `next-cloudinary@6` on Next.js 15 or earlier; use caret in `package.json`; valid names are `next-cloudinary` and `cloudinary`
 - [ ] **OG images (App Router)**: on Next.js 15+, `await params` in `generateMetadata`
 - [ ] **TypeScript**: define an upload-result interface; type env vars in `env.d.ts`; use `unknown` + guards instead of `any`
 - [ ] **Sample assets** (`samples/cloudinary-icon`, `samples/elephants`, etc.) may have been deleted — handle `onError` and provide an upload path

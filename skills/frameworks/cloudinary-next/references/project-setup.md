@@ -13,7 +13,7 @@ For a **new** install, pick the `next-cloudinary` major version from the project
 
 | Next.js | Install | `package.json` range |
 | --- | --- | --- |
-| 16 | `npm install next-cloudinary` (v7: also needs React 18.2 or 19 and Node.js 22+) | `"^7.0.0"` |
+| 16 | `npm install next-cloudinary@7` (v7: also needs React 18.2 or 19 and Node.js 22+) | `"^7.0.0"` |
 | 15 or earlier | `npm install next-cloudinary@6` | `"^6.0.0"` |
 
 ```bash
