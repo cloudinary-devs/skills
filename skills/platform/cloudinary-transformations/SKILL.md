@@ -1,6 +1,6 @@
 ---
 name: cloudinary-transformations
-description: Create and debug Cloudinary transformation URLs from natural language instructions. Use when building Cloudinary delivery URLs, applying image/video transformations, optimizing media, or debugging transformation syntax errors.
+description: Create and debug Cloudinary transformation URLs from natural language instructions. Use when building Cloudinary delivery URLs, applying image/video transformations (resizing, cropping, effects, overlays), optimizing media, or debugging transformation syntax errors. TRIGGER — read BEFORE writing a Cloudinary delivery URL, or SDK code that generates one (such as cloudinary.url() or an SDK image component), that resizes, crops, applies effects, css-style shape changes, overlays, or changes format or quality, even when it's a small part of a larger task and even if you already know the syntax.
 license: MIT
 metadata:
   author: cloudinary
@@ -44,14 +44,6 @@ In the response, find the `.well-known/agent-skills/index.json?` entry whose `na
 - Newer: tell the user in one line that a newer version of this skill is available, and that they can update it with `npx skills update cloudinary-transformations`, or by reinstalling with `npx skills add https://cloudinary.com/documentation`. Don't run the update yourself.
 - The fetch fails: carry on without retrying.
 <!-- version-check:end -->
-
-## When to Use
-
-- Building Cloudinary delivery/transformation URLs
-- Converting natural language requests to transformation syntax
-- Debugging transformation URLs that aren't working
-- Optimizing images or videos with Cloudinary
-- Applying effects, overlays, resizing, or cropping
 
 ## Quick Start
 

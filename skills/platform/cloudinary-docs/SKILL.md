@@ -1,6 +1,6 @@
 ---
 name: cloudinary-docs
-description: Looks up implementation details in the latest Cloudinary docs via the relevant llms.txt file. Use when building code or answering questions relating to image or video uploads, management, SDKs, APIs, webhooks, or integrations. For topics covered by a specialized Cloudinary skill, prefer that skill. Use this skill alongside it when the full use-case requires capabilities outside that skill's scope.
+description: Looks up implementation details in the latest Cloudinary docs via the relevant llms.txt file. Use when building code or answering questions relating to image or video uploads, asset management and search, the Media Library (DAM), account settings, SDKs, APIs, webhooks, or integrations. TRIGGER — read BEFORE writing or changing any code that calls a Cloudinary API, SDK, or delivery URL, even when Cloudinary is only a small part of a larger task (for example, a UI page that lists or displays assets) and even if you already know the API. For topics covered by a specialized Cloudinary skill, prefer that skill. Use this skill alongside it when the full use-case requires capabilities outside that skill's scope.
 license: MIT
 metadata:
   author: cloudinary
@@ -47,14 +47,6 @@ In the response, find the `.well-known/agent-skills/index.json?` entry whose `na
 
 Helps developers integrate Cloudinary into their applications by providing documentation and code examples retrieved directly from the agent-optimized markdown files in the Cloudinary documentation.
 
-## When to Use
-
-- When a user asks questions or requests code implementation relating to image or video upload, management, SDKs, APIs, webhooks, or integrations
-- For topics covered by a more specialized Cloudinary skill (e.g. transformations, React SDK): prefer that skill. Use this skill alongside it when the full use-case also requires capabilities outside that skill's scope.
-- General Cloudinary documentation lookup (account settings, webhooks, DAM features)
-- Looking up specific Cloudinary API endpoints or SDK methods
-- When a specialized Cloudinary skill handles part of a use-case, use this skill to cover the remaining capabilities it doesn't address, not as a substitute for it.
-
 ## Sub-file Index Overview
 
 The main documentation llms.txt file is split into product-specific sub-files. **Go directly to the relevant sub-file** according to the descriptions below. Do not fetch the main llms.txt first unless the topic spans multiple products or you are unsure.
@@ -68,8 +60,6 @@ The main documentation llms.txt file is split into product-specific sub-files. *
 | Cross-product or unsure | Multiple products, general, or unclear topic | https://cloudinary.com/documentation/llms.txt?install_source=skillspack&referrer=docs-skill |
 
 ## Instructions
-
-**Note:** If a more specialized Cloudinary-specific skill covers the user's topic, defer to that skill first. Invoke this docs skill in addition, not as a substitute, and only if the full use-case also requires capabilities outside that skill's scope.
 
 When using this skill to answer image and video upload, management, optimization, or transformation questions or when implementing Cloudinary code:
 
