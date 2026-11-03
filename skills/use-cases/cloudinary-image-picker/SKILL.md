@@ -4,7 +4,7 @@ description: "End-to-end recipe for choosing the right images for a website from
 license: MIT
 metadata:
   author: cloudinary
-  version: '0.5.1'
+  version: '0.6.0'
   internal: true
 ---
 
@@ -23,7 +23,9 @@ Don't use this skill for logos, icons, or brand marks: use the user's own files.
 
 ## Prerequisites
 
-- **Credentials**: `CLOUDINARY_URL` (`cloudinary://<API_KEY>:<API_SECRET>@<CLOUD_NAME>`), or `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET`. Never print the secret or put it in client-side code.
+- **Access to the product environment**, in this order of preference:
+  1. **Cloudinary MCP servers** (recommended): the [Asset Management and Analysis MCP servers](https://cloudinary.com/documentation/cloudinary_llm_mcp.md?install_source=skillspack&referrer=image-picker-skill#mcp_servers) sign in with OAuth, so the user never shares an API secret with you. They cover search, Visual Search, upload, image generation and editing, and AI Vision. If they're connected, use their tools in place of the `curl` examples below, which show the parameters to pass. If they aren't, suggest the user installs them, or the Cloudinary [marketplace plugin](https://cloudinary.com/documentation/cloudinary_llm_mcp.md?install_source=skillspack&referrer=image-picker-skill#marketplace_plugins), which sets them up. Fall back to `curl` for any call no connected tool covers. The one gap is marking saved images as AI-generated: see [Save the approved image](#7-generate-images-for-unfilled-slots).
+  2. **API credentials**: `CLOUDINARY_URL` (`cloudinary://<API_KEY>:<API_SECRET>@<CLOUD_NAME>`), or `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET`, when the user prefers not to use MCP or a call has no MCP tool. Never print the secret or put it in client-side code.
 - **Vision**: you must be able to view images (fetch an image URL and see its contents). Scoring depends on it.
 - **Image Generation add-on** must be registered for the product environment to generate images. If it isn't, report the gap instead of generating.
 
@@ -249,7 +251,9 @@ curl -s -X POST "https://api.cloudinary.com/v2/generate/$CLOUDINARY_CLOUD_NAME/i
 Then:
 
 1. **Check the result**: open the transformation URL (the first request can take a while, since the edit runs then) or the `image_to_image` preview URL, and view it. Score it with the step 5 rubric. If it scores under 14, try a different fix or a clearer prompt, up to 2 attempts, then go to step 7.
-2. **Save the approved result as a new asset**, using the same upload call as in step 7, with `tags=ai-edited,image-picker` and `ai_generated=true`. Don't overwrite the original. Saving also means the responsive sizes in step 8 resize one fixed image, instead of running the generative edit again for every width.
+2. **Save the approved result as a new asset**, using the same upload call as in step 7, with `tags=ai-edited,image-picker` and `ai_generated=true`. Don't overwrite the original. Saving also means the responsive sizes in step 8 resize one fixed image, instead of running the generative edit again for every width. If the user has no API credentials:
+   - For an `image_to_image` edit, follow the MCP steps in step 7.
+   - For an edit made with a transformation from the table, save the transformation URL with the `upload-asset` tool, with the same tags and context. The tool can't set `ai_generated`, so add the step 8 AI label unconditionally, and say in the report that the asset isn't marked as AI-generated.
 
 ### 7. Generate images for unfilled slots
 
@@ -318,6 +322,13 @@ curl -s -X POST "https://api.cloudinary.com/v1_1/$CLOUDINARY_CLOUD_NAME/image/up
 ```
 
 Always pass `ai_generated=true` when you save a generated or AI-edited image, whether or not the user wants a visible label. It sets the asset's [AI-generated field](https://cloudinary.com/documentation/content_provenance_and_authenticity.md?install_source=skillspack&referrer=image-picker-skill#provenance_and_ai_fields), which search and the conditional AI label in step 8 rely on. Re-uploading a preview URL doesn't set it automatically, and the field can't be added to an asset after upload.
+
+No MCP tool can set `ai_generated`: `upload-asset`, `sign-upload`, and `create-upload-preset` all drop it, and images that Image Generation saves directly aren't flagged on most accounts. So saving is the one step that needs API credentials, even when you use the MCP servers for everything else. If the user has none:
+
+1. Have `generate-image` or `generate-image-from-images` save each attempt straight to the product environment (`target: {target_type: managed_asset, public_id: <SITE_NAME>/<SLOT_ID>}`), and view and score the saved asset as you would the preview.
+2. Delete each rejected attempt with `delete-asset` before you try again, so only the approved image is left.
+3. Add the tags and the `alt` and `prompt` context with `manage-asset-tags` and `manage-asset-context`.
+4. Check the flag with `search-assets` and the expression `ai_generated=true AND public_id="<PUBLIC_ID>"`. If it isn't set, add the step 8 AI label unconditionally, and say in the report that the asset isn't marked as AI-generated.
 
 ### 8. Deliver with slot-sized transformations
 
