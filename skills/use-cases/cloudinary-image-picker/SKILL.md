@@ -4,7 +4,7 @@ description: "End-to-end recipe for choosing the right images for a website from
 license: MIT
 metadata:
   author: cloudinary
-  version: '0.6.0'
+  version: '0.6.1'
   internal: true
 ---
 
@@ -323,7 +323,7 @@ curl -s -X POST "https://api.cloudinary.com/v1_1/$CLOUDINARY_CLOUD_NAME/image/up
 
 Always pass `ai_generated=true` when you save a generated or AI-edited image, whether or not the user wants a visible label. It sets the asset's [AI-generated field](https://cloudinary.com/documentation/content_provenance_and_authenticity.md?install_source=skillspack&referrer=image-picker-skill#provenance_and_ai_fields), which search and the conditional AI label in step 8 rely on. Re-uploading a preview URL doesn't set it automatically, and the field can't be added to an asset after upload.
 
-No MCP tool can set `ai_generated`: `upload-asset`, `sign-upload`, and `create-upload-preset` all drop it, and images that Image Generation saves directly aren't flagged on most accounts. So saving is the one step that needs API credentials, even when you use the MCP servers for everything else. If the user has none:
+No MCP tool can set `ai_generated` on an upload: `upload-asset`, `sign-upload`, and `create-upload-preset` all drop it. But Image Generation sets it itself on every image it saves to the product environment, on any account, so you don't need API credentials to save a generated image. It doesn't set it on `temporary` previews, which is why the `curl` call above passes it. If the user has no API credentials:
 
 1. Have `generate-image` or `generate-image-from-images` save each attempt straight to the product environment (`target: {target_type: managed_asset, public_id: <SITE_NAME>/<SLOT_ID>}`), and view and score the saved asset as you would the preview.
 2. Delete each rejected attempt with `delete-asset` before you try again, so only the approved image is left.
