@@ -82,6 +82,10 @@ This skill is organized for progressive loading. Do not load every reference fil
 - Use `onSuccess` for upload widget success handling. Do not use deprecated upload callback names unless the installed version explicitly documents them.
 - For deletes, pass a public ID, not a delivery URL. Pass `resource_type` when deleting videos or raw assets, and use `invalidate: true` when CDN cache invalidation is desired.
 
+## Related skills (load alongside this one)
+
+This skill covers Next.js patterns specific to `next-cloudinary`. It doesn't replace the other Cloudinary skills. When a task needs something this skill and its references don't document, load the relevant `cloudinary-xxx` skill as well, even if you think you already know the answer.
+
 ## Reference map
 
 Load the smallest useful set of references:

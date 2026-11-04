@@ -51,6 +51,10 @@ In the response, find the `.well-known/agent-skills/index.json?` entry whose `na
 - When implementing or fixing: Upload Widget, AdvancedImage/AdvancedVideo, transformations, overlays, image galleries, video player, or signed/unsigned uploads.
 - When the user sees errors like "createUploadWidget is not a function", wrong imports from `@cloudinary/url-gen`, upload preset issues, or video player DOM errors.
 
+## Related skills (load alongside this one)
+
+This skill covers Cloudinary React SDK rendering and upload patterns. It doesn't replace the other Cloudinary skills.When a task needs something this skill and its references don't document, load the relevant `cloudinary-xxx` skill as well, even if you think you already know the answer.
+
 
 ## Quick Start
 
@@ -99,7 +103,7 @@ This skill provides React patterns and common errors. For detailed API options (
 - Always consult the official transformation rules when creating transformations
 - Use only officially supported parameters from the transformation reference
 
-**Golden rule for @cloudinary/url-gen:** When generating overlay or transformation code, use **only** the "Import reference" table and "Canonical overlay block" in these rules. Copy those import paths and usage patterns exactly; do not guess or derive paths (e.g. `text` and `image` are from `qualifiers/source`, not `actions/overlay`; `Position` is from `qualifiers/position`, not `positioning/Position`).
+**Golden rule for @cloudinary/url-gen:** When generating overlay or transformation code, use **only** the "Import reference" table and "Canonical overlay block" in these rules. Copy those import paths and usage patterns exactly; do not guess or derive paths (e.g. `text` and `image` are from `qualifiers/source`, not `actions/overlay`; `Position` is from `qualifiers/position`, not `positioning/Position`). If what you need isn't in the table or block, don't write it from memory: load cloudinary-transformations to confirm the transformation, and cloudinary-docs if you need to confirm the `@cloudinary/url-gen` import path.
 
 ---
 
@@ -198,7 +202,7 @@ export const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || '';
 
 ## Import reference: @cloudinary/url-gen (use these exact paths only)
 
-**Rule:** Do not invent or guess import paths for `@cloudinary/url-gen`. Use **only** the paths in the table and canonical block below. Copy the import statements exactly; do not derive paths (e.g. `@cloudinary/url-gen/overlay` exports only `source` — `text` and `image` are from **`qualifiers/source`**; `Position` is from **`qualifiers/position`**, not `positioning/Position`). Wrong paths cause "module not found" or "does not exist".
+**Rule:** Do not invent or guess import paths for `@cloudinary/url-gen`. Use **only** the paths in the table and canonical block below. Copy the import statements exactly; do not derive paths (e.g. `@cloudinary/url-gen/overlay` exports only `source` — `text` and `image` are from **`qualifiers/source`**; `Position` is from **`qualifiers/position`**, not `positioning/Position`). Wrong paths cause "module not found" or "does not exist". If the import you need isn't listed, follow the fallback in the golden rule above rather than guessing.
 
 | Purpose | Exact import |
 |--------|----------------|
@@ -327,9 +331,10 @@ cld.image('id').overlay(
   ```
 
 ## Image gallery with lazy loading and responsive
-- ✅ **When the user asks for an image gallery with lazy loading and responsive**: Use Cloudinary **plugins** with `AdvancedImage`: `responsive()`, `lazyload()`, `placeholder()` (see Plugin Patterns). Use `fill()` resize with the responsive plugin. Add `width` and `height` to prevent layout shift.
+- ✅ **When the user needs an image gallery with lazy loading and responsive**: Use Cloudinary **plugins** with `AdvancedImage`: `responsive()`, `lazyload()`, `placeholder()` (see Plugin Patterns). Use `fill()` resize with the responsive plugin. Add `width` and `height` to prevent layout shift.
 - ✅ **Sample assets in galleries**: Use the sample public IDs from "Creating Image & Video Instances" (e.g. `samples/bike`, `samples/landscapes/beach-boat`, `samples/food/spices`, `samples/two-ladies`, `samples/landscapes/girl-urban-view`, `samples/animals/reindeer`, `samples/food/pot-mussels`, `samples/cloudinary-icon`). **Assume any sample might not exist** — users can delete them. Start with one reliable sample (e.g. `samples/cloudinary-icon`) or a short list; add **onError** handling and remove/hide failed images. Prefer **uploaded** assets when available (e.g. from UploadWidget) over samples.
 - ✅ **Handle load errors**: Use `onError` on `AdvancedImage` to hide or remove failed images (e.g. set state to filter out the publicId, or hide the parent). Provide user feedback (e.g. "Some images could not be loaded. Try uploading your own!") and upload functionality so users can add their own images.
+- ✅ **Galleries of existing assets** (for example by tag, folder, metadata, or search criteria): this skill covers rendering the images, not finding them. Getting the list of assets to include may require a listing or search API, and some options require account settings or a backend. Load the relevant `cloudinary-xxx` skill to choose the approach before writing the fetch code.
 - ✅ **Fallback**: Default gallery list can be a subset of the sample list (e.g. `['samples/cloudinary-icon', 'samples/bike', 'samples/landscapes/beach-boat']`); when user uploads, append `result.public_id`. If an image fails to load, remove it from the list or hide it so the UI doesn't show broken images.
 
 ## Image Overlays (text or logos)
