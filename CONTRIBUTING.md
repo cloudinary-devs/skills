@@ -81,19 +81,45 @@ your machine will be wrong on someone else's.
 Bump `metadata.version` on any content change to a skill, including its
 references and assets. Moving or renaming files with identical content does not
 bump the version; the lock-file hash is unchanged and `skills update` correctly
-reports nothing to do.
+reports nothing to do. CI enforces this on every PR: a skill with changed
+content and an unchanged version fails the `versions` job.
+
+## Documentation links
+
+Every link to a Cloudinary docs `.md` page or `llms.txt` must carry
+`?install_source=skillspack&referrer=<skill>-skill` so traffic from skills is
+attributable. Use the same `referrer` value throughout a skill, for example
+`trans-skill` or `react-skill`. CI fails the `links` job on any link missing
+either param.
+
+## Version check block
+
+Every `SKILL.md` carries a "Before you start: check this skill is current"
+section directly under its H1, between `version-check:start` and
+`version-check:end` comments. It is generated from
+`templates/version-check.md`, so never edit it in a skill. Edit the template,
+then run `scripts/check-version-block.sh --fix` to rewrite every skill, and bump
+the version of any skill that isn't already ahead of `main` on your branch
+(one bump per branch, see Versioning). The block includes the skill's version, so also run
+`--fix` after every version bump. A new skill gets the block the same way. CI fails the
+`version-check-block` job on a missing, edited, or misplaced block.
 
 ## Local check
 
-Before opening a PR, run the same check CI runs:
+Before opening a PR, run the same checks CI runs:
 
 ```bash
-INSTALL_INTERNAL_SKILLS=1 npx -y skills@latest add . --list
+scripts/check-discovery.sh
+scripts/check-links.sh
+scripts/check-version-block.sh
+scripts/check-versions.sh origin/main HEAD
 ```
 
-The `Found N skills` line must match the number of `SKILL.md` files under
-`skills/`, and every skill name must appear in the list. A mismatch means a skill
-is being dropped: check for bad frontmatter, an unquoted colon in the
-description, a missing `name` or `description`, or a directory nested at the wrong
-depth. CI (`.github/workflows/skills-discovery.yml`) fails the PR on the same
-mismatch.
+The discovery script compares the `name` in every `SKILL.md` under `skills/`
+against the names the skills CLI actually lists, and names any skill that is
+missing. A missing skill means it is being dropped: check for bad frontmatter,
+an unquoted colon in the description, a missing `name` or `description`, or a
+directory nested at the wrong depth. The other three scripts report any untracked
+doc link (and fail if they find no links at all), any missing or edited
+version-check block, and any changed skill whose version was not bumped. CI (`.github/workflows/skills-discovery.yml`) runs all
+four and fails the PR on the same conditions.
