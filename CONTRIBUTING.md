@@ -99,7 +99,8 @@ section directly under its H1, between `version-check:start` and
 `version-check:end` comments. It is generated from
 `templates/version-check.md`, so never edit it in a skill. Edit the template,
 then run `scripts/check-version-block.sh --fix` to rewrite every skill, and bump
-each skill's version. The block includes the skill's version, so also run
+the version of any skill that isn't already ahead of `main` on your branch
+(one bump per branch, see Versioning). The block includes the skill's version, so also run
 `--fix` after every version bump. A new skill gets the block the same way. CI fails the
 `version-check-block` job on a missing, edited, or misplaced block.
 
