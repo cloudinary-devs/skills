@@ -23,7 +23,7 @@ import { CldImage } from 'next-cloudinary';
 - ✅ A full Cloudinary URL is also accepted as `src` **only if it includes a version segment** (e.g. `/v1234/`). To preserve transformations already in that URL, also pass `preserveTransformations`.
 - ✅ Pass a **`sizes`** prop on every `<CldImage>` that isn't a fixed-size icon — this is what powers responsive `srcset`. See "Responsive images".
 - ✅ **Optimization is automatic**: by default `format=auto` and `quality=auto` are applied. Don't add raw `f_auto` / `q_auto` yourself.
-- ✅ `<CldImage>` can render in a Server Component, **but** if the file uses event handlers (`onLoad`, `onError`), refs, or other client-only APIs, add `"use client"` at the top of the file.
+- ✅ In v7, `<CldImage>` can render in a Server Component, **but** if the file uses event handlers (`onLoad`, `onError`), refs, or other client-only APIs, add `"use client"` at the top of the file. In v6, `<CldImage>` always needs a Client Component.
 
 ### Sample assets (use for demos when no upload yet)
 
