@@ -4,7 +4,7 @@ Use this when applying image transformations. Prefer documented `next-cloudinary
 
 ## CldImage — transformations (the canonical prop reference)
 
-Use **only** the prop names and shapes below (and on https://next.cloudinary.dev/cldimage/configuration). These are not the same as the underlying URL transformation params.
+Use **only** the prop names and shapes below (and on https://next.cloudinary.dev/cldimage/configuration). These are not the same as the underlying URL transformation params. If what you need isn't listed, don't write it from memory: load cloudinary-transformations to confirm the transformation, and cloudinary-docs to confirm the `next-cloudinary` prop or the `rawTransformations` string.
 
 ### Basic transformations
 | Prop | Type | Example |

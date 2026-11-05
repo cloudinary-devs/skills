@@ -31,6 +31,7 @@ Cloudinary accounts ship with sample public IDs that **may** exist (users can de
 - Images: `samples/cloudinary-icon`, `samples/two-ladies`, `samples/food/spices`, `samples/landscapes/beach-boat`, `samples/bike`, `samples/landscapes/girl-urban-view`, `samples/animals/reindeer`, `samples/food/pot-mussels`
 - Video: `samples/elephants`
 - ✅ Default for a single image: `samples/cloudinary-icon`. Prefer uploaded assets when available.
+- ✅ **Displaying existing assets** (for example a gallery by tag, folder, metadata, or search criteria): this skill covers rendering the images, not finding them. Getting the list of assets to include may require a listing or search API, and some options require account settings or a backend. Load the relevant `cloudinary-xxx` skill to choose the approach before writing the fetch code.
 
 ## getCldImageUrl — same API as CldImage, returns a URL string
 
