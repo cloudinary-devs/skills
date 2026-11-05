@@ -104,6 +104,12 @@ the version of any skill that isn't already ahead of `main` on your branch
 `--fix` after every version bump. A new skill gets the block the same way. CI fails the
 `version-check-block` job on a missing, edited, or misplaced block.
 
+## Tests
+
+A skill's tests, if it has any, live in `tests/<skill-name>/` at the repo root,
+not inside the skill directory, so they don't ship to users who install the
+skill.
+
 ## Local check
 
 Before opening a PR, run the same checks CI runs:
