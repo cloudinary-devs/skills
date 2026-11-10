@@ -9,13 +9,20 @@ If the user is **not** using a CLI scaffold and only has these rules, generate t
 
 **1. Install**
 
+For a **new** install, pick the `next-cloudinary` major version from the project's Next.js version. If the project already has `next-cloudinary`, keep its major version unless the user wants to upgrade (see `references/migrating-to-v7.md`).
+
+| Next.js | Install | `package.json` range |
+| --- | --- | --- |
+| 16 | `npm install next-cloudinary@7` (v7: also needs React 18.2 or 19 and Node.js 22+) | `"^7.0.0"` |
+| 15 or earlier | `npm install next-cloudinary@6` | `"^6.0.0"` |
+
 ```bash
-npm install next-cloudinary
 # Add the Node SDK only if you do server-side uploads/deletes/signing:
 npm install cloudinary
 ```
 
-Use `npm install <package>` with **no version** so npm gets the latest compatible version. In `package.json` use a **caret range** (`"next-cloudinary": "^6.0.0"`). Do not pin exact versions unless verified on npm.
+- ❌ **WRONG**: `npm install next-cloudinary` (no version) on Next.js 15 or earlier. npm picks v7, whose peer dependencies require Next.js 16, and refuses the install.
+- Do not pin exact versions unless verified on npm.
 
 **2. Environment (`.env.local`)**
 
@@ -64,7 +71,7 @@ Create `app/api/sign-cloudinary-params/route.ts` (App Router) — see **"Signed 
 **5. Summary for rules-only users**
 - **Env**: `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` is required; add `NEXT_PUBLIC_CLOUDINARY_API_KEY` + `CLOUDINARY_API_SECRET` only when signing uploads. Restart dev server after edits.
 - **No `Cloudinary` instance to construct**: `next-cloudinary` reads env automatically. Just import components/helpers and use them.
-- **Components are client-side**: `CldUploadWidget`, `CldUploadButton`, `CldVideoPlayer` always need `"use client"`. `CldImage` works in both, but make the file a Client Component if you also use refs / event handlers / state with it.
+- **Client vs server**: any file that passes functions (event handlers, refs, the `CldUploadWidget` render function) needs `"use client"`. In v7, components without those can render from a Server Component. In v6, every component needs `"use client"` (see `references/v6.md`).
 - **Server work uses the Node SDK** (`cloudinary` v2) inside Server Actions or route handlers — never in client code.
 
 ## Upload Presets
@@ -82,7 +89,7 @@ Create `app/api/sign-cloudinary-params/route.ts` (App Router) — see **"Signed 
 
 ## Installing Cloudinary packages
 
-- ✅ **Install latest**: `npm install <package>` (no version) so npm gets the latest compatible. Use a caret in `package.json`. Do not pin to an exact version unless verified on npm.
+- ✅ **Install the right major**: for `next-cloudinary`, follow the Next.js version table above. For `cloudinary`, `npm install cloudinary` (no version). Use a caret in `package.json`. Do not pin to an exact version unless verified on npm.
 - ✅ **Package names only**: `next-cloudinary` (the Next.js wrapper), `cloudinary` (Node SDK v2 — server-side only). Do not invent names like `@cloudinary/next` or `next-cloudinary-server`.
 - ❌ **WRONG**: `npm install next-cloudinary@1.2.3` (exact pin) when you haven't verified the version exists.
 - ❌ **WRONG**: Installing `@cloudinary/url-gen` or `@cloudinary/react` for a Next.js project — `next-cloudinary` already wraps the URL builder. Only install those if the user explicitly wants to bypass `next-cloudinary`.
