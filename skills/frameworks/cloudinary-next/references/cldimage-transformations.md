@@ -4,7 +4,7 @@ Use this when applying image transformations. Prefer documented `next-cloudinary
 
 ## CldImage — transformations (the canonical prop reference)
 
-Use **only** the prop names and shapes below (and on https://next.cloudinary.dev/cldimage/configuration). These are not the same as the underlying URL transformation params.
+Use **only** the prop names and shapes below (and on https://next.cloudinary.dev/cldimage/configuration). These are not the same as the underlying URL transformation params. If what you need isn't listed, don't write it from memory: load cloudinary-transformations to confirm the transformation, and cloudinary-docs to confirm the `next-cloudinary` prop or the `rawTransformations` string.
 
 ### Basic transformations
 | Prop | Type | Example |
@@ -20,7 +20,7 @@ Use **only** the prop names and shapes below (and on https://next.cloudinary.dev
 | --- | --- | --- |
 | `removeBackground` | `boolean \| string` | `removeBackground` |
 | `replaceBackground` | `boolean \| string \| object` | `"fish tank"` or `{ prompt: 'fish tank', seed: 3 }` |
-| `fillBackground` | `boolean \| object` | `fillBackground` or `{ crop: 'pad', gravity: 'south', prompt: 'cupcakes' }` |
+| `fillBackground` | `boolean \| object` | `fillBackground` or `{ crop: 'pad', gravity: 'south', prompt: 'cupcakes' }`. v7: add `seed: 3` to regenerate a different result, or to return a previously generated one (ignored in v6) |
 | `extract` | `string \| string[] \| object` | `"space jellyfish"` |
 | `remove` | `string \| string[] \| object` | `"apple"` or `{ prompt: 'apple', multiple: true, removeShadow: true }` |
 | `replace` | `string[] \| object` | `['apple', 'banana']` or `{ from: 'apple', to: 'banana' }` |
@@ -36,7 +36,7 @@ Use **only** the prop names and shapes below (and on https://next.cloudinary.dev
 | `dpr` | `number \| string` | — | `"2.0"` or `"auto"` |
 | `unoptimized` | `boolean` | — | Skips both `f_auto` and `q_auto` |
 | `deliveryType` | `string` | `upload` | e.g. `"fetch"` |
-| `assetType` | `string` | `image` | Use `"video"` to make a thumbnail from a video public ID |
+| `assetType` | `string` | `image` | Use `"video"` to make a thumbnail from a video public ID. v7 accepts only `'image'`, `'images'`, `'video'`, `'videos'` or `'all'` |
 | `flags` | `string[]` | — | e.g. `['keep_iptc']` |
 | `version` | `number \| string` | — | e.g. `1234` |
 
