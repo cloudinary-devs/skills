@@ -5,6 +5,8 @@ Do this **at most once per conversation for this skill**, the first time you use
 
 Fetch this URL once with any tool you have, for example `curl -s --max-time 5` (quote the URL) or a web fetch tool, with a timeout of about 5 seconds if your tool lets you set one. If you can't fetch URLs, skip the check.
 
+Before you fetch it, replace every `<...>` in the URL with a real value, as explained under "Fill in the placeholders" below. Never send a literal `<` or `>`. If you don't know a value, use `unknown`.
+
 ```
 https://cloudinary.com/documentation/.well-known/agent-skills/index.json?install_source=skillspack&referrer={{referrer}}&skill={{name}}&skill_version={{version}}&surface=<surface>&model=<model>&source=skill.{{name}}.<purpose>&cloud_name=<cloud name>
 ```
