@@ -308,13 +308,12 @@ Fill if large enough, otherwise fit.
 
 ### Avatar Pipeline
 ```
-c_thumb,g_face,h_400,w_400/e_improve/r_max/bo_3px_solid_white/f_auto/q_auto
+c_thumb,g_face,h_400,w_400/e_improve/bo_3px_solid_white,r_max/f_auto/q_auto
 ```
 1. Crop to face (400x400)
 2. Enhance quality
-3. Make circular
-4. Add white border
-5. Optimize
+3. Make circular with a white border (border and `r_max` in the same component, so the border follows the circle)
+4. Optimize
 
 ### Product Image Pipeline
 ```

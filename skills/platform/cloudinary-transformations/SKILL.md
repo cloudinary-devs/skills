@@ -259,7 +259,7 @@ bo_5px_solid_black             # 5px black border
 r_20,bo_5px_solid_rgb:0066ff   # Rounded with border (same component)
 ```
 
-**Important**: For borders that follow rounded corners, use border as qualifier in same component.
+**Important**: For borders that follow rounded corners or a circle, put the border and the radius in the same component (`bo_3px_solid_white,r_max`). A separate `r_max/bo_...` component draws a square frame around the shape.
 
 ### Background Color
 
