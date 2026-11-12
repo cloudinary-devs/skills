@@ -243,7 +243,6 @@ c_fill,h_400,w_300/l_same_image/c_fill,e_grayscale,h_400,w_300/fl_layer_apply,g_
 
 **Important**: 
 - Color (`co_`) is a qualifier — use in the **same component** as text overlay declaration
-- **Always use `fl_relative`** when you want overlay dimensions as a percentage of the base image
 - **Side-by-side / canvas extension**: to place an overlay *beside* the base, offset it past the base edge — the canvas auto-expands. Use `g_west,x_<base_width>` for horizontal or `g_north,y_<base_height>` for vertical.
 
 ### Borders & Rounding
@@ -265,7 +264,7 @@ r_20,bo_5px_solid_rgb:0066ff   # Rounded with border (same component)
 ### Background Color
 
 - **`b_color,c_pad`** - Fill empty space with solid color (product images, letterboxing)
-- **`b_auto,c_pad`** - Aautomatically selected background color based on one or more predominant colors in the image
+- **`b_auto,c_pad`** - Automatically selected background color based on one or more predominant colors in the image
 - **`b_gen_fill,c_pad`** - AI-extended background (change aspect ratio without cropping; see AI Transformations for cost)
 
 **Examples:**

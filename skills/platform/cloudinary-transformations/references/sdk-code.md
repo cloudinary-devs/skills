@@ -41,11 +41,31 @@ Use SKILL.md to build and validate the transformation string (for example, `c_fi
 2. Each example on a parameter page is followed by code blocks tagged with the SDK name (`nodejs`, `react`, `python`, `php`, etc.). Read the block for the user's SDK, choosing the example closest to what you need.
 3. Combine the snippets into one expression, following the chaining pattern the snippets show. For example, `@cloudinary/url-gen` chains action methods (`.resize(...).delivery(...)`). The Node.js, Python and Ruby SDKs take an array of transformation objects (`transformation: [{...}, {...}]`), one per URL component.
 4. Replace the example public IDs (such as `docs/camera-640.jpg`) and values with the user's.
-5. Add the imports. Some snippets include per-transformation imports (for example, `import { fill } from "@cloudinary/url-gen/actions/resize"` or PHP's `use Cloudinary\Transformation\Resize;`). Copy them and merge duplicates. The snippets never show the SDK's base import or setup (such as `CloudinaryImage`, `require('cloudinary').v2`, or the Kotlin and Dart SDK imports). Reuse the one already in the user's code. If there isn't one, get it from that SDK's docs page rather than guessing.
+5. Add the imports. Some snippets include per-transformation imports (for example, `import { fill } from "@cloudinary/url-gen/actions/resize"` or PHP's `use Cloudinary\Transformation\Resize;`). Copy them and merge duplicates. The snippets never show the SDK's base import or setup (such as `CloudinaryImage`, `require('cloudinary').v2`, or the Kotlin and Dart SDK imports). Reuse the one already in the user's code. If there isn't one, get it from that SDK's docs page rather than guessing. Also check any class a snippet uses without importing it (for example `new Transformation()` in React and PHP, or `TextLayer` in Java).
 
 **Watch out for:**
-- **Tag vs URL:** Many snippets generate an HTML tag (`cloudinary.image()` in Node.js, `.image()` in Python, `cl_image_tag` in Ruby). If the user needs only the URL, use the SDK's URL method instead (`cloudinary.url()`, `.build_url()`, `cl_image_path`).
+- **Tag vs URL:** Many snippets generate an HTML tag (`cloudinary.image()` in Node.js, `.image()` in Python, `cl_image_tag` in Ruby, `ImageTag` in PHP, `.imageTag()` in Java). If the user needs only the URL, keep the same transformation and swap the final call:
+
+  | SDK | URL call |
+  |---|---|
+  | Node.js | `cloudinary.url('id', { transformation: [...] })` |
+  | Python | `CloudinaryImage('id').build_url(transformation=[...])` |
+  | Ruby | `Cloudinary::Utils.cloudinary_url('id', transformation: [...])` (`cl_image_path` is a Rails view helper) |
+  | PHP | `$cld->image('id')->...->toUrl()` |
+  | Java | `cloudinary.url().transformation(...).generate("id")` |
+  | `@cloudinary/url-gen`, React | `cld.image('id')...toURL()` |
+- **Reserved words and broken snippets:** If a snippet's method name isn't valid in the language (for example, Java's `.if("w_gt_300")`, where `if` is reserved), don't copy it. Check the SDK's source or javadoc for the real name (in Java, `ifCondition()`, `ifElse()` and `endIf()`). Don't fall back to raw transformations when a real method exists.
 - **SDK version:** The examples use each SDK's current major version. If the user's code uses an older API style (for example, `cloudinary-core` instead of `@cloudinary/url-gen`), match their existing code. Tell them the reference examples target a newer version.
 - **No example for a parameter:** Don't invent method names. Use the SDK's raw transformation option instead (`addTransformation("...")` in `@cloudinary/url-gen`, `raw_transformation` in the Node.js, Python and Ruby SDKs), and tell the user that's what you did.
+
+## 4. Conditionals, overlays and delivery
+
+These are written in URL syntax in SKILL.md, but each SDK has its own form:
+
+- **Conditionals:** In array SDKs (Node.js, Python, Ruby), `if`, `else` and `end` are separate elements: `{ if: 'w_gt_1000' }, {...}, { if: 'else' }, {...}, { if: 'end' }`. Typed SDKs (React, PHP) wrap them as `ifCondition('width > 1000', ...).otherwise(...)`. In Java, chain `.ifCondition("w_gt_1000").chain() ... .ifElse().chain() ... .endIf().chain()`. Put `f_auto/q_auto` after the end of the conditional, not inside it.
+- **`w` vs `iw`:** In a condition, `w` is the width at that point in the chain. Use `iw` (initial width) unless the condition is the first component.
+- **Overlays:** The URL's `l_...` and `fl_layer_apply,g_...` components are separate elements in array SDKs: `{ color: 'white', overlay: {...} }, { gravity: 'south_east', flags: 'layer_apply' }`. Typed SDKs set position on the overlay (React `source(...).position(new Position().gravity(compass('south_east')))`). Encode overlay text the way the snippet does (some pre-encode, for example `Smile%21`), and don't encode it twice.
+- **`f_auto` and `q_auto`:** `fetch_format: 'auto'` and `quality: 'auto'` in array SDKs, `format(auto())` and `quality(auto())` in React (`auto` is exported by both qualifiers, so alias the imports), `Delivery::format(Format::auto())` and `Delivery::quality(Quality::auto())` in PHP, and `.fetchFormat("auto")` and `.quality("auto")` in Java.
+- **Java:** Add `.chain()` between URL components.
 
 After writing the code, show the delivery URL it generates. The user can check it against the transformation string from step 2.
