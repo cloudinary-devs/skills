@@ -104,6 +104,27 @@ the version of any skill that isn't already ahead of `main` on your branch
 `--fix` after every version bump. A new skill gets the block the same way. CI fails the
 `version-check-block` job on a missing, edited, or misplaced block.
 
+## Releasing
+
+Merging to `main` publishes the change straight away to anyone who installs the
+skills from this repository. The skills also ship in two other places, which
+the Cloudinary docs team releases together shortly after the merge:
+
+- The [Cloudinary plugin](https://github.com/cloudinary-devs/cloudinary-plugin),
+  which carries a copy of some of these skills. A PR there syncs them from the
+  new `main` commit.
+- The skills index on cloudinary.com, which the version check in each skill
+  compares against, and which `npx skills add https://cloudinary.com/documentation`
+  installs from.
+
+Until that release, the index keeps the previous versions, so plugin users never
+see an update notice for a version they can't get yet.
+
+The plugin's version-check block is derived from `templates/version-check.md`
+by the plugin's sync script. If you reword the "Newer:" line or the
+`install_source` parameter in the template, update that script in the same
+release, or the sync fails.
+
 ## Tests
 
 A skill's tests, if it has any, live in `tests/<skill-name>/` at the repo root,
