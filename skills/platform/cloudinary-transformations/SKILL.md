@@ -102,6 +102,14 @@ Before generating a transformation URL, if not already specified, clarify these 
 - **Codec/format:** Output format (MP4, WebM, etc.) and quality requirements (use `vc_auto` if unsure)
 - **Audio:** Keep or remove the audio track. For autoplay, suggest removing it (`ac_none`)
 
+### Warming up the Cache with Pre-Generated (Eager) Transformations
+Pre-generate with `eager` on upload, or the `explicit` method on existing assets, when a transformation is too slow or expensive to process on the first request. Ask whether the user wants it, especially for:
+- **Videos, especially long or large ones.** Progressive videos (such as MP4) over 30 minutes, and ABR (`sp_auto`) over 60 minutes, are processed in the background and return a 423 until done. Even shorter videos stream on the first request with the wrong duration and no seeking until the derived video is generated, so eager is recommended for any video that will be shared or downloaded.
+- **AI effects** (background removal, generative AI) and other transformations that can't be processed on the fly.
+- **Don't rely on `f_auto` in an eager transformation.** `f_auto` delivers a different format per browser, and each format is a separate derived asset, so an eager with `f_auto` generates only one of them. Generate one eager transformation per format that `f_auto` can deliver, and keep `f_auto` in the delivery URL. The exact set differs for images and videos, so read [Using automatic format in eager transformations](https://cloudinary.com/documentation/eager_and_incoming_transformations.md#using_automatic_format_in_eager_transformations) first.
+- **Match the delivery URL exactly:** same components, same order, same extension.
+- **A 423 in some browsers only** means a format that `f_auto` selected wasn't generated.
+
 ## Quick Reference
 
 ### URL Structure
