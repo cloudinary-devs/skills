@@ -1,6 +1,6 @@
 ---
 name: cloudinary-transformations
-description: Create and debug Cloudinary transformation URLs from natural language instructions. Use when building Cloudinary delivery URLs, writing transformation code with a Cloudinary SDK, applying image/video transformations (resizing, cropping, effects, overlays), optimizing media, or debugging transformation syntax errors. TRIGGER — read BEFORE writing a Cloudinary delivery URL, or SDK code that generates one (such as cloudinary.url() or an SDK image component), that resizes, crops, applies effects, css-style shape changes, overlays, or changes format or quality, even when it's a small part of a larger task and even if you already know the syntax.
+description: Create and debug Cloudinary transformation URLs from natural language instructions. Use when building Cloudinary delivery URLs, writing transformation code with a Cloudinary SDK, applying image/video transformations (resizing, cropping, effects, overlays), optimizing media, pre-generating transformations with eager when a video or AI effect is slow on first request or returns a 423, or debugging transformation syntax errors. TRIGGER — read BEFORE writing a Cloudinary delivery URL, or SDK code that generates one (such as cloudinary.url() or an SDK image component), that resizes, crops, applies effects, css-style shape changes, overlays, or changes format or quality, even when it's a small part of a larger task and even if you already know the syntax.
 license: MIT
 metadata:
   author: cloudinary
@@ -103,12 +103,9 @@ Before generating a transformation URL, if not already specified, clarify these 
 - **Audio:** Keep or remove the audio track. For autoplay, suggest removing it (`ac_none`)
 
 ### Warming up the Cache with Pre-Generated (Eager) Transformations
-Pre-generate with `eager` on upload, or the `explicit` method on existing assets, when a transformation is too slow or expensive to process on the first request. Ask whether the user wants it, especially for:
-- **Videos, especially long or large ones.** Progressive videos (such as MP4) over 30 minutes, and ABR (`sp_auto`) over 60 minutes, are processed in the background and return a 423 until done. Even shorter videos stream on the first request with the wrong duration and no seeking until the derived video is generated, so eager is recommended for any video that will be shared or downloaded.
-- **AI effects** (background removal, generative AI) and other transformations that can't be processed on the fly.
-- **Don't rely on `f_auto` in an eager transformation.** `f_auto` delivers a different format per browser, and each format is a separate derived asset, so an eager with `f_auto` generates only one of them. Generate one eager transformation per format that `f_auto` can deliver, and keep `f_auto` in the delivery URL. The exact set differs for images and videos, so read [Using automatic format in eager transformations](https://cloudinary.com/documentation/eager_and_incoming_transformations.md#using_automatic_format_in_eager_transformations) first.
-- **Match the delivery URL exactly:** same components, same order, same extension.
-- **A 423 in some browsers only** means a format that `f_auto` selected wasn't generated.
+Pre-generate with `eager` on upload, or the `explicit` method on existing assets, when a transformation is too slow or expensive to process on the first request. Ask whether the user wants it, especially for long or large videos (progressive output over 30 minutes and ABR output over 60 minutes return a 423 until processed) and AI effects.
+
+Two rules to keep in mind: don't put `f_auto` in an eager transformation (generate one per format it can deliver), and the delivery URL must match the eager transformation exactly. **Before writing any eager code, read [references/eager-transformations.md](references/eager-transformations.md)** for the syntax, video and ABR rules, and how to verify.
 
 ## Quick Reference
 
@@ -341,7 +338,7 @@ For complete details, syntax, and powerful combinations, see [references/ai-tran
 
 ## Video-Specific Transformations
 
-**Critical:** Use `f_auto:video` (not just `f_auto`) to ensure video output - plain `f_auto` may return an image thumbnail.
+**Critical:** Use `f_auto:video` (not just `f_auto`) to ensure video output - plain `f_auto` may return an image thumbnail. This applies to URLs without a video extension. If the URL ends in a video extension such as `.mp4`, plain `f_auto` selects the codec and returns video. When pre-generating with eager, see [references/eager-transformations.md](references/eager-transformations.md) for how to match the extension.
 
 - **`vc_auto`** - Automatic codec (recommended; optimal for browser/device)
 - **`so_N/eo_M`** - Trim (start/end in seconds; create clips, remove intro/outro)
@@ -424,6 +421,7 @@ For complete cost details and cost reduction strategies, see [references/transfo
 - [references/video-transformations.md](references/video-transformations.md) - Use when working with video codecs, trimming strategies, concatenation, or creating animated images from videos
 - [references/advanced-features.md](references/advanced-features.md) - Use when building complex logic with variables, conditionals, or arithmetic
 - [references/responsive-images.md](references/responsive-images.md) - Use when implementing responsive images, configuring Client Hints, or using dpr_auto/w_auto
+- [references/eager-transformations.md](references/eager-transformations.md) - Use when pre-generating transformations with `eager` or `explicit`, or when the first request for a video or AI transformation is slow or returns a 423
 - [references/transformation-costs.md](references/transformation-costs.md) - Use when optimizing for cost or explaining cost implications to users
 - [references/named-transformations.md](references/named-transformations.md) - Use when creating reusable transformations or reducing costs for repeated operations
 - [references/examples.md](references/examples.md) - Use when you need real-world examples beyond the Quick Start (social cards, e-commerce, responsive images)
