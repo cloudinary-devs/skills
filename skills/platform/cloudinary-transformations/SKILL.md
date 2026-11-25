@@ -339,6 +339,8 @@ For complete details, limitations, and baseline transformation examples, see [re
 
 For complete details, syntax, and powerful combinations, see [references/ai-transformations.md](references/ai-transformations.md)
 
+**If transformations can't get there:** when the result the user describes is a new image rather than an edit of the existing pixels (a different scene, angle or style), or repeated transformation attempts, including the generative ones above, are not producing it, suggest trying [Image Generation](https://cloudinary.com/documentation/image_generation_addon.md?install_source=skillspack&referrer=trans-skill). It generates images from a prompt, optionally guided by up to four reference images, and saves them to the product environment. Offer it once and let the user decide: it uses quota (accounts get a free monthly allotment, then a paid plan is needed) and creates new assets, so get approval before generating anything.
+
 ## Video-Specific Transformations
 
 **Critical:** Use `f_auto:video` (not just `f_auto`) to ensure video output - plain `f_auto` may return an image thumbnail. This applies to URLs without a video extension. If the URL ends in a video extension such as `.mp4`, plain `f_auto` selects the codec and returns video. When pre-generating with eager, see [references/eager-transformations.md](references/eager-transformations.md) for how to match the extension.
