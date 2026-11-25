@@ -22,6 +22,12 @@ Skills are grouped by category below. The category is a folder in this repo only
 | `cloudinary-react` | Provides opinionated React SDK patterns for configuration, common integration scenarios, and troubleshooting for frequent errors and TypeScript pitfalls. Use when developing React apps with Cloudinary. |
 | `cloudinary-next` | Provides opinionated Next.js SDK patterns for Server and Client Component boundaries, server-side uploads and deletes, and troubleshooting for frequent errors and TypeScript pitfalls. Use when developing Next.js apps with Cloudinary. |
 
+### Use cases
+
+| Skill | Description |
+|---|---|
+| `cloudinary-product-gallery` | End-to-end recipe for adding product galleries to an e-commerce site: product listing pages (PLPs) with fast, consistent thumbnails, and product detail pages (PDPs) with images, video, 360 spin sets and 3D models in the Cloudinary Product Gallery widget. Use when adding a gallery to a product page, building a product grid or category page, adding a 360 spin or 3D model viewer, moving from Product Gallery v1 to v2, or previewing the widget on an existing store page. |
+
 ## Install
 
 Install the skills you need by name:
