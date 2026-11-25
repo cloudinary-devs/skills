@@ -3,6 +3,7 @@
 Links to the full Cloudinary docs for each transformation area. For individual parameters, use the [Transformation Reference](https://cloudinary.com/documentation/transformation_reference.md?install_source=skillspack&referrer=trans-skill).
 
 ## Image Transformations
+- [Image Transformation Recipes](https://cloudinary.com/documentation/image_transformation_recipes.md?install_source=skillspack&referrer=trans-skill) - step-by-step "How do I…" recipes with working URLs
 - [Image Transformations Overview](https://cloudinary.com/documentation/image_transformations.md?install_source=skillspack&referrer=trans-skill)
 - [Resizing and Cropping](https://cloudinary.com/documentation/resizing_and_cropping.md?install_source=skillspack&referrer=trans-skill)
 - [Placing Layers on Images](https://cloudinary.com/documentation/layers.md?install_source=skillspack&referrer=trans-skill)
@@ -19,6 +20,7 @@ Links to the full Cloudinary docs for each transformation area. For individual p
 - [Custom Functions](https://cloudinary.com/documentation/custom_functions.md?install_source=skillspack&referrer=trans-skill)
 
 ## Video Transformations
+- [Video Transformation Recipes](https://cloudinary.com/documentation/video_transformation_recipes.md?install_source=skillspack&referrer=trans-skill) - step-by-step "How do I…" recipes with working URLs
 - [Video Transformations Overview](https://cloudinary.com/documentation/video_manipulation_and_delivery.md?install_source=skillspack&referrer=trans-skill)
 - [Resizing and Cropping](https://cloudinary.com/documentation/video_resizing_and_cropping.md?install_source=skillspack&referrer=trans-skill)
 - [Trimming and Concatenating](https://cloudinary.com/documentation/video_trimming_and_concatenating.md?install_source=skillspack&referrer=trans-skill)

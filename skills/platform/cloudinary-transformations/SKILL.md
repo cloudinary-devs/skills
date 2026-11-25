@@ -72,7 +72,10 @@ In the response, find the `.well-known/agent-skills/index.json?` entry whose `na
 **Important:** All transformation strings shown throughout this skill are illustrative examples to demonstrate syntax and concepts. When generating transformations, choose specific values (dimensions, colors, positions, etc.) based on the user's actual requirements and use case, not the example values shown.
 
 **For debugging:** See [references/debugging.md](references/debugging.md) for detailed troubleshooting steps.
+
 ## Gathering Requirements
+
+**Check for a recipe first.** If the request is a "how do I…" question, or something isn't working as expected (an offset or position is ignored, an overlay or crop lands in the wrong place), fetch the [image recipes](https://cloudinary.com/documentation/image_transformation_recipes.md?install_source=skillspack&referrer=trans-skill) or [video recipes](https://cloudinary.com/documentation/video_transformation_recipes.md?install_source=skillspack&referrer=trans-skill) index before designing the transformation. If a recipe matches, fetch it and adapt its URL to the user's asset. Recipe pages are named `https://cloudinary.com/documentation/recipe_<slug>.md?install_source=skillspack&referrer=trans-skill` and the slug is in each link on the index. If your fetch tool summarizes the index and hides the link targets, get the raw markdown instead (for example with `curl`). Recipe URLs are demos, so still apply the optimization defaults above and the self-validation checklist. If none matches, carry on.
 
 Before generating a transformation URL, if not already specified, clarify these details based on the user's request:
 
