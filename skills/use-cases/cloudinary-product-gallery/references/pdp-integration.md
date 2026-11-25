@@ -156,12 +156,28 @@ Expect these differences and check each:
    layout relied on the widget's pixel size, constrain the container instead.
 3. **Custom CSS.** v1 class names were hashed (`css-xxxx`) and v1 `data-test`
    hooks are not emitted unless `testAttributes: true`. Rewrite overrides
-   against v2's `.pgw` class names, or use config parameters.
+   against v2's `.pgw` class names, or use config parameters. Work through the
+   store's CSS rule by rule:
+   - **`[data-test=...]` rules:** the name usually says what it targeted, so map
+     it to the matching v2 class (for example a thumbnail to `.pgw .thumbnailItem`).
+   - **`css-xxxx` rules:** the hash says nothing about which element it styled.
+     If the v1 page can be loaded, open it in a browser and run
+     `document.querySelectorAll('.css-xxxx')` to see what it matched, then pick
+     the v2 equivalent. If it matches nothing (the hashes can change between v1
+     releases) or the page isn't available, **ask the user** what the rule was
+     for. Do not guess silently, and tell the user which rewrites were guesses.
+   - **Check each rewrite:** after switching, confirm the new selector matches an
+     element in the v2 page (`document.querySelectorAll(...)`), and compare how
+     it looks before and after.
+   - Rules that depend on hashed names cannot be saved by `useLegacyV1Mode`
+     (see step 5): they need a manual decision.
 4. **Video player.** The Cloudinary Video Player inside the gallery is v4, so
    CSS aimed at v1's `.vjs-` classes may need updating.
 5. **Temporary bridge.** `useLegacyV1Mode: true` renders v1's markup hooks on
-   top of v2 for the script embed. It is deprecated and will be removed: use it
-   only to unblock a release, and plan to remove it.
+   top of v2 for the script embed: v1 `data-test` names, wrapper elements and
+   attributes, and v1's CSS strength. It does not bring back v1's hashed `css-`
+   class names. It is deprecated and will be removed: use it only to unblock a
+   release, and plan to remove it.
 
 Verify after the switch: first paint, the layout at three widths, the 360 spin,
 zoom, video, and any analytics hooks that listened for v1 events.

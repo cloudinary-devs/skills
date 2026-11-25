@@ -200,13 +200,21 @@ add-on or exhausted credits, say so and point to the feature's docs page.
 
 | Check | Expected | If it fails |
 | --- | --- | --- |
-| Console, Settings > Security > Restricted image types: **Resource list** is cleared | Tag lists can be fetched | The gallery shows "No media assets available for preview" and logs a console warning |
+| Console, Settings > Security > Restricted image types: **Resource list** is cleared **and saved** | Tag lists can be fetched | The gallery shows "No media assets available for preview" and logs a console warning |
 | Assets use delivery type `upload` | Shown | Assets of other types are not displayed |
 | Strict Transformations is off for the cloud | Derived images generate on request | Add the store's domain to **Allowed strict referral domains**, or turn the feature off |
 | Tag has fewer than about 1000 assets | Lists load | The widget does not paginate; narrow the tag |
 
 Changing Console security settings is an account-changing action: state what
-will change and wait for the user's approval before asking them to do it.
+will change and wait for the user's approval before asking them to do it. Tell
+them what it exposes: with **Resource list** cleared, anyone can read the list
+of assets under a tag from `res.cloudinary.com/<cloud>/<type>/list/<tag>.json`.
+The widget needs this, and the docs note you may clear it only temporarily.
+
+Give the steps in full: open Settings > Security, find **Restricted image
+types**, clear **Resource list**, then **scroll down and click Save**. The Save
+button is below the fold and the change does nothing until it is saved. Then
+check it took effect by requesting a tag list URL (expect `200`, not `401`).
 
 ## Preview the widget on the customer's own page
 
@@ -222,7 +230,7 @@ user to save the page from their own browser.
 | Check | Expected result | On failure |
 | --- | --- | --- |
 | Browser console after load | No Product Gallery warnings | "No media assets" means the Resource list restriction, a wrong tag, or no asset of that `mediaType` |
-| Network tab: tag list request (`res.cloudinary.com/<cloud>/image/list/<tag>.json`, `video/list/...` for video) | HTTP 200 | 404 means the tag does not exist or has no asset of that type |
+| Network tab: tag list request (`res.cloudinary.com/<cloud>/image/list/<tag>.json`, `video/list/...` for video) | HTTP 200 | 404 means the tag does not exist or has no asset of that type. 401 with `x-cld-error: Resources of type list are restricted in this account` means the Resource list restriction is on (a new account has it on by default) |
 | Network tab: image requests | `f_auto,q_auto` in the URLs, several width candidates in `srcset`, and a width that fits the container | Check `imageBreakpoint`, `viewerWidthHint` (SSR) and the container width |
 | Page layout at load | Container height is stable before and after the widget renders | Set the container width and `aspectRatio`; add `viewerWidthHint` when server rendering |
 | Spin, video and 3D tabs | Each opens, spins or plays | Spin: check frame tag and ordering. 3D: confirm the model is GLB and an `image` resource type |

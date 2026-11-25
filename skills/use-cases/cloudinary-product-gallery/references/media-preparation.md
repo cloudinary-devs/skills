@@ -123,6 +123,6 @@ first and wait for approval, since this changes the account.
 
 | Check | Expected | On failure |
 | --- | --- | --- |
-| `curl -s -o /dev/null -w '%{http_code}' https://res.cloudinary.com/your-cloud-name/image/list/<tag>.json` | `200` | `404`: no asset with that tag and type. Any other error status: check the Resource list restriction (see SKILL.md prerequisites) |
+| `curl -s -o /dev/null -w '%{http_code}' https://res.cloudinary.com/your-cloud-name/image/list/<tag>.json` | `200` | `404`: no asset with that tag and type. `401` with the response header `x-cld-error: Resources of type list are restricted in this account`: the Resource list restriction is on (see SKILL.md prerequisites) |
 | Same URL with `/video/list/` | `200` for tags that have videos | Tag set on an image, not the video |
 | The returned `public_id`s | In display order | Rename with zero padding |
