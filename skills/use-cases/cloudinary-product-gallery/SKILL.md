@@ -175,6 +175,27 @@ Replace `<version>` with the current release from the changelog and
 Two scripts with `defer` run in order, so the second sees `cloudinary` defined.
 With `async`, wait for the script's `load` event instead.
 
+## Fill gaps with generated media (offer, don't run)
+
+When a product has only one or two images, or the user wants a richer gallery
+without a new photo shoot, offer these once, briefly, and wait for a yes. Both
+use quota or credits and save new assets to the account, so state what will be
+created and get approval before generating.
+
+| Offer | What it does | How |
+| --- | --- | --- |
+| Different product shots from one image | Uses the product's existing image as a reference to generate new scenes or angles, for example "Place the product from [1] on a marble kitchen counter, soft morning light" | [Image Generation](https://cloudinary.com/documentation/image_generation_addon.md?install_source=skillspack&referrer=gallery-skill): the `generate-image-from-images` tool of the Asset Management MCP server, or the Console, or the API. Takes up to four reference images. Accounts get a free monthly credit allotment; beyond it, a paid plan is needed |
+| A short product video from an image | Animates a product image into a short video, optionally with a prompt describing the motion | [Image to Video](https://cloudinary.com/documentation/image_to_video_addon.md?install_source=skillspack&referrer=gallery-skill) (Beta): the Image to Video app in the Console, enabled by an add-on subscription. It uses credits, with a one-time free allocation to try it; the page also links the Beta API |
+
+After generating, tag the new assets the same way as the product's other media
+(see [references/media-preparation.md](references/media-preparation.md)) so the
+gallery picks them up: images with the product tag, videos fetched with
+`mediaType: "video"`. Generated images are marked as AI-generated in the
+asset's AI-generated field. Ask the user to review each generated image and
+video for accuracy against the real product (colour, logo, proportions)
+before it goes on a product page. If a generation is refused for a missing
+add-on or exhausted credits, say so and point to the feature's docs page.
+
 ## Prerequisites the widget needs
 
 | Check | Expected | If it fails |
