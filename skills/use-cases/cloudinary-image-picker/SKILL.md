@@ -234,7 +234,7 @@ Match the problem to the fix:
 
 Prompts inside a transformation URL must be URL-encoded (for example, spaces as `%20`). Use cloudinary-transformations for the exact syntax and limits of each [generative AI transformation](https://cloudinary.com/documentation/generative_ai_transformations.md?install_source=skillspack&referrer=image-picker-skill).
 
-For several changes or a restyle, use `image_to_image` with a temporary target, so you can check the result first:
+For several changes or a restyle, use `image_to_image`, saving the result straight to the product environment as a new asset (never overwrite the original). Image Generation sets `ai_generated` on it automatically:
 
 ```bash
 curl -s -X POST "https://api.cloudinary.com/v2/generate/$CLOUDINARY_CLOUD_NAME/image_to_image" \
@@ -244,16 +244,28 @@ curl -s -X POST "https://api.cloudinary.com/v2/generate/$CLOUDINARY_CLOUD_NAME/i
     "prompt": "Keep the people and composition of [1], change the season to autumn with orange leaves and warm light",
     "reference_images": [{ "source_type": "managed_asset", "asset_id": "<ASSET_ID>" }],
     "model": { "mode": "auto" },
-    "target": { "target_type": "temporary" }
+    "target": { "target_type": "managed_asset", "public_id": "<SITE_NAME>/<SLOT_ID>" }
   }'
 ```
 
 Then:
 
-1. **Check the result**: open the transformation URL (the first request can take a while, since the edit runs then) or the `image_to_image` preview URL, and view it. Score it with the step 5 rubric. If it scores under 14, try a different fix or a clearer prompt, up to 2 attempts, then go to step 7.
-2. **Save the approved result as a new asset**, using the same upload call as in step 7, with `tags=ai-edited,image-picker` and `ai_generated=true`. Don't overwrite the original. Saving also means the responsive sizes in step 8 resize one fixed image, instead of running the generative edit again for every width. If the user has no API credentials:
-   - For an `image_to_image` edit, follow the MCP steps in step 7.
-   - For an edit made with a transformation from the table, save the transformation URL with the `upload-asset` tool, with the same tags and context. The tool can't set `ai_generated`, so add the step 8 AI label unconditionally, and say in the report that the asset isn't marked as AI-generated.
+1. **Check the result**: open the transformation URL (the first request can take a while, since the edit runs then) or the `secure_url` of the saved `image_to_image` asset, and view it. Score it with the step 5 rubric. If it scores under 14, try a different fix or a clearer prompt, up to 2 attempts, then go to step 7.
+2. **Save the approved result as a new asset.** An `image_to_image` edit is already saved: delete each rejected attempt with `delete-asset` (or the Admin API) before retrying, then add the tags `ai-edited,image-picker` and the `alt` context. For an edit made with a transformation from the table, save the transformation URL as a new asset, with `tags=ai-edited,image-picker`, the `alt` context, and `ai_generated=true`. Don't overwrite the original:
+
+```bash
+curl -s -X POST "https://api.cloudinary.com/v1_1/$CLOUDINARY_CLOUD_NAME/image/upload" \
+  -u "$CLOUDINARY_API_KEY:$CLOUDINARY_API_SECRET" \
+  -F "file=<TRANSFORMATION_URL>" \
+  -F "public_id=<SITE_NAME>/<SLOT_ID>" \
+  -F "tags=ai-edited,image-picker" \
+  -F "context=alt=<ALT_TEXT>" \
+  -F "ai_generated=true"
+```
+
+Without API credentials, use the `upload-asset` tool with the same parameters.
+
+Always save generative edits as assets like this, instead of leaving the generative transformation in the delivery URL. The responsive sizes in step 8 then resize one fixed image instead of re-running the edit for every width, and the image's AI provenance comes from the saved asset's `ai_generated` field, not from whether the account adds C2PA data to images delivered with generative transformations (only some accounts do).
 
 ### 7. Generate images for unfilled slots
 
@@ -288,7 +300,7 @@ This keeps the set consistent, which separate `text_to_image` prompts rarely do,
 
 Match the style of the images you already chose for the page, so the generated image doesn't stand out.
 
-**Generate a temporary preview first** so you can inspect it before saving anything:
+**Generate straight to a hosted asset** so what you check is exactly what you keep, and Image Generation sets `ai_generated` itself:
 
 ```bash
 curl -s -X POST "https://api.cloudinary.com/v2/generate/$CLOUDINARY_CLOUD_NAME/text_to_image" \
@@ -298,37 +310,24 @@ curl -s -X POST "https://api.cloudinary.com/v2/generate/$CLOUDINARY_CLOUD_NAME/t
     "prompt": "<PROMPT>",
     "model": { "mode": "auto", "preference": "quality" },
     "image_size": { "aspect_ratio": "16:9", "resolution": "2K" },
-    "target": { "target_type": "temporary" }
+    "target": { "target_type": "managed_asset", "public_id": "<SITE_NAME>/<SLOT_ID>" }
   }'
 ```
+
+Without API credentials, call `generate-image` (or `generate-image-from-images`) with the same `target`.
 
 - Set `aspect_ratio` to the slot's ratio, or the nearest supported one, and choose a `resolution` that meets the minimum source size. `2K` is about 2048 pixels on the long side, which is enough for slots up to about 1000 CSS pixels wide at 2x.
 - For wider slots, such as a full-width hero, still generate at `2K`, which costs far less than `4K`. If the approved image is under the slot's minimum source size, upscale it when you save it: `e_upscale` always multiplies each dimension by 4, so follow it with `c_limit` to stop at the minimum source size, and save that derived image. For example, for a 1440x600 hero, save `e_upscale/c_limit,w_2880/<PUBLIC_ID>` rather than the full 8192-pixel result. Upscaling doesn't use Image Generation quota.
 - For text-heavy or vector needs, `mode: auto` picks a suitable model. Only pin a `model.id` if the user asks.
 - If an existing image is close to what you need, adapt it in step 6 instead of generating from scratch.
 
-**Verify the preview** by viewing `data.assets[0].storage.secure_url`. Score it with the step 5 rubric. If it scores under 14, rewrite the prompt to fix what's wrong (name the specific problem, for example "the subject is centered, move it to the right third") and try again. Stop after 3 attempts per slot, keep the best result, and flag the slot in the report.
+**Verify the result** by viewing `data.assets[0].storage.secure_url`. Score it with the step 5 rubric. If it scores under 14, delete that attempt with `delete-asset` (or the Admin API), rewrite the prompt to fix what's wrong (name the specific problem, for example "the subject is centered, move it to the right third") and try again. Stop after 3 attempts per slot, keep the best result, and flag the slot in the report. Delete every rejected attempt, so only the approved image is left in the library.
 
-**Save the approved image** by uploading the preview URL before it expires, so you keep exactly the image you checked:
+**Then add the tags and context** (`ai-generated,image-picker`, plus the `alt` and `prompt`) with `manage-asset-tags` and `manage-asset-context`, or the Admin API.
 
-```bash
-curl -s -X POST "https://api.cloudinary.com/v1_1/$CLOUDINARY_CLOUD_NAME/image/upload" \
-  -u "$CLOUDINARY_API_KEY:$CLOUDINARY_API_SECRET" \
-  -F "file=<PREVIEW_SECURE_URL>" \
-  -F "public_id=<SITE_NAME>/<SLOT_ID>" \
-  -F "tags=ai-generated,image-picker" \
-  -F "context=alt=<ALT_TEXT>|prompt=<PROMPT>" \
-  -F "ai_generated=true"
-```
+**Check the AI-generated field.** Image Generation sets [`ai_generated`](https://cloudinary.com/documentation/content_provenance_and_authenticity.md?install_source=skillspack&referrer=image-picker-skill#provenance_and_ai_fields) on every image it saves to the product environment, on any account, whether or not the user wants a visible label. Search and the conditional AI label in step 8 rely on it. Confirm it with `search-assets` and the expression `ai_generated=true AND public_id="<PUBLIC_ID>"`. If it isn't set, add the step 8 AI label unconditionally, and say in the report that the asset isn't marked as AI-generated.
 
-Always pass `ai_generated=true` when you save a generated or AI-edited image, whether or not the user wants a visible label. It sets the asset's [AI-generated field](https://cloudinary.com/documentation/content_provenance_and_authenticity.md?install_source=skillspack&referrer=image-picker-skill#provenance_and_ai_fields), which search and the conditional AI label in step 8 rely on. Re-uploading a preview URL doesn't set it automatically, and the field can't be added to an asset after upload.
-
-No MCP tool can set `ai_generated` on an upload: `upload-asset`, `sign-upload`, and `create-upload-preset` all drop it. But Image Generation sets it itself on every image it saves to the product environment, on any account, so you don't need API credentials to save a generated image. It doesn't set it on `temporary` previews, which is why the `curl` call above passes it. If the user has no API credentials:
-
-1. Have `generate-image` or `generate-image-from-images` save each attempt straight to the product environment (`target: {target_type: managed_asset, public_id: <SITE_NAME>/<SLOT_ID>}`), and view and score the saved asset as you would the preview.
-2. Delete each rejected attempt with `delete-asset` before you try again, so only the approved image is left.
-3. Add the tags and the `alt` and `prompt` context with `manage-asset-tags` and `manage-asset-context`.
-4. Check the flag with `search-assets` and the expression `ai_generated=true AND public_id="<PUBLIC_ID>"`. If it isn't set, add the step 8 AI label unconditionally, and say in the report that the asset isn't marked as AI-generated.
+When you save anything else that is AI-generated or AI-edited by uploading it (such as a generative transformation URL, as in step 6), pass `ai_generated=true` (the `ai_generated` parameter of the `upload-asset` and `sign-upload` tools, or `-F "ai_generated=true"` with the Upload API). Only set it on images that really are AI-generated or AI-edited: once `true`, it's permanent, even if you upload over the same public ID, and it can't be added to an asset after upload.
 
 ### 8. Deliver with slot-sized transformations
 
@@ -401,7 +400,7 @@ c_fill,g_auto,h_600,w_1440/if_ctx:!cld_ai_generated!_eq_!true!/l_ai-labels:LABEL
 ```
 
 - The condition shows the label only when the asset's AI-generated field is `true`, so the same URL pattern is safe to use on library images too. It depends on the asset having been saved with `ai_generated=true` (step 7).
-- For an AI-generated asset saved without `ai_generated=true`, drop the `if_ctx` and `if_end` components and add the overlay unconditionally.
+- For an AI-generated asset that isn't marked with `ai_generated=true` (for example, one saved by another tool), drop the `if_ctx` and `if_end` components and add the overlay unconditionally.
 - Add the overlay to every URL for the slot: each `srcset` width, each `<source>` crop, and CSS `background-image` URLs.
 - Add the disclosure to the alt text too, so screen reader users get it: for example, "AI-generated image: two hikers on an autumn trail".
 
@@ -448,8 +447,9 @@ Also list the discovery method you used, any slots you flagged, any images you e
 - Placing a portrait image in a wide banner and relying on `g_auto` to rescue it
 - Delivering one wide crop to a slot whose aspect ratio changes on phones, so CSS center-cropping cuts out the subject
 - Using the same image twice on one page
-- Generating before searching, or saving every generation attempt to the product environment
+- Generating before searching, or leaving rejected generation attempts in the product environment instead of deleting them
 - Generating a matching set (product cards, gallery) with separate text prompts, so the images don't match and cost more, instead of using one image as the `image_to_image` reference
 - Putting API credentials in client-side code
 - Saving a generated image without `ai_generated=true`, so the conditional AI label never shows and the flag can't be added later
+- Setting `ai_generated=true` on a real photo or a library image, which can't be undone
 - Placing the AI label before the crop, so it's cropped out, or choosing its version from the full image instead of the corner of each crop
