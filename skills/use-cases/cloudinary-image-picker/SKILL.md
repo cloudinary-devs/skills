@@ -245,8 +245,9 @@ Read [references/generate-images.md](references/generate-images.md) before you g
 Build each delivery URL with cloudinary-transformations. The defaults for a slot are:
 
 - Crop to the slot: `c_fill,g_auto,h_<H>,w_<W>`, with `ar_<RATIO>` for fluid layouts
+- Don't ask for a crop larger than the source: `c_fill` upscales silently
 - Always optimize: `f_auto/q_auto` as the final components
-- Responsive images: a `srcset` at 1x and 2x the display width, or `w_auto` where the site uses Client Hints
+- Responsive images: a `srcset` at 1x and 2x the display width, or `w_auto` where the site uses Client Hints. Set `sizes` from the measured box width, which includes padding and `box-sizing`, not the CSS value
 - Overlay text: if contrast is weak, darken behind the text with a flat tint (`co_rgb:000000,e_colorize:30`) or a gradient overlay rather than choosing a busier image. Avoid `e_brightness:-20`: it leaves grey blotches over bright highlights such as windows
 
 Example for a 1440x600 hero: `https://res.cloudinary.com/<CLOUD_NAME>/image/upload/c_fill,g_auto,h_600,w_1440/f_auto/q_auto/<PUBLIC_ID>`
@@ -264,7 +265,7 @@ Before handing back, open the page and check it, using a browser tool if you hav
 Check the page as a visitor sees it, with all its styles, scripts, and fonts loaded. Use the project's dev server if it has one. For a static site, serve the folder over local HTTP (for example, `python3 -m http.server`) rather than opening the file directly: some browser tools load a `file://` page without its stylesheet, which hides crop and overlay problems. If the page renders unstyled, fix that before checking anything else. Take a screenshot at desktop width and one at phone width.
 
 - [ ] Every delivery URL returns HTTP 200 and an image, not an error placeholder
-- [ ] Each image shows what its slot needs, at the size it's displayed. Measure it: compare each `<img>`'s `clientWidth` and `clientHeight` with its `naturalWidth` and `naturalHeight`. The ratios should match, and the natural width should be about the displayed width times the pixel ratio. Padding and `box-sizing` often make the displayed width differ from the CSS value
+- [ ] Each image shows what its slot needs, at the size it's displayed. Measure it: compare each `<img>`'s `clientWidth` and `clientHeight` with its `naturalWidth` and `naturalHeight`. The ratios should match. Read the delivered width from the file at `currentSrc`: with a `w`-descriptor `srcset`, `naturalWidth` is already divided by the pixel ratio. The delivered width should be about the displayed width times the pixel ratio. Padding and `box-sizing` often make the displayed width differ from the CSS value
 - [ ] No key subject is cropped badly (cut-off heads, products cut in half), at desktop or phone width
 - [ ] Overlay text is readable over the image
 - [ ] If AI labels are on: every generated or AI-edited image shows its label, clearly readable, not hidden under text or buttons, and not clipped by CSS cropping, at desktop and phone width and at widths between breakpoints (for example, 1000 and 800 pixels), and at least 48 CSS pixels across on the phone crops
