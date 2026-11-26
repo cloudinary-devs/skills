@@ -22,6 +22,12 @@ Skills are grouped by category below. The category is a folder in this repo only
 | `cloudinary-react` | Provides opinionated React SDK patterns for configuration, common integration scenarios, and troubleshooting for frequent errors and TypeScript pitfalls. Use when developing React apps with Cloudinary. |
 | `cloudinary-next` | Provides opinionated Next.js SDK patterns for Server and Client Component boundaries, server-side uploads and deletes, and troubleshooting for frequent errors and TypeScript pitfalls. Use when developing Next.js apps with Cloudinary. |
 
+### Use cases
+
+| Skill | Description |
+|---|---|
+| `cloudinary-image-picker` | End-to-end recipe for choosing the right images for a website from a Cloudinary product environment, and generating new ones when nothing fits. Use when building a website or page that needs images, filling empty or placeholder image slots, replacing or refreshing existing site images (for example, a seasonal hero banner), or when the user asks to find, pick, match, or generate images for their site from Cloudinary. |
+
 ## Install
 
 Install the skills you need by name:
