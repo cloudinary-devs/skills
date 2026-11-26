@@ -14,7 +14,8 @@ this whole file exists to prevent. It *looks* like a successful migration.
 
 ## What each platform allows
 
-Verified September 2026. Endpoints change; treat the shape as durable and
+Researched from each vendor's documentation in September 2026, not tested
+against a live account. Endpoints change; treat the shape as durable and
 re-check the specifics for the account in front of you.
 
 | Platform | Original retrievable? | Route |
@@ -64,6 +65,19 @@ deleted masters to save storage cost. Neither is recoverable by retrying; fall
 back to asking the customer for their own copy, and if there is none, say so
 rather than quietly ingesting a rendition.
 
+**From Cloudinary Professional Services' Brightcove migrations** (project
+experience, not Brightcove's docs):
+
+- Master URLs are signed and expire, so fetch each one just before uploading it
+  rather than queuing a batch of URLs.
+- Pace Brightcove API calls at about 6 to 8 requests per second. Its 429
+  responses carry no `Retry-After` header.
+- To check a signed URL, send a `GET` with `Range: bytes=0-0`. `HEAD` returns
+  403.
+- Captions, posters, and thumbnails are separate assets. Migrate them alongside
+  the video, and keep the video-to-caption links in the mapping.
+- DRM-protected content needs its own plan. Ask before attempting it.
+
 ### Vimeo
 
 Requires a paid plan (Standard/Pro/Business/Enterprise and up) and a token
@@ -104,11 +118,10 @@ fallback. Never substitute a scraped rendition.
 locations have their own TTLs, Brightcove feed templates lag ~10 minutes. Fetch
 and upload promptly; do not collect a list of URLs now to ingest tomorrow.
 
-**Prefer download-then-upload over Cloudinary remote fetch.** Two reasons that
-compound: these URLs are authenticated and/or expiring, and (per the
-cloudinary-video skill's gotchas) on an unclaimed claimable cloud Cloudinary's own
-fetcher is blocked by the delivery IP allow-list, so remote fetch fails there
-regardless. Downloading locally first works on every destination.
+**Prefer download-then-upload over Cloudinary remote fetch.** These URLs are
+authenticated, expiring, or both, so a URL handed to Cloudinary can fail or
+expire before it's fetched. Downloading locally first works on every
+destination.
 
 **Verify what you got.** `ffprobe` the downloaded file before uploading:
 resolution, bitrate, and whether an audio stream exists at all. That last one

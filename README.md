@@ -22,6 +22,12 @@ Skills are grouped by category below. The category is a folder in this repo only
 | `cloudinary-react` | Provides opinionated React SDK patterns for configuration, common integration scenarios, and troubleshooting for frequent errors and TypeScript pitfalls. Use when developing React apps with Cloudinary. |
 | `cloudinary-next` | Provides opinionated Next.js SDK patterns for Server and Client Component boundaries, server-side uploads and deletes, and troubleshooting for frequent errors and TypeScript pitfalls. Use when developing Next.js apps with Cloudinary. |
 
+### Use cases
+
+| Skill | Description |
+|---|---|
+| `cloudinary-asset-migration` | End-to-end recipe for migrating images, video, and raw files, with their metadata, onto Cloudinary from another DAM, a video platform, cloud storage, or an existing website. Use when moving or bulk-importing an existing media library into Cloudinary, planning a migration, or rebuilding a site's media on Cloudinary, and when code bulk-uploads from a bucket, a URL list, or a manifest CSV. |
+
 ## Install
 
 Install the skills you need by name:
