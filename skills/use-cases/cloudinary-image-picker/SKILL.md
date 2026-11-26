@@ -124,9 +124,9 @@ Ask one short, batched question before you search. Skip a scope or style questio
 - **Style**: photography or illustration, people or no people, color mood?
 - **Write permission**: may you edit existing images or generate new ones when nothing in the library fits, save the results to the product environment as new assets, and delete the rejected attempts you generated along the way (never any other asset)? Mention the quota cost (see [references/generate-images.md](references/generate-images.md)).
 - **Generation priority**: when you have write permission, ask whether quality or cost matters more for generated images. Map the answer to the `preference` of automatic model selection (see [Automatic model selection](https://cloudinary.com/documentation/image_generation_addon.md?install_source=skillspack&referrer=image-picker-skill#automatic_model_selection)): best quality is `quality`, lowest cost is `economy`, and a balance is `balanced` (the default). If speed matters too, use the `_fast` variant (`quality_fast`, `economy_fast`, `balanced_fast`). A lower cost also stretches the quota (see [references/generate-images.md](references/generate-images.md)).
-- **AI disclosure**: when you have write permission, ask whether the site should show a visible "AI" label on AI-generated and AI-edited images. Some regulations, such as Article 50 of the EU AI Act, require AI-generated media to be disclosed to the people viewing it. Don't give legal advice: if the user isn't sure, suggest they check with their legal or compliance team. See [references/deliver-and-ai-label.md](references/deliver-and-ai-label.md).
+- **AI disclosure**: always ask this, even if you don't expect to generate or edit anything and whether or not you have write permission, because the library may already hold AI-generated images (from earlier generation runs, or uploaded that way) that you'll choose in step 5. Ask whether the site should show a visible "AI" label on every AI-generated and AI-edited image it uses, new or already in the library. Some regulations, such as Article 50 of the EU AI Act, require AI-generated media to be disclosed to the people viewing it. Don't give legal advice: if the user isn't sure, suggest they check with their legal or compliance team. See [references/deliver-and-ai-label.md](references/deliver-and-ai-label.md).
 
-If the user says to go ahead without answering, search all public images, and edit or generate where needed, with `balanced` generation and without an AI label. If they decline write permission, use library images only and flag any slots that don't reach the acceptance score.
+If the user says to go ahead without answering, search all public images, and edit or generate where needed, with `balanced` generation and without an AI label. If a chosen library image turns out to be AI-generated (step 5), say so in the report so the user can decide. If they decline write permission, use library images only and flag any slots that don't reach the acceptance score.
 
 ### 3. Write search queries per slot
 
@@ -169,7 +169,7 @@ Then read [references/discovery-methods.md](references/discovery-methods.md) for
 
 ### 5. Score candidates and choose
 
-Read each candidate's `width`, `height`, `tags`, and `context` from the search results. Then **look at the image itself**: fetch a small preview such as `https://res.cloudinary.com/<CLOUD_NAME>/image/upload/c_limit,w_600/f_jpg/q_auto/<PUBLIC_ID>` and view it. Never choose from the public ID, filename, or tags alone: they're often wrong or vague.
+Read each candidate's `width`, `height`, `tags`, and `context` from the search results, and whether its AI-generated field is set: add `ai_generated=true` to a search expression to list the AI-generated assets in the scope (or request `provenance` with the results). Note which shortlisted candidates are AI-generated, since they need the AI label when the user wants disclosure. Then **look at the image itself**: fetch a small preview such as `https://res.cloudinary.com/<CLOUD_NAME>/image/upload/c_limit,w_600/f_jpg/q_auto/<PUBLIC_ID>` and view it. Never choose from the public ID, filename, or tags alone: they're often wrong or vague.
 
 Score every candidate against the slot:
 
@@ -280,7 +280,7 @@ Check the page as a visitor sees it, with all its styles, scripts, and fonts loa
 - [ ] Each image shows what its slot needs, at the size it's displayed. Measure it: compare each `<img>`'s `clientWidth` and `clientHeight` with its `naturalWidth` and `naturalHeight`. The ratios should match. Read the delivered width from the file at `currentSrc`: with a `w`-descriptor `srcset`, `naturalWidth` is already divided by the pixel ratio. The delivered width should be about the displayed width times the pixel ratio. Padding and `box-sizing` often make the displayed width differ from the CSS value
 - [ ] No key subject is cropped badly (cut-off heads, products cut in half), at desktop or phone width
 - [ ] Overlay text is readable over the image
-- [ ] If AI labels are on: every generated or AI-edited image shows its label, clearly readable, not hidden under text or buttons, and not clipped by CSS cropping, at desktop and phone width and at widths between breakpoints (for example, 1000 and 800 pixels), and with a visible circle of at least 36 CSS pixels on the phone crops
+- [ ] If AI labels are on: every AI-generated or AI-edited image (including library images whose AI-generated field is `true`) shows its label, clearly readable, not hidden under text or buttons, and not clipped by CSS cropping, at desktop and phone width and at widths between breakpoints (for example, 1000 and 800 pixels), and with a visible circle of at least 36 CSS pixels on the phone crops
 - [ ] The images look consistent together on the page
 - [ ] No image appears blurry or pixelated at 2x
 
@@ -296,7 +296,7 @@ End with a short table, one row per slot:
 | `menu-banner` | Adapted | `bakery-site/menu-banner` | 16/20 | Library photo was 4:3; extended to 21:9 with generative fill |
 | `about-team` | Generated | `bakery-site/about-team` | 15/20 | No team photos in the library; generated a matching portrait |
 
-Also list the discovery method you used, any slots you flagged, any images you edited or generated and saved (with their public IDs and the original asset for edits), the Image Generation quota used and remaining, which images carry an AI label (and which label version), and anything the user should review, such as generated images of people presented as real staff or customers.
+Also list the discovery method you used, any slots you flagged, any images you edited or generated and saved (with their public IDs and the original asset for edits), the Image Generation quota used and remaining, which images carry an AI label (and which label version), which chosen library images are AI-generated, and anything the user should review, such as generated images of people presented as real staff or customers.
 
 ## Common Mistakes
 
@@ -316,6 +316,7 @@ Also list the discovery method you used, any slots you flagged, any images you e
 - Generating before searching, or leaving rejected generation attempts in the product environment instead of deleting them
 - Generating a matching set (product cards, gallery) with separate text prompts, so the images don't match and cost more, instead of using one image as the `image_to_image` reference
 - Putting API credentials in client-side code
+- Asking about AI disclosure only when generating, so AI-generated images that are already in the library are shown without the label the user wanted
 - Saving a generated image without `ai_generated=true`, so the conditional AI label never shows and the flag can't be added later
 - Setting `ai_generated=true` on a real photo or a library image, which can't be undone
 - Letting CSS `object-fit: cover` re-crop a delivered image at widths between breakpoints, which hides the corner AI label and can cut the subject

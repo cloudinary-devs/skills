@@ -1,6 +1,6 @@
 # Responsive crops and the visible AI label
 
-Read this in step 8 when a slot's aspect ratio changes at a breakpoint or with the viewport width (the `<picture>` pattern), or when the user wants a visible "AI" label on AI-generated and AI-edited images.
+Read this in step 8 when a slot's aspect ratio changes at a breakpoint or with the viewport width (the `<picture>` pattern), or when the user wants a visible "AI" label on AI-generated and AI-edited images, including ones that were already in the library.
 
 **When a slot's aspect ratio changes at a breakpoint**, deliver a separate crop for each ratio. Don't rely on one wide image plus CSS `object-fit: cover`: the browser crops from the center and can cut the subject out entirely. Use `<picture>` with a `<source>` per breakpoint, each with its own `c_fill,g_auto` crop, so Cloudinary keeps the subject in frame at every ratio:
 
@@ -45,7 +45,7 @@ Two practical notes:
 
 ## Add a visible AI label
 
-If the user wants AI disclosure (step 2), add an "AI" label in the bottom-right corner of every generated or AI-edited image, as a [conditional overlay](https://cloudinary.com/documentation/content_provenance_and_authenticity.md?install_source=skillspack&referrer=image-picker-skill#adding_a_visible_ai_disclosure) applied at delivery. The original asset is never changed.
+If the user wants AI disclosure (step 2), add an "AI" label in the bottom-right corner of every AI-generated or AI-edited image you use, whether you made it in this run or it was already in the library with its AI-generated field set, as a [conditional overlay](https://cloudinary.com/documentation/content_provenance_and_authenticity.md?install_source=skillspack&referrer=image-picker-skill#adding_a_visible_ai_disclosure) applied at delivery. The original asset is never changed.
 
 **1. Make sure the labels are in the product environment.** There are four versions of the label, all round "AI" badges on a transparent canvas:
 
@@ -81,7 +81,8 @@ Don't set `ai_generated` on the labels themselves.
 c_fill,g_auto,h_600,w_1440/if_ctx:!cld_ai_generated!_eq_!true!/l_ai-labels:LABEL_AI_black_transparent/c_scale,w_64/fl_layer_apply,g_south_east/if_end/f_auto/q_auto/<PUBLIC_ID>
 ```
 
-- The condition shows the label only when the asset's AI-generated field is `true`, so the same URL pattern is safe to use on library images too. It depends on the asset having been saved with `ai_generated=true` (step 7).
+- The condition shows the label only when the asset's AI-generated field is `true`, so the same URL pattern is safe to use on every chosen image, AI-generated or not. When the user wants disclosure, add it to all of them, so a library image that is AI-generated gets its label without you having to treat it specially. It depends on the asset having been saved with `ai_generated=true` (step 7), or having that field set in the library.
+- Make sure the four `ai-labels/*` assets exist whenever disclosure is on and any chosen image might be AI-generated, even if you generate nothing yourself. Uploading them is a write, so it needs the user's permission.
 - For an AI-generated asset that isn't marked with `ai_generated=true` (for example, one saved by another tool), drop the `if_ctx` and `if_end` components and add the overlay unconditionally.
 - Add the overlay to every URL for the slot: each `srcset` width, each `<source>` crop, and CSS `background-image` URLs.
 - Add the disclosure to the alt text too, so screen reader users get it: for example, "AI-generated image: two hikers on an autumn trail".
