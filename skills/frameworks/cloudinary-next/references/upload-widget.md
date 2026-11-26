@@ -17,7 +17,8 @@ import { CldUploadWidget } from 'next-cloudinary';
 </CldUploadWidget>;
 ```
 
-- ✅ **`"use client"` is required**.
+- ✅ **`"use client"` is required** for `CldUploadWidget`: its render-function child can't be passed from a Server Component. The same applies to `CldUploadButton` when you pass callbacks such as `onSuccess`.
+- ✅ In v7, `<CldUploadButton>` with no callbacks, or with Server Actions in its `*Action` props, can render from a Server Component. In v6 it always needs a Client Component.
 - ✅ The widget renders **nothing by default** — pass a function-as-children that returns the trigger UI. The function receives `{ open, close, cloudinary, widget, results, error, isLoading }`.
 - ✅ Use `<CldUploadButton>` for a one-line drop-in if you don't need custom UI.
 - ✅ **Default to unsigned uploads** unless the user explicitly asks for "secure" or "signed". Signed requires a running backend route and will fail out of the box without it.
@@ -53,7 +54,7 @@ import { CldUploadWidget } from 'next-cloudinary';
 >{({ open }) => <button onClick={() => open()}>Upload</button>}</CldUploadWidget>
 ```
 
-- ✅ **Prefer `onSuccess`** — `onUpload` is deprecated.
+- ✅ **Use `onSuccess`** — `onUpload` was deprecated in v6 and removed in v7.
 - ✅ The "Action" variants (`onSuccessAction`, `onUploadAddedAction`, etc.) are the same events but only receive `results` (no widget instance) — use them when wiring directly to a Server Action so the callback is serializable.
 - ✅ `result.info` shape includes at least: `public_id`, `secure_url`, `url`, `width`, `height`, `format`, `resource_type`, `bytes`, `created_at`. Type it explicitly (see TypeScript section).
 - ❌ **Don't** treat `result.info` as always an object — when the event isn't `success` it can be a string. Narrow before accessing.
