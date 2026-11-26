@@ -1,6 +1,6 @@
 ---
 name: cloudinary-image-picker
-description: "End-to-end recipe for choosing the right images for a website from a Cloudinary product environment, and generating new ones when nothing fits. Use when building a website or page that needs images, filling empty or placeholder image slots, replacing or refreshing existing site images (for example, a seasonal hero banner), or when the user asks to find, pick, match, or generate images for their site from Cloudinary."
+description: "End-to-end recipe for choosing the right images for a website or page from a Cloudinary product environment, and generating new ones when nothing fits. Use when building a site or page that needs photos or hero, banner, or card imagery, when filling empty or placeholder image slots (grey boxes, placehold.co, lorem picsum) with real photos, when replacing or refreshing existing site images (for example, a seasonal hero banner), or when the user asks to find, pick, match, or generate one or more images for their site from Cloudinary. Not for uploading, delivery URL or transformation syntax, video, or framework SDK integration: use the other Cloudinary skills."
 license: MIT
 metadata:
   author: cloudinary
@@ -54,7 +54,7 @@ Picks the best image for every image slot on a website from the assets in a Clou
 - The user wants to replace or refresh existing images, for example, swapping a summer hero banner for an autumn one
 - The user asks to find, match, or generate images for their site from their Cloudinary media library
 
-Don't use this skill for logos, icons, or brand marks: use the user's own files. For transformation syntax details, use cloudinary-transformations. For anything outside this skill's scope, use cloudinary-docs.
+Logos, icons, and other brand marks are a special case: use the user's own files for them, exactly as they are (see "Brand images" in step 2). For transformation syntax details, use cloudinary-transformations. For anything outside this skill's scope, use cloudinary-docs.
 
 ## Prerequisites
 
@@ -104,6 +104,7 @@ Before searching, build a slot list from the page code, the design, or your own 
 | Minimum source size | Display size multiplied by 2 for high-density screens. For example, a 1440x600 hero needs a source of at least 2880x1200, or at least 1920 wide as a floor. |
 | Overlay | Whether text or buttons sit on top of the image, and where. The image needs a calm, low-detail area there. |
 | Current image | The existing URL, if any, and why it's being replaced |
+| Brand image | Whether it's a logo, icon, or other brand mark. If so, handle it as set out in step 2, not as a photo slot |
 
 Read the copy closely and connect the dots. A section titled "Fresh from our kitchen" above a bakery menu needs warm, close-up food photography, not a generic "food" image. A "Meet the team" grid needs consistent head-and-shoulders portraits, not mixed group shots.
 
@@ -112,6 +113,7 @@ Read the copy closely and connect the dots. A section titled "Fresh from our kit
 Ask one short, batched question before you search. Skip a scope or style question when the user already answered it, but **always ask for write permission** unless the user already gave it: editing and generating create new assets in their product environment and use add-on quota, and without explicit permission your agent's safety checks may block the upload at the end of the run, after the quota is already spent.
 
 - **Scope**: limit the search to a folder, tag, or collection? (for example, only assets tagged `approved` or `CC0`)
+- **Brand images**: are there specific logos, icons, or other brand images that must be used exactly as they are? Ask where they are (a folder or tag in the product environment, or a file or URL the user gives you). Use those files as given: don't search for look-alikes, edit, or regenerate them, and skip step 5 scoring for those slots (just check that the file is big enough and delivers correctly). If the user wants a *new* logo or brand mark designed, treat it as a generation slot: it needs write permission and counts against the generation budget, say that it's a draft design for them to approve and not an official brand asset, and expect to try more than one prompt, since image models often get lettering wrong. Pick a vector- or text-capable model if the user asks for one; `auto` can choose.
 - **Style**: photography or illustration, people or no people, color mood?
 - **Write permission**: may you edit existing images or generate new ones when nothing in the library fits, save the results to the product environment as new assets, and delete the rejected attempts you generated along the way (never any other asset)? Mention the quota cost (see [references/generate-images.md](references/generate-images.md)).
 - **Generation priority**: when you have write permission, ask whether quality or cost matters more for generated images. Map the answer to the `preference` of automatic model selection (see [Automatic model selection](https://cloudinary.com/documentation/image_generation_addon.md?install_source=skillspack&referrer=image-picker-skill#automatic_model_selection)): best quality is `quality`, lowest cost is `economy`, and a balance is `balanced` (the default). If speed matters too, use the `_fast` variant (`quality_fast`, `economy_fast`, `balanced_fast`). A lower cost also stretches the quota (see [references/generate-images.md](references/generate-images.md)).
