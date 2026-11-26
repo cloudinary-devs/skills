@@ -4,6 +4,7 @@ Use this when the user provides an error message, broken behavior, or asks for a
 
 ## Table of contents
 
+- Install errors
 - Environment variable errors
 - Component / `use client` errors
 - Import errors
@@ -17,6 +18,12 @@ Use this when the user provides an error message, broken behavior, or asks for a
 
 
 # ⚠️ COMMON ERRORS & SOLUTIONS
+
+## Install Errors
+
+### `npm install next-cloudinary` fails with `ERESOLVE` / peer dependency conflict
+- ❌ Problem: the project is on Next.js 15 or earlier. next-cloudinary v7 requires Next.js 16 (and React 18.2 or 19, Node.js 22+).
+- ✅ Solution: install v6 with `npm install next-cloudinary@6`, or upgrade Next.js to 16 first. Don't use `--force` or `--legacy-peer-deps` to push v7 onto an older Next.js.
 
 ## Environment Variable Errors
 
@@ -42,23 +49,27 @@ Use this when the user provides an error message, broken behavior, or asks for a
 
 ## Component / "use client" errors
 
-### "You're importing a component that needs `useState` (or `useEffect`, `createContext`, etc.). It only works in a Client Component."
-- ❌ Problem: `<CldUploadWidget>`, `<CldUploadButton>`, or `<CldVideoPlayer>` rendered in a Server Component without `"use client"`.
-- ✅ Solution: add `"use client"` at the top of the file (or extract the widget/player into its own client component and import it from a server file).
+### "Functions cannot be passed directly to Client Components" / "Event handlers cannot be passed to Client Component props"
+- ❌ Problem: a Server Component passes a function to a `next-cloudinary` component: an event handler (`onSuccess`, `onLoad`, `onPlay`, …), a ref, or the render-function child of `<CldUploadWidget>`.
+- ✅ Solution: add `"use client"` at the top of the file, or move the component and its handlers into a small Client Component and render that from the server file. To call server code on upload, `<CldUploadButton>` and `<CldUploadWidget>` accept Server Actions in their `*Action` props (e.g. `onSuccessAction`).
 
-### `CldImage` works in a server file but breaks when I add an `onLoad` handler
-- ❌ Problem: Event handlers can only be passed to Client Components.
-- ✅ Solution: add `"use client"` at the top of the file, or split: keep `<CldImage>` as a child in a server file, but render it from a small `"use client"` wrapper that owns the handler.
-
-### "useRouter is not a function" / random hook errors near `<CldUploadWidget>`
-- ❌ Problem: Same — missing `"use client"` directive, or an old version of `next-cloudinary` mismatched with your Next.js version.
-- ✅ Solution: confirm `"use client"`; upgrade to the latest `next-cloudinary` (`npm install next-cloudinary@latest`).
+### "You're importing a component that needs `useState`…" / `useState is not a function` / `useRef is not a function` (v6)
+- ❌ Problem: on next-cloudinary v6, a component (including `<CldImage>`) is rendered from a Server Component. v6 components don't include `'use client'`.
+- ✅ Solution: add `"use client"` to the file, or wrap the component in a Client Component. On Next.js 16, upgrading to v7 also fixes this (see `references/migrating-to-v7.md`).
 
 ## Import Errors
 
 ### "Cannot find module 'next-cloudinary/dist/cld-video-player.css'"
 - ❌ Problem: Wrong path or the package isn't installed.
-- ✅ Solution: install `next-cloudinary` (latest), then import exactly: `import 'next-cloudinary/dist/cld-video-player.css';`. Don't use `cloudinary-video-player/...` — that's the standalone package, not the Next wrapper.
+- ✅ Solution: install `next-cloudinary`, then import exactly: `import 'next-cloudinary/dist/cld-video-player.css';`. Don't use `cloudinary-video-player/...` — that's the standalone package, not the Next wrapper.
+
+### "Can't resolve 'next-cloudinary/cld-video-player.css'"
+- ❌ Problem: the short CSS path only exists in v7. The project is on v6.
+- ✅ Solution: use `next-cloudinary/dist/cld-video-player.css`, which works in both.
+
+### "Module not found: Can't resolve 'next-cloudinary/dist/…'" / `ERR_PACKAGE_PATH_NOT_EXPORTED`
+- ❌ Problem: v7 defines an `exports` map, so imports of internal files such as `next-cloudinary/dist/index.js` no longer resolve.
+- ✅ Solution: import from `next-cloudinary`. The only supported file paths are the video player CSS (`next-cloudinary/dist/cld-video-player.css`, or `next-cloudinary/cld-video-player.css` in v7).
 
 ### "Module not found: cloudinary" in a route handler
 - ❌ Problem: `cloudinary` (Node SDK) wasn't installed.
@@ -110,9 +121,9 @@ Use this when the user provides an error message, broken behavior, or asks for a
 - ❌ Problem: The preset is **Signed** in the dashboard, but you used `uploadPreset` without `signatureEndpoint`.
 - ✅ Solution: either flip the preset to Unsigned in the dashboard, or add a `signatureEndpoint` (see signed uploads pattern).
 
-### `onUpload` is never called
-- ❌ Problem: `onUpload` is deprecated in v6.
-- ✅ Solution: use `onSuccess`. The argument shape is similar: `(result, { widget }) => …`.
+### `onUpload` is never called, or "Property 'onUpload' does not exist"
+- ❌ Problem: `onUpload` was deprecated in v6 and removed in v7.
+- ✅ Solution: use `onSuccess`. The second argument is an object: `(result, { widget }) => …` (with `onUpload` it was `(result, widget)`).
 
 ### `result.info` is a string, not an object
 - ❌ Problem: You're handling a non-success event (e.g. `queues-end`, `display-changed`) where `info` is a string.
@@ -168,15 +179,26 @@ Use this when the user provides an error message, broken behavior, or asks for a
 ## CldVideoPlayer Errors
 
 ### "Cannot find module 'next-cloudinary/dist/cld-video-player.css'"
-- ✅ Solution: install / upgrade `next-cloudinary`. The path is exactly that — no other variant is exposed.
+- ✅ Solution: install `next-cloudinary`. This path works in v6 and v7; v7 also accepts `next-cloudinary/cld-video-player.css`.
+
+### Poster image is broken when `aspectRatio` is set (v7.0.x)
+- ❌ Problem: known limitation with Video Player v4. The video itself plays normally.
+- ✅ Solution: remove `aspectRatio` if it isn't needed, or also set a crop mode such as `cropMode="fill"`, which crops the video to that ratio. `cropMode` isn't in the TypeScript types yet, so it needs a cast. A fix is planned for a follow-up release.
+
+### Custom poster from the Video Player Studio isn't shown
+- ✅ Checks: v7 shows Studio posters automatically; v6 (Video Player v1.x) doesn't. A `poster` prop set in code takes precedence.
 
 ### Player styles are broken / unstyled controls
 - ❌ Problem: CSS not imported.
 - ✅ Solution: `import 'next-cloudinary/dist/cld-video-player.css';` once on a layout or the page using the player.
 
 ### Player throws hydration / removeChild errors
-- ❌ Problem: Component is in a Server Component, or the page suspends and unmounts the player at the wrong time.
-- ✅ Solution: add `"use client"` to the file. Wrap the player in its own component if needed so it's not torn down by parent suspense.
+- ❌ Problem: on v6, the component is in a Server Component; or the page suspends and unmounts the player at the wrong time.
+- ✅ Solution: on v6, add `"use client"` to the file. Wrap the player in its own component if needed so it's not torn down by parent suspense.
+
+### Player is blank after navigating away and back
+- ❌ Problem: on v6, the player doesn't re-initialise after it's unmounted and mounted again (for example after client-side navigation away and back).
+- ✅ Solution: fixed in v7. See `references/migrating-to-v7.md`.
 
 ### Video doesn't autoplay
 - ❌ Problem: Browsers block autoplay with sound. The `autoplay` prop also takes a string `autoplayMode` (e.g. `"on-scroll"`).
@@ -207,11 +229,13 @@ Use this when the user provides an error message, broken behavior, or asks for a
 ### "Property 'NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME' does not exist on type 'ProcessEnv'"
 - ✅ Solution: declare the env vars in an `env.d.ts` (see "Environment Variable Typing" above).
 
-### "Type 'null' is not assignable to type 'RefObject<…>'"
+### "Type 'RefObject<unknown>' is not assignable…" / "Type 'null' is not assignable to type 'RefObject<…>'"
 - ✅ Solution: type refs with the actual element / instance type:
   ```ts
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const playerRef = useRef<unknown>(null);
+  import type { CloudinaryVideoPlayer } from 'next-cloudinary';
+
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const playerRef = useRef<CloudinaryVideoPlayer | null>(null);
   ```
 
 ---
