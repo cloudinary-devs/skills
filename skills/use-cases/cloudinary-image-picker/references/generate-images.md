@@ -4,6 +4,8 @@ Read this in step 7 before you generate anything. It covers the quota budget, ma
 
 ## Check the generation budget
 
+**Before the first generation**, read the remaining quota. With API credentials, call the Admin API `usage` endpoint (`GET https://api.cloudinary.com/v1_1/$CLOUDINARY_CLOUD_NAME/usage`): its `image_generation` object has `usage` (units used) and `limit`, so the remaining quota is `limit - usage`. With MCP, `get-usage-details` returns the same `image_generation` object. If neither reports it, make the first call a cheap one (`1K`) and re-plan from `limits.addons_quota` in its response. Then estimate the cost of the unfilled slots (see the unit costs below), and compare it with the remaining quota and with the user's generation limit from step 2. If the estimate is higher than either, **stop and ask** the user how to proceed (raise the limit, generate fewer slots, or leave some as library near-misses) instead of choosing for them.
+
 Every `text_to_image` and `image_to_image` call uses Image Generation quota, and a free plan's allotment runs out after a handful of images. Every response reports the quota in `limits.addons_quota` (`used_by_request`, `remaining`, `limit`).
 
 - After the first call, work out how many more images the remaining quota allows, and plan around it: generate the slots that matter most first (hero, then products, then decorative backgrounds).
