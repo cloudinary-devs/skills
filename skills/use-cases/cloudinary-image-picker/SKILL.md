@@ -100,7 +100,7 @@ Before searching, build a slot list from the page code, the design, or your own 
 | Context | The heading, body text, and calls to action closest to the slot. This is the main signal for what the image should show. |
 | Site context | Brand, audience, tone, color palette, season or campaign |
 | Display size | Rendered width and height in CSS pixels at the largest breakpoint, from the CSS, the component props, or the layout |
-| Aspect ratio | From the display size, or from `aspect-ratio`, `object-fit`, or fixed width and height. Check the media queries too: if the ratio changes at a breakpoint (for example, a 12:5 hero that becomes 4:5 on phones), record each ratio and its breakpoint. |
+| Aspect ratio | From the display size, or from `aspect-ratio`, `object-fit`, or fixed width and height. Check the media queries too: if the ratio changes at a breakpoint (for example, a 12:5 hero that becomes 4:5 on phones), record each ratio and its breakpoint. If the height is fixed and the width is fluid (for example, `height: 600px; width: 100%`), the ratio changes at every viewport width, not only at breakpoints: see [references/deliver-and-ai-label.md](references/deliver-and-ai-label.md). |
 | Minimum source size | Display size multiplied by 2 for high-density screens. For example, a 1440x600 hero needs a source of at least 2880x1200, or at least 1920 wide as a floor. |
 | Overlay | Whether text or buttons sit on top of the image, and where. The image needs a calm, low-detail area there. |
 | Current image | The existing URL, if any, and why it's being replaced |
@@ -247,15 +247,15 @@ Build each delivery URL with cloudinary-transformations. The defaults for a slot
 - Crop to the slot: `c_fill,g_auto,h_<H>,w_<W>`, with `ar_<RATIO>` for fluid layouts
 - Always optimize: `f_auto/q_auto` as the final components
 - Responsive images: a `srcset` at 1x and 2x the display width, or `w_auto` where the site uses Client Hints
-- Overlay text: if contrast is weak, darken behind the text with `e_brightness:-20` or a gradient overlay rather than choosing a busier image
+- Overlay text: if contrast is weak, darken behind the text with a flat tint (`co_rgb:000000,e_colorize:30`) or a gradient overlay rather than choosing a busier image. Avoid `e_brightness:-20`: it leaves grey blotches over bright highlights such as windows
 
 Example for a 1440x600 hero: `https://res.cloudinary.com/<CLOUD_NAME>/image/upload/c_fill,g_auto,h_600,w_1440/f_auto/q_auto/<PUBLIC_ID>`
 
-**When a slot's aspect ratio changes at a breakpoint**, deliver a separate crop for each ratio with `<picture>`, instead of one wide image and CSS `object-fit: cover`, which can cut the subject out. If the user wants a visible "AI" label, add it to every URL for each AI-generated or AI-edited image. Read [references/deliver-and-ai-label.md](references/deliver-and-ai-label.md) for both patterns.
+**The delivered crop's aspect ratio must match the box it's shown in, at every viewport width.** If it doesn't, CSS `object-fit: cover` trims the sides or the bottom, which can cut out the subject and the corner AI label. Slots whose ratio changes at a breakpoint, or whose height is fixed while the width is fluid, need a separate crop per breakpoint or width band, or a CSS `aspect-ratio`. If the user wants a visible "AI" label, add it to every URL for each AI-generated or AI-edited image. Read [references/deliver-and-ai-label.md](references/deliver-and-ai-label.md) for both patterns.
 
 Write meaningful `alt` text for every image, based on what the image actually shows and why it's on the page. Use an empty `alt=""` only for purely decorative images.
 
-When replacing an existing image, change only the image source, size, and `alt`. Keep the surrounding markup, classes, and loading behavior.
+When replacing an existing image, change only the image source, size, and `alt`, plus the `<picture>` wrapper or CSS `aspect-ratio` when a slot needs one to keep its crop. Keep the surrounding markup, classes, and loading behavior, and add `width` and `height` attributes only if the original markup had them.
 
 ### 9. Self-check the rendered page
 
@@ -264,14 +264,14 @@ Before handing back, open the page and check it, using a browser tool if you hav
 Check the page as a visitor sees it, with all its styles, scripts, and fonts loaded. Use the project's dev server if it has one. For a static site, serve the folder over local HTTP (for example, `python3 -m http.server`) rather than opening the file directly: some browser tools load a `file://` page without its stylesheet, which hides crop and overlay problems. If the page renders unstyled, fix that before checking anything else. Take a screenshot at desktop width and one at phone width.
 
 - [ ] Every delivery URL returns HTTP 200 and an image, not an error placeholder
-- [ ] Each image shows what its slot needs, at the size it's displayed
+- [ ] Each image shows what its slot needs, at the size it's displayed. Measure it: compare each `<img>`'s `clientWidth` and `clientHeight` with its `naturalWidth` and `naturalHeight`. The ratios should match, and the natural width should be about the displayed width times the pixel ratio. Padding and `box-sizing` often make the displayed width differ from the CSS value
 - [ ] No key subject is cropped badly (cut-off heads, products cut in half), at desktop or phone width
 - [ ] Overlay text is readable over the image
-- [ ] If AI labels are on: every generated or AI-edited image shows its label, clearly readable, not hidden under text or buttons, and not clipped by CSS cropping, at desktop and phone width
+- [ ] If AI labels are on: every generated or AI-edited image shows its label, clearly readable, not hidden under text or buttons, and not clipped by CSS cropping, at desktop and phone width and at widths between breakpoints (for example, 1000 and 800 pixels), and at least 48 CSS pixels across on the phone crops
 - [ ] The images look consistent together on the page
 - [ ] No image appears blurry or pixelated at 2x
 
-Fix any failure by returning to step 5 for that slot (next candidate), step 6 (edit), or step 7 (new generation). Limit this to 2 fix rounds, then report what's left.
+Fix any failure by returning to step 5 for that slot (next candidate), step 6 (edit), or step 7 (new generation). Limit this to 2 fix rounds, then report what's left. If an overlay text has no calm area at a breakpoint crop, darken behind it more, move the text, or regenerate with a prompt that leaves calm space at both ratios, and flag it in the report if it's still weak.
 
 ### 10. Report to the user
 
@@ -305,4 +305,5 @@ Also list the discovery method you used, any slots you flagged, any images you e
 - Putting API credentials in client-side code
 - Saving a generated image without `ai_generated=true`, so the conditional AI label never shows and the flag can't be added later
 - Setting `ai_generated=true` on a real photo or a library image, which can't be undone
+- Letting CSS `object-fit: cover` re-crop a delivered image at widths between breakpoints, which hides the corner AI label and can cut the subject
 - Placing the AI label before the crop, so it's cropped out, or choosing its version from the full image instead of the corner of each crop

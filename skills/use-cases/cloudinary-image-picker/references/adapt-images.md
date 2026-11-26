@@ -18,8 +18,8 @@ curl -s -X POST "https://api.cloudinary.com/v2/generate/$CLOUDINARY_CLOUD_NAME/i
 
 Then:
 
-1. **Check the result**: open the transformation URL (the first request can take a while, since the edit runs then) or the `secure_url` of the saved `image_to_image` asset, and view it. Score it with the step 5 rubric. If it scores under 14, try a different fix or a clearer prompt, up to 2 attempts, then go to step 7.
-2. **Save the approved result as a new asset.** An `image_to_image` edit is already saved: delete each rejected attempt with `delete-asset` (or the Admin API) before retrying, then add the tags `ai-edited,image-picker` and the `alt` context. For an edit made with a transformation from the table, save the transformation URL as a new asset, with `tags=ai-edited,image-picker`, the `alt` context, and `ai_generated=true`. Don't overwrite the original:
+1. **Check the result**: open the transformation URL (the first request can take a while, since the edit runs then, and may return `423` with "Processing continued in the background": repeat the request until it returns `200`) or the `secure_url` of the saved `image_to_image` asset, and view it. Score it with the step 5 rubric. If it scores under 14, try a different fix or a clearer prompt, up to 2 attempts, then go to step 7.
+2. **Save the approved result as a new asset.** An `image_to_image` edit is already saved: delete each rejected attempt with `delete-asset` (or the Admin API) before retrying, then add the tags `ai-edited,image-picker` and the `alt` context. For an edit made with a transformation from the table, save the transformation URL as a new asset, but only once the URL returns `200` (saving it while it returns `423` fails with "423 Locked"), with `tags=ai-edited,image-picker`, the `alt` context, and `ai_generated=true`. Don't overwrite the original:
 
 ```bash
 curl -s -X POST "https://api.cloudinary.com/v1_1/$CLOUDINARY_CLOUD_NAME/image/upload" \

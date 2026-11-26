@@ -9,6 +9,7 @@ Every `text_to_image` and `image_to_image` call uses Image Generation quota, and
 - After the first call, work out how many more images the remaining quota allows, and plan around it: generate the slots that matter most first (hero, then products, then decorative backgrounds).
 - Count retries against the budget. If the budget can't cover every slot plus a retry each, tell the user which slots you'll leave as library near-misses, before you spend it.
 - The cost per image varies with the model, the resolution, and the endpoint, so read `used_by_request` after each call instead of assuming a fixed price. Request only the resolution the slot needs, and never more than `2K`: in testing, one 4K hero cost 19 units, about as much as 7 smaller images together. For wider slots, generate at `2K` and upscale (see below).
+- The quota is counted in units, not images: in testing, a `2K` hero cost 5 units and a `1K` card cost 1. If the user gives a cap in images, keep to it and still track units.
 - Report the quota used and remaining at the end.
 
 ## Generate matching sets from one reference
@@ -47,8 +48,8 @@ curl -s -X POST "https://api.cloudinary.com/v2/generate/$CLOUDINARY_CLOUD_NAME/t
 
 Without API credentials, call `generate-image` (or `generate-image-from-images`) with the same `target`.
 
-- Set `aspect_ratio` to the slot's ratio, or the nearest supported one, and choose a `resolution` that meets the minimum source size. `2K` is about 2048 pixels on the long side, which is enough for slots up to about 1000 CSS pixels wide at 2x.
-- For wider slots, such as a full-width hero, still generate at `2K`, which costs far less than `4K`. If the approved image is under the slot's minimum source size, upscale it when you save it: `e_upscale` always multiplies each dimension by 4, so follow it with `c_limit` to stop at the minimum source size, and save that derived image. For example, for a 1440x600 hero, save `e_upscale/c_limit,w_2880/<PUBLIC_ID>` rather than the full 8192-pixel result. Upscaling doesn't use Image Generation quota.
+- Set `aspect_ratio` to the slot's ratio, or the nearest supported one, and choose a `resolution` that meets the minimum source size. `2K` is about 2048 pixels on the long side, which is enough for slots up to about 1000 CSS pixels wide at 2x. The supported ratios are `1:1`, `16:9`, `9:16`, `4:3`, and `3:4` (there is no `21:9`: generate `16:9` and crop). The size you get varies by model (a `1K` square came back at 1600x1600, a `2K` 16:9 at 2048x1152), so read `width` and `height` from the response before you decide whether the image meets the minimum source size.
+- For wider slots, such as a full-width hero, still generate at `2K`, which costs far less than `4K`. If the approved image is under the slot's minimum source size, upscale it when you save it: `e_upscale` always multiplies each dimension by 4, so follow it with `c_limit` to stop at the minimum source size, and save that derived image. For example, for a 1440x600 hero, save `e_upscale/c_limit,w_2880/<PUBLIC_ID>` rather than the full 8192-pixel result. Upscaling doesn't use Image Generation quota. The pre-upscale original stays in the library as the approved image, and the upscaled copy is a separate asset: list both in the report.
 - For text-heavy or vector needs, `mode: auto` picks a suitable model. Only pin a `model.id` if the user asks.
 - If an existing image is close to what you need, adapt it in step 6 instead of generating from scratch.
 

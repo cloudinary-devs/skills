@@ -1,6 +1,6 @@
 # Responsive crops and the visible AI label
 
-Read this in step 8 when a slot's aspect ratio changes at a breakpoint (the `<picture>` pattern), or when the user wants a visible "AI" label on AI-generated and AI-edited images.
+Read this in step 8 when a slot's aspect ratio changes at a breakpoint or with the viewport width (the `<picture>` pattern), or when the user wants a visible "AI" label on AI-generated and AI-edited images.
 
 **When a slot's aspect ratio changes at a breakpoint**, deliver a separate crop for each ratio. Don't rely on one wide image plus CSS `object-fit: cover`: the browser crops from the center and can cut the subject out entirely. Use `<picture>` with a `<source>` per breakpoint, each with its own `c_fill,g_auto` crop, so Cloudinary keeps the subject in frame at every ratio:
 
@@ -15,10 +15,24 @@ Read this in step 8 when a slot's aspect ratio changes at a breakpoint (the `<pi
 </picture>
 ```
 
-- Keep the existing `<img>` class and attributes on the `<img>` inside `<picture>`, so the site's CSS still applies.
+- Keep the existing `<img>` class and attributes on the `<img>` inside `<picture>`, so the site's CSS still applies. Add `width` and `height` only if the original `<img>` had them.
 - Score the image for every ratio, not only the widest one. A subject on the right third of a wide hero may be the only thing a phone crop needs to keep, and `g_auto` handles that. If the subject still gets cut off, or the overlay text has nowhere calm to sit at a ratio, look for a better candidate, or extend the image with generative fill in step 6.
-- If the overlay text moves at a breakpoint (for example, from the left side to the top), check that the crop for that breakpoint has a calm area where the text now sits.
+- If the overlay text moves at a breakpoint (for example, from the left side to the top), check that the crop for that breakpoint has a calm area where the text now sits. If it doesn't, darken behind the text more, move the text, or regenerate the image with a prompt that keeps calm space at both ratios, and flag the slot in the report if it's still weak.
 
+
+## Fluid slots: match the crop to the box at every width
+
+A breakpoint isn't the only place the ratio changes. If a slot has a fixed height and a fluid width (for example, a 600-pixel-tall hero at `width: 100%`), its box is 1440x600 at 1440 pixels wide but 1000x600 at 1000. A 1440x600 crop shown in a 1000x600 box is trimmed by `object-fit: cover` to the middle 69% of its width, and the bottom-right AI label is cut off.
+
+Fix it with one of these, in this order of preference:
+
+1. **Give the slot a fixed ratio in CSS** (`aspect-ratio: 12 / 5` instead of a fixed height), so the box and the crop match at every width above the breakpoint.
+2. **Add a `<source>` per width band**, each with `media="(min-width: Npx) and (max-width: Mpx)"`, a crop whose ratio matches the box at that width (for example, `c_fill,g_auto,w_1000,h_600`), and its own label size. A `srcset` with `w` descriptors can't do this: every candidate in one `srcset` must have the same ratio.
+3. **Give up the corner label's position** only if neither is possible: set `object-position: right bottom` so the bottom-right corner stays visible, and check that the subject isn't cut off.
+
+Deliver each crop at about the width it's displayed (1x and 2x of that width), not at the largest width scaled down. A 1100-pixel crop shown 327 pixels wide shrinks its label to about 19 CSS pixels, which is unreadable. Size the label for each crop's delivered width (see step 3 of the label section below).
+
+Check the result at 3 or more widths, including ones between breakpoints: compare each `<img>`'s `clientWidth / clientHeight` with its `naturalWidth / naturalHeight`. If they differ by more than about 2%, the browser is cropping it again.
 
 ## Add a visible AI label
 
