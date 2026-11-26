@@ -265,7 +265,7 @@ curl -s -X POST "https://api.cloudinary.com/v1_1/$CLOUDINARY_CLOUD_NAME/image/up
 
 Without API credentials, use the `upload-asset` tool with the same parameters.
 
-Always save generative edits as assets like this, instead of leaving the generative transformation in the delivery URL. The responsive sizes in step 8 then resize one fixed image instead of re-running the edit for every width, and the image's AI provenance comes from the saved asset's `ai_generated` field, not from whether the account adds C2PA data to images delivered with generative transformations (only some accounts do).
+Always save generative edits as assets like this, instead of leaving the generative transformation in the delivery URL. The responsive sizes in step 8 then resize one fixed image instead of re-running the edit for every width, and the image's AI provenance comes from the saved asset's `ai_generated` field. On accounts that add C2PA data to images delivered with generative transformations (only some do), saving the transformation URL keeps that C2PA manifest in the new asset, and in its resized derivatives. Images made with Image Generation (`text_to_image` and `image_to_image`) don't get C2PA data, only the `ai_generated` field.
 
 ### 7. Generate images for unfilled slots
 
