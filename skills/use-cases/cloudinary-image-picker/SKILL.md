@@ -60,7 +60,7 @@ Don't use this skill for logos, icons, or brand marks: use the user's own files.
 
 - **Access to the product environment**, in this order of preference:
   1. **Cloudinary MCP servers** (recommended): the [Asset Management and Analysis MCP servers](https://cloudinary.com/documentation/cloudinary_llm_mcp.md?install_source=skillspack&referrer=image-picker-skill#mcp_servers) sign in with OAuth, so the user never shares an API secret with you. They cover search, Visual Search, upload, image generation and editing, and AI Vision. If they're connected, use their tools in place of the `curl` examples below, which show the parameters to pass. If they aren't, suggest the user installs them, or the Cloudinary [marketplace plugin](https://cloudinary.com/documentation/cloudinary_llm_mcp.md?install_source=skillspack&referrer=image-picker-skill#marketplace_plugins), which sets them up. Fall back to `curl` for any call no connected tool covers.
-  2. **API credentials**: `CLOUDINARY_URL` (`cloudinary://<API_KEY>:<API_SECRET>@<CLOUD_NAME>`), or `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET`, when the user prefers not to use MCP or a call has no MCP tool. Never print the secret or put it in client-side code.
+  2. **API credentials**: `CLOUDINARY_URL` (`cloudinary://<API_KEY>:<API_SECRET>@<CLOUD_NAME>`), or `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET`. The `curl` examples in this skill use the separate variables: if only `CLOUDINARY_URL` is set, split it first (`CLOUDINARY_CLOUD_NAME="${CLOUDINARY_URL##*@}"`, and the part between `cloudinary://` and `@` is `<API_KEY>:<API_SECRET>`). Use API credentials when the user prefers not to use MCP or a call has no MCP tool. Never print the secret or put it in client-side code.
 - **Vision**: you must be able to view images (fetch an image URL and see its contents). Scoring depends on it.
 - **Image Generation add-on** must be registered for the product environment to generate images. If it isn't, report the gap instead of generating.
 
@@ -114,9 +114,10 @@ Ask one short, batched question before you search. Skip a scope or style questio
 - **Scope**: limit the search to a folder, tag, or collection? (for example, only assets tagged `approved` or `CC0`)
 - **Style**: photography or illustration, people or no people, color mood?
 - **Write permission**: may you edit existing images or generate new ones when nothing in the library fits, save the results to the product environment as new assets, and delete the rejected attempts you generated along the way (never any other asset)? Mention the quota cost (see [references/generate-images.md](references/generate-images.md)).
+- **Generation priority**: when you have write permission, ask whether quality or cost matters more for generated images. Map the answer to the `preference` of automatic model selection (see [Automatic model selection](https://cloudinary.com/documentation/image_generation_addon.md?install_source=skillspack&referrer=image-picker-skill#automatic_model_selection)): best quality is `quality`, lowest cost is `economy`, and a balance is `balanced` (the default). If speed matters too, use the `_fast` variant (`quality_fast`, `economy_fast`, `balanced_fast`). A lower cost also stretches the quota (see [references/generate-images.md](references/generate-images.md)).
 - **AI disclosure**: when you have write permission, ask whether the site should show a visible "AI" label on AI-generated and AI-edited images. Some regulations, such as Article 50 of the EU AI Act, require AI-generated media to be disclosed to the people viewing it. Don't give legal advice: if the user isn't sure, suggest they check with their legal or compliance team. See [references/deliver-and-ai-label.md](references/deliver-and-ai-label.md).
 
-If the user says to go ahead without answering, search all public images, and edit or generate where needed, without an AI label. If they decline write permission, use library images only and flag any slots that don't reach the acceptance score.
+If the user says to go ahead without answering, search all public images, and edit or generate where needed, with `balanced` generation and without an AI label. If they decline write permission, use library images only and flag any slots that don't reach the acceptance score.
 
 ### 3. Write search queries per slot
 
@@ -146,6 +147,8 @@ Pick the first method that works for the product environment and the user's scop
 | C. Search API on tags and captions | The scope is larger, and assets have auto-tags or captions | Content keywords |
 | D. Search API on existing tags and names | None of the above | Whatever keywords the uploader added |
 
+When the library is large but few assets have tags or captions, none of the rows fit well. Drop the assets that can't fill a slot (non-photographic assets, product spin frames, anything under the smallest slot's display size), then browse the rest as in method B. Run the caption search of method C first if some assets have captions, then confirm it by browsing, because a caption search misses assets whose captions use other words.
+
 To test for Visual Search, run one visual search call with a broad query that should match something in any library, such as `outdoor` or `person`. Treat it as unavailable if the call returns an error saying the feature isn't enabled, or if it returns no results: the feature may be off, or the images may not be indexed yet. Move on without mentioning it again. To size the scope, run a Search API call with the scope expression and read `total_count`.
 
 Then read [references/discovery-methods.md](references/discovery-methods.md) for the commands and filtering rules for the method you chose.
@@ -174,7 +177,7 @@ Maximum score: 20. Rules:
 
 - **Hard fails**: a 0 on subject match or resolution disqualifies the candidate, whatever its total.
 - **Accept** the highest scorer if it reaches **14 or more**.
-- **Don't reuse** one asset in two slots on the same page, unless the design intends it.
+- **Don't reuse** one asset in two slots on the same page, unless the design intends it. A copy of the same image under another public ID (common in sample libraries) counts as reuse.
 - **Check crop fit** by comparing aspect ratios: a 4:3 source in a 21:9 hero loses most of its height. `g_auto` helps, but can't add pixels that aren't there.
 - **Third-party logos and brand names** on products (for example, a brand logo on sunglasses) score 0 on Clean for a store or brand site, because they misrepresent what's for sale.
 - If no candidate reaches 14, but one scores 10 or more and an edit could fix what it's missing, the slot goes to step 6. Otherwise, it goes to step 7.
@@ -221,10 +224,10 @@ Prompts inside a transformation URL must be URL-encoded (for example, spaces as 
 Rules for every edit, whichever fix you use:
 
 - Never overwrite the original asset. Save the approved result as a new asset, with `tags=ai-edited,image-picker` and `ai_generated=true`.
-- Check the result and score it with the step 5 rubric. If it scores under 14, try a different fix or a clearer prompt, up to 2 attempts, then go to step 7.
+- View every result before you score it with the step 5 rubric: a generative edit can return an unusable image (blurred, smudged, or changed in the wrong place) with an HTTP 200. If it scores under 14, try a different fix or a clearer prompt, up to 2 attempts, then go to step 7. If the best attempt still has a visible flaw, say so in the report.
 - Always save generative edits as assets, instead of leaving a generative transformation in the delivery URL. The responsive sizes in step 8 then resize one fixed image instead of re-running the edit for every width, and the image's AI provenance comes from the saved asset's `ai_generated` field.
 
-Read [references/adapt-images.md](references/adapt-images.md) for the `image_to_image` call, how to save an edit, and what C2PA data a saved edit carries.
+Read [references/adapt-images.md](references/adapt-images.md) for the `image_to_image` call, how to save an edit, and how C2PA data behaves for a saved edit.
 
 ### 7. Generate images for unfilled slots
 
@@ -268,7 +271,7 @@ Check the page as a visitor sees it, with all its styles, scripts, and fonts loa
 - [ ] Each image shows what its slot needs, at the size it's displayed. Measure it: compare each `<img>`'s `clientWidth` and `clientHeight` with its `naturalWidth` and `naturalHeight`. The ratios should match. Read the delivered width from the file at `currentSrc`: with a `w`-descriptor `srcset`, `naturalWidth` is already divided by the pixel ratio. The delivered width should be about the displayed width times the pixel ratio. Padding and `box-sizing` often make the displayed width differ from the CSS value
 - [ ] No key subject is cropped badly (cut-off heads, products cut in half), at desktop or phone width
 - [ ] Overlay text is readable over the image
-- [ ] If AI labels are on: every generated or AI-edited image shows its label, clearly readable, not hidden under text or buttons, and not clipped by CSS cropping, at desktop and phone width and at widths between breakpoints (for example, 1000 and 800 pixels), and at least 48 CSS pixels across on the phone crops
+- [ ] If AI labels are on: every generated or AI-edited image shows its label, clearly readable, not hidden under text or buttons, and not clipped by CSS cropping, at desktop and phone width and at widths between breakpoints (for example, 1000 and 800 pixels), and with a visible circle of at least 36 CSS pixels on the phone crops
 - [ ] The images look consistent together on the page
 - [ ] No image appears blurry or pixelated at 2x
 

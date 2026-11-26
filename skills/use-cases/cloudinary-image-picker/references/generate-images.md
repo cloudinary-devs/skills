@@ -9,7 +9,7 @@ Every `text_to_image` and `image_to_image` call uses Image Generation quota, and
 - After the first call, work out how many more images the remaining quota allows, and plan around it: generate the slots that matter most first (hero, then products, then decorative backgrounds).
 - Count retries against the budget. If the budget can't cover every slot plus a retry each, tell the user which slots you'll leave as library near-misses, before you spend it.
 - The cost per image varies with the model, the resolution, and the endpoint, so read `used_by_request` after each call instead of assuming a fixed price. Request only the resolution the slot needs, and never more than `2K`: in testing, one 4K hero cost 19 units, about as much as 7 smaller images together. For wider slots, generate at `2K` and upscale (see below).
-- The quota is counted in units, not images: in testing, a `2K` hero cost 5 units and a `1K` card cost 1. If the user gives a cap in images, keep to it and still track units.
+- The quota is counted in units, not images, and the cost depends on the model: in testing, a `2K` 16:9 image cost 5 units, a `1K` square cost 1, and a `1K` 4:3 image cost 4 (and came back at 1024x768). If the user gives a cap in images, keep to it and still track units.
 - Report the quota used and remaining at the end.
 
 ## Generate matching sets from one reference
@@ -40,13 +40,15 @@ curl -s -X POST "https://api.cloudinary.com/v2/generate/$CLOUDINARY_CLOUD_NAME/t
   -H "Content-Type: application/json" \
   -d '{
     "prompt": "<PROMPT>",
-    "model": { "mode": "auto", "preference": "quality" },
+    "model": { "mode": "auto", "preference": "<PREFERENCE>" },
     "image_size": { "aspect_ratio": "16:9", "resolution": "2K" },
     "target": { "target_type": "managed_asset", "public_id": "<SITE_NAME>/<SLOT_ID>" }
   }'
 ```
 
 Without API credentials, call `generate-image` (or `generate-image-from-images`) with the same `target`.
+
+Set `<PREFERENCE>` to the answer from step 2 (`quality`, `economy`, or `balanced`, with `_fast` added if speed matters). If the user didn't answer, use `balanced`. Use `economy` if the quota can't cover every slot, since it picks the cheaper models. Check `data.assets[].model` in the response to see which model was chosen.
 
 - Set `aspect_ratio` to the slot's ratio, or the nearest supported one, and choose a `resolution` that meets the minimum source size. `2K` is about 2048 pixels on the long side, which is enough for slots up to about 1000 CSS pixels wide at 2x. The supported ratios are `1:1`, `16:9`, `9:16`, `4:3`, and `3:4` (there is no `21:9`: generate `16:9` and crop). The size you get varies by model (a `1K` square came back at 1600x1600, a `2K` 16:9 at 2048x1152), so read `width` and `height` from the response before you decide whether the image meets the minimum source size.
 - For wider slots, such as a full-width hero, still generate at `2K`, which costs far less than `4K`. If the approved image is under the slot's minimum source size, upscale it when you save it: `e_upscale` always multiplies each dimension by 4, so follow it with `c_limit` to stop at the minimum source size, and save that derived image. For example, for a 1440x600 hero, save `e_upscale/c_limit,w_2880/<PUBLIC_ID>` rather than the full 8192-pixel result. Upscaling doesn't use Image Generation quota. The pre-upscale original stays in the library as the approved image, and the upscaled copy is a separate asset: list both in the report.
@@ -57,6 +59,6 @@ Without API credentials, call `generate-image` (or `generate-image-from-images`)
 
 **Then add the tags and context** (`ai-generated,image-picker`, plus the `alt` and `prompt`) with `manage-asset-tags` and `manage-asset-context`, or the Admin API.
 
-**Check the AI-generated field.** Image Generation sets [`ai_generated`](https://cloudinary.com/documentation/content_provenance_and_authenticity.md?install_source=skillspack&referrer=image-picker-skill#provenance_and_ai_fields) on every image it saves to the product environment, on any account, whether or not the user wants a visible label. Search and the conditional AI label in step 8 rely on it. Confirm it with `search-assets` and the expression `ai_generated=true AND public_id="<PUBLIC_ID>"`. If it isn't set, add the step 8 AI label unconditionally, and say in the report that the asset isn't marked as AI-generated.
+**Check the AI-generated field.** Image Generation sets [`ai_generated`](https://cloudinary.com/documentation/content_provenance_and_authenticity.md?install_source=skillspack&referrer=image-picker-skill#provenance_and_ai_fields) on every image it saves to the product environment, on any account, whether or not the user wants a visible label. Search and the conditional AI label in step 8 rely on it. Search can lag by a minute or so after a new asset or a tag change, so if the check finds nothing, wait and repeat it (or read the asset's `provenance` field with `get-asset-details`) before you decide the field isn't set. Confirm it with `search-assets` and the expression `ai_generated=true AND public_id="<PUBLIC_ID>"`. If it isn't set, add the step 8 AI label unconditionally, and say in the report that the asset isn't marked as AI-generated.
 
 When you save anything else that is AI-generated or AI-edited by uploading it (such as a generative transformation URL, as in step 6), pass `ai_generated=true` (the `ai_generated` parameter of the `upload-asset` and `sign-upload` tools, or `-F "ai_generated=true"` with the Upload API). Only set it on images that really are AI-generated or AI-edited: once `true`, it's permanent, even if you upload over the same public ID, and it can't be added to an asset after upload.

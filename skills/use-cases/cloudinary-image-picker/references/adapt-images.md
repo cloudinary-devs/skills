@@ -2,7 +2,7 @@
 
 Read this in step 6, once you've picked a fix from the table in SKILL.md. It covers the `image_to_image` call, how to check an edit, and how to save an approved edit as a new asset.
 
-For several changes or a restyle, use `image_to_image`, saving the result straight to the product environment as a new asset (never overwrite the original). Image Generation sets `ai_generated` on it automatically:
+For several changes or a restyle, use `image_to_image`, saving the result straight to the product environment as a new asset (never overwrite the original). Image Generation sets `ai_generated` on it automatically. Set `<PREFERENCE>` to the generation priority answer from step 2 (`quality`, `economy`, or `balanced`, with `_fast` added if speed matters; `balanced` if unanswered):
 
 ```bash
 curl -s -X POST "https://api.cloudinary.com/v2/generate/$CLOUDINARY_CLOUD_NAME/image_to_image" \
@@ -11,7 +11,7 @@ curl -s -X POST "https://api.cloudinary.com/v2/generate/$CLOUDINARY_CLOUD_NAME/i
   -d '{
     "prompt": "Keep the people and composition of [1], change the season to autumn with orange leaves and warm light",
     "reference_images": [{ "source_type": "managed_asset", "asset_id": "<ASSET_ID>" }],
-    "model": { "mode": "auto" },
+    "model": { "mode": "auto", "preference": "<PREFERENCE>" },
     "target": { "target_type": "managed_asset", "public_id": "<SITE_NAME>/<SLOT_ID>" }
   }'
 ```
@@ -31,6 +31,6 @@ curl -s -X POST "https://api.cloudinary.com/v1_1/$CLOUDINARY_CLOUD_NAME/image/up
   -F "ai_generated=true"
 ```
 
-Without API credentials, use the `upload-asset` tool with the same parameters.
+Without API credentials, use the `upload-asset` tool with the same parameters. Separate several `context` pairs with `|` (for example, `alt=<ALT_TEXT>|prompt=<PROMPT>`), and escape any `=` or `|` inside a value with a backslash.
 
-Always save generative edits as assets like this, instead of leaving the generative transformation in the delivery URL. The responsive sizes in step 8 then resize one fixed image instead of re-running the edit for every width, and the image's AI provenance comes from the saved asset's `ai_generated` field. On accounts that add C2PA data to images delivered with generative transformations (only some do), saving the transformation URL keeps that C2PA manifest in the new asset, and in its resized derivatives. Images made with Image Generation (`text_to_image` and `image_to_image`) don't get C2PA data, only the `ai_generated` field.
+Always save generative edits as assets like this, instead of leaving the generative transformation in the delivery URL. The responsive sizes in step 8 then resize one fixed image instead of re-running the edit for every width, and the image's AI provenance comes from the saved asset's `ai_generated` field. C2PA data depends on the account. On accounts with the C2PA flags enabled, Cloudinary adds a manifest to images delivered with generative transformations and preserves and extends an existing one when any other transformation is applied (resizing, cropping, format changes, overlays), so saving the transformation URL keeps the manifest in the new asset and its derivatives. On accounts without the flags, deliveries carry no C2PA data, and a manifest that a model embedded in a generated original isn't kept in any transformed delivery. Cloudinary doesn't add C2PA data to Image Generation output itself, and some models embed their own manifest in the original PNG. The `ai_generated` field is the provenance signal on every account.
